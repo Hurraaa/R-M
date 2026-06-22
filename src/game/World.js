@@ -2,8 +2,11 @@ import * as THREE from "three";
 
 // Alien gezegen arenası — engebeli low-poly zemin, kristaller, kayalar, sis ve ışıklar.
 export class World {
-  constructor(scene) {
+  constructor(scene, mobile = false) {
     this.scene = scene;
+    this.mobile = mobile;
+    // mobilde sınırlı sayıda ışıklı kristal (dinamik ışık çok pahalı)
+    this.crystalLightBudget = mobile ? 3 : 8;
 
     scene.background = new THREE.Color(0x140a22);
     scene.fog = new THREE.FogExp2(0x140a22, 0.018);
@@ -21,7 +24,8 @@ export class World {
     const sun = new THREE.DirectionalLight(0xffe0b0, 1.1);
     sun.position.set(20, 30, 10);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
+    const shadowRes = this.mobile ? 1024 : 2048;
+    sun.shadow.mapSize.set(shadowRes, shadowRes);
     sun.shadow.camera.near = 1;
     sun.shadow.camera.far = 100;
     const s = 50;
@@ -109,9 +113,13 @@ export class World {
         crystal.castShadow = true;
         this.scene.add(crystal);
 
-        const glow = new THREE.PointLight(0x46e6ff, 0.5, 10, 2);
-        glow.position.set(x, h * 0.6, z);
-        this.scene.add(glow);
+        // ışığı yalnızca bütçe kadar kristale ekle
+        if (this.crystalLightBudget > 0) {
+          this.crystalLightBudget--;
+          const glow = new THREE.PointLight(0x46e6ff, 0.6, 12, 2);
+          glow.position.set(x, h * 0.6, z);
+          this.scene.add(glow);
+        }
       } else {
         // kaya
         const rad = 0.8 + Math.random() * 1.8;

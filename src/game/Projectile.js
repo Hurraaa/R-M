@@ -18,9 +18,7 @@ export class Projectile {
     this.dead = false;
     this.damage = 1;
     this.radius = 0.18;
-
-    this.light = new THREE.PointLight(0x9cff6a, 3, 5, 2);
-    this.mesh.add(this.light);
+    // Ayrı ışık yok — yüksek emissive + bloom parlamayı sağlıyor (mobil performans).
   }
 
   update(dt) {

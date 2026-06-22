@@ -124,9 +124,9 @@ export class Player {
     this.yaw -= input.aimDX * 0.0025;
     this.group.rotation.y = this.yaw;
 
-    // analog hareket (yaw'a göre)
+    // analog hareket (yaw'a göre) — rightV ekran-sağı ile hizalı
     const fwd = new THREE.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
-    const rightV = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
+    const rightV = new THREE.Vector3(-Math.cos(this.yaw), 0, Math.sin(this.yaw));
     const move = new THREE.Vector3();
     move.addScaledVector(fwd, input.moveY);
     move.addScaledVector(rightV, input.moveX);

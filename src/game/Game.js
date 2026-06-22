@@ -15,6 +15,7 @@ import { Particles } from "./Particles.js";
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
+    this.isMobile = matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
     this.state = "menu"; // menu | playing | dead
     this.score = 0;
     this.wave = 1;
@@ -38,8 +39,9 @@ export class Game {
   }
 
   _initRenderer() {
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: !this.isMobile });
+    // mobilde piksel oranını sınırla — bloom + gölge maliyetini ciddi azaltır
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.isMobile ? 1.25 : 2));
     this.renderer.setSize(innerWidth, innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -51,7 +53,7 @@ export class Game {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.1, 400);
 
-    this.world = new World(this.scene);
+    this.world = new World(this.scene, this.isMobile);
     this.player = new Player();
     this.scene.add(this.player.group);
     this.particles = new Particles(this.scene);
@@ -65,9 +67,9 @@ export class Game {
 
     const bloom = new UnrealBloomPass(
       new THREE.Vector2(innerWidth, innerHeight),
-      0.85, // güç
+      this.isMobile ? 0.7 : 0.85, // güç
       0.5, // yarıçap
-      0.12 // eşik
+      this.isMobile ? 0.2 : 0.12 // eşik (mobilde daha az piksel parlar)
     );
     this.bloom = bloom;
     this.composer.addPass(bloom);
