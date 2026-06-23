@@ -26,8 +26,8 @@ class Portal {
 export class PortalSystem {
   constructor(scene) {
     this.scene = scene;
-    this.a = new Portal(0x46e6ff); // cyan
-    this.b = new Portal(0x9cff6a); // yeşil
+    this.a = new Portal(0x37c95f); // teal-yeşil
+    this.b = new Portal(0x9be84f); // lime-yeşil
     scene.add(this.a.mesh, this.a.light, this.b.mesh, this.b.light);
     this.lastCenter = new THREE.Vector3();
   }
@@ -119,7 +119,7 @@ export class PortalSystem {
       p.open = Math.min(1, p.open + dt * 3);
       p.material.uniforms.uTime.value += dt;
       p.material.uniforms.uOpen.value = p.open;
-      p.light.intensity = 2.2 * p.open;
+      p.light.intensity = 1.0 * p.open;
     }
   }
 }
