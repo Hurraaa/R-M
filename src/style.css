@@ -197,26 +197,53 @@ h1.dead {
   font-weight: bold;
 }
 
+/* temel reset — özel stiller aşağıda */
 button {
-  margin-top: 16px;
-  padding: 16px 42px;
-  font-size: 20px;
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+/* menü butonları: cam + neon kenar + üzerinden geçen parlama */
+.panel button {
+  position: relative;
+  overflow: hidden;
+  margin-top: 20px;
+  padding: 15px 46px;
+  font-size: 19px;
   letter-spacing: 3px;
   font-weight: bold;
-  color: #06210a;
-  background: linear-gradient(180deg, var(--green-glow), var(--green));
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 0 0 24px rgba(110, 232, 79, 0.6);
-  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  color: #eafff0;
+  background: linear-gradient(180deg, rgba(110, 232, 79, 0.22), rgba(16, 36, 18, 0.4));
+  border: 1.5px solid rgba(170, 255, 122, 0.7);
+  border-radius: 13px;
+  text-shadow: 0 0 10px rgba(110, 232, 79, 0.55);
+  box-shadow: inset 0 0 18px rgba(110, 232, 79, 0.18), 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 0.14s ease, box-shadow 0.25s ease, background 0.25s ease;
 }
-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 36px rgba(110, 232, 79, 0.9);
+.panel button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -70%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.55s ease;
 }
-button:active {
-  transform: scale(0.98);
+.panel button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, rgba(110, 232, 79, 0.34), rgba(16, 36, 18, 0.45));
+  box-shadow: inset 0 0 24px rgba(110, 232, 79, 0.3), 0 10px 26px rgba(110, 232, 79, 0.3);
+}
+.panel button:hover::before {
+  left: 130%;
+}
+.panel button:active {
+  transform: translateY(0) scale(0.97);
 }
 
 .hint {
@@ -310,17 +337,27 @@ button:active {
 
 .hud-btn {
   pointer-events: auto;
-  margin: 0;
-  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   font-size: 20px;
   line-height: 1;
-  color: #cdeccd;
-  background: rgba(10, 6, 18, 0.55);
-  border: 1px solid rgba(110, 232, 79, 0.4);
-  border-radius: 8px;
-  box-shadow: none;
+  color: #d6f0d6;
+  background: radial-gradient(circle at 38% 32%, rgba(40, 60, 45, 0.7), rgba(8, 14, 10, 0.7));
+  border: 1.5px solid rgba(110, 232, 79, 0.45);
+  border-radius: 50%;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.15), 0 3px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, color 0.2s ease;
 }
-.hud-btn:hover { transform: none; box-shadow: 0 0 12px rgba(110, 232, 79, 0.5); }
+.hud-btn:hover {
+  color: #fff;
+  transform: rotate(-40deg);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.2), 0 0 14px rgba(110, 232, 79, 0.6);
+}
+.hud-btn:active { transform: rotate(-180deg) scale(0.92); }
 
 .hint-banner {
   position: absolute;
@@ -385,22 +422,66 @@ button:active {
   pointer-events: none;
 }
 .touch-btn {
+  position: relative;
   pointer-events: auto;
-  width: 74px;
-  height: 74px;
+  width: 78px;
+  height: 78px;
   margin: 0;
+  padding: 0;
   border-radius: 50%;
-  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 27px;
   font-weight: bold;
-  color: #08210d;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 18px rgba(0, 0, 0, 0.4);
+  color: #06210a;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  /* kabartma: üstte ışık, altta gölge + zemine düşen gölge */
+  box-shadow: inset 0 4px 8px rgba(255, 255, 255, 0.5), inset 0 -9px 16px rgba(0, 0, 0, 0.32),
+    0 5px 14px rgba(0, 0, 0, 0.45);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease, filter 0.12s ease, box-shadow 0.12s ease;
 }
-.touch-btn.portal { background: radial-gradient(circle at 40% 35%, #aef58f, #37c95f); color: #062b10; }
-.touch-btn.portal-a { background: radial-gradient(circle at 40% 35%, #8ff0b0, #37c95f); }
-.touch-btn.portal-b { background: radial-gradient(circle at 40% 35%, var(--green-glow), var(--green)); }
-.touch-btn.jump { width: 88px; height: 88px; font-size: 34px; background: radial-gradient(circle at 40% 35%, #ffe9a8, #ffb347); }
-.touch-btn:active { filter: brightness(1.3); transform: scale(0.94); }
+.touch-btn:active {
+  transform: scale(0.9);
+  filter: brightness(1.2);
+  box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* portal butonu: dönen yeşil girdap + nabız halkası */
+.touch-btn.portal {
+  overflow: hidden;
+  background: #1d5e2c;
+  color: #eafff0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.touch-btn.portal::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  background: conic-gradient(from 0deg, #155f26, #aef58f, #37c95f, #0f4a1e, #155f26);
+  animation: spin 5s linear infinite;
+}
+.touch-btn.portal::after {
+  content: "◉";
+  position: relative;
+  z-index: 1;
+}
+.touch-btn.jump {
+  width: 92px;
+  height: 92px;
+  font-size: 36px;
+  color: #3a1e02;
+  background: radial-gradient(circle at 38% 32%, #ffe9a8, #ff9d32 72%);
+}
+.touch-btn.reset-mini {
+  background: radial-gradient(circle at 38% 32%, #d7e6ff, #7f93b8 72%);
+  color: #102038;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 /* görev (amaç) banner'ı */
 .objective-banner {
