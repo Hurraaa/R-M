@@ -15,11 +15,14 @@
 
       <div class="hud-top">
         <span id="chamber-info">ODA 1 / 3</span>
-        <button id="reset-btn" class="hud-btn" title="Odayı sıfırla">⟲</button>
+        <div class="hud-actions">
+          <button id="hint-btn" class="hud-btn" title="İpucu">?</button>
+          <button id="reset-btn" class="hud-btn" title="Odayı sıfırla">⟲</button>
+        </div>
       </div>
 
       <div id="objective" class="objective-banner"></div>
-      <div id="hint" class="hint-banner"></div>
+      <div id="hint" class="hint-banner hidden"></div>
 
       <!-- Mobil dokunmatik kontroller -->
       <div id="joystick" class="touch-only"><div id="joy-knob"></div></div>

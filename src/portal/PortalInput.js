@@ -62,7 +62,7 @@ export class PortalInput {
 
     const inButton = (t) => {
       const el = document.elementFromPoint(t.clientX, t.clientY);
-      return el && el.classList && el.classList.contains("touch-btn");
+      return !!(el && el.closest && el.closest("button"));
     };
 
     const onStart = (e) => {

@@ -335,6 +335,12 @@ button {
   text-shadow: 0 0 10px var(--green);
 }
 
+.hud-actions {
+  display: flex;
+  gap: 10px;
+  pointer-events: none;
+}
+
 .hud-btn {
   pointer-events: auto;
   display: flex;

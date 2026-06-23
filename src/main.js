@@ -25,6 +25,7 @@ game._onHud = (n, total, hintText, objectiveText) => {
   chamberInfo.textContent = `ODA ${n} / ${total}`;
   objective.textContent = objectiveText ? "🎯 " + objectiveText : "";
   hint.textContent = hintText || "";
+  hint.classList.add("hidden"); // her odada ipucu gizli — oyuncu kendi keşfeder
 };
 game._onChamberClear = (next, story) => showToast(story || `Oda ${next}`, 3200);
 game._onDeny = () => showToast("Bu yüzeye portal açılamaz", 900);
@@ -44,6 +45,7 @@ function begin() {
 document.getElementById("start-btn").addEventListener("click", begin);
 document.getElementById("again-btn").addEventListener("click", begin);
 document.getElementById("reset-btn").addEventListener("click", () => game.loadChamber(game.chamberIndex));
+document.getElementById("hint-btn").addEventListener("click", () => hint.classList.toggle("hidden"));
 
 // pointer-lock koparsa (ESC) başlangıca dönmeden devam; tekrar kilitlemek için tıkla
 canvas.addEventListener("click", () => {
