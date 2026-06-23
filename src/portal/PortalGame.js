@@ -139,7 +139,7 @@ export class PortalGame {
       }
     }
 
-    this.controller.update(dt, this.input, this.level);
+    this.controller.update(dt, this.input, this.level, this.portals);
     this.portals.update(dt);
     this.portals.tryTeleport(this.controller);
 

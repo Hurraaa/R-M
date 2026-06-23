@@ -56,10 +56,8 @@ export class FPController {
     };
   }
 
-  // portal deliğinde mi? (o yüzeyle çarpışma atlanmalı)
-  _inPortalHole(collider) {
-    const p = collider.portal;
-    if (!p || p.open < 0.4) return false;
+  // bu portalın deliğinde mi?
+  _holeTest(p) {
     const c = this.center;
     const rel = new THREE.Vector3().subVectors(c, p.position);
     const along = rel.dot(p.normal);
@@ -67,10 +65,20 @@ export class FPController {
     return planar < p.radius * 0.95 && Math.abs(along) < 2.5;
   }
 
-  _collideAxis(axis, colliders) {
+  // bu yüzeyde, oyuncunun içinde olduğu AKTİF bir portal var mı?
+  // (aynı yüzeye iki portal da açılabilir — ikisini de kontrol et)
+  _inPortalHole(collider, portals) {
+    if (!portals) return false;
+    for (const p of [portals.a, portals.b]) {
+      if (p && p.active && p.open >= 0.4 && p.collider === collider && this._holeTest(p)) return true;
+    }
+    return false;
+  }
+
+  _collideAxis(axis, colliders, portals) {
     const box = this._aabb(this.position);
     for (const c of colliders) {
-      if (this._inPortalHole(c)) continue;
+      if (this._inPortalHole(c, portals)) continue;
       if (
         box.max.x > c.min.x && box.min.x < c.max.x &&
         box.max.y > c.min.y && box.min.y < c.max.y &&
@@ -93,7 +101,7 @@ export class FPController {
     }
   }
 
-  update(dt, input, level) {
+  update(dt, input, level, portals) {
     this.teleportCooldown = Math.max(0, this.teleportCooldown - dt);
 
     // bakış
@@ -135,11 +143,11 @@ export class FPController {
     // eksen-eksen entegrasyon + çarpışma
     this.onGround = false;
     this.position.x += this.velocity.x * dt;
-    this._collideAxis("x", level.colliders);
+    this._collideAxis("x", level.colliders, portals);
     this.position.z += this.velocity.z * dt;
-    this._collideAxis("z", level.colliders);
+    this._collideAxis("z", level.colliders, portals);
     this.position.y += this.velocity.y * dt;
-    this._collideAxis("y", level.colliders);
+    this._collideAxis("y", level.colliders, portals);
 
     // boşluğa düşersek spawn'a dön
     if (this.position.y < -40) this.reset(level.spawn);
