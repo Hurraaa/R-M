@@ -13,6 +13,7 @@ export class PortalInput {
     this._jump = false;
     this._portalA = false;
     this._portalB = false;
+    this._portalNext = false; // mobil tek-buton (sırayla)
 
     // --- masaüstü ---
     addEventListener("keydown", (e) => {
@@ -57,8 +58,7 @@ export class PortalInput {
       }, { passive: false });
     };
     bind("btn-jump", () => (this._jump = true));
-    bind("btn-portal-a", () => (this._portalA = true));
-    bind("btn-portal-b", () => (this._portalB = true));
+    bind("btn-portal", () => (this._portalNext = true));
 
     const inButton = (t) => {
       const el = document.elementFromPoint(t.clientX, t.clientY);
@@ -152,6 +152,11 @@ export class PortalInput {
   consumePortalB() {
     const v = this._portalB;
     this._portalB = false;
+    return v;
+  }
+  consumePortalNext() {
+    const v = this._portalNext;
+    this._portalNext = false;
     return v;
   }
 

@@ -18,6 +18,7 @@ export class PortalGame {
     this.chamberIndex = 0;
     this.level = null;
     this.winTimer = 0;
+    this._nextPortal = "a"; // mobil tek-buton sırası
 
     this._initRenderer();
     this._initScene();
@@ -106,6 +107,7 @@ export class PortalGame {
     this.portals.reset();
     this.portals.lastCenter.copy(this.controller.center);
     this.winTimer = 0;
+    this._nextPortal = "a";
     this._onHud?.(i + 1, CHAMBER_COUNT, this.level.hint);
   }
 
@@ -113,22 +115,29 @@ export class PortalGame {
     const f = this.controller.getForward();
     this.raycaster.set(this.controller.eyePosition, f);
     const hits = this.raycaster.intersectObjects(this.level.raycast, false);
-    if (!hits.length) return;
+    if (!hits.length) return false;
     const hit = hits[0];
     const mesh = hit.object;
     if (!mesh.userData.portalable) {
       this._onDeny?.();
-      return;
+      return false;
     }
     const normal = hit.face.normal.clone().transformDirection(mesh.matrixWorld).normalize();
     this.portals.place(which, hit.point, normal, mesh.userData.collider);
+    return true;
   }
 
   _update(dt) {
     if (this.state !== "playing") return;
 
-    if (this.input.consumePortalA()) this.firePortal("a");
-    if (this.input.consumePortalB()) this.firePortal("b");
+    if (this.input.consumePortalA()) this.firePortal("a"); // masaüstü sol tık
+    if (this.input.consumePortalB()) this.firePortal("b"); // masaüstü sağ tık
+    if (this.input.consumePortalNext()) {
+      // mobil tek buton: sırayla giriş/çıkış portalı
+      if (this.firePortal(this._nextPortal)) {
+        this._nextPortal = this._nextPortal === "a" ? "b" : "a";
+      }
+    }
 
     this.controller.update(dt, this.input, this.level);
     this.portals.update(dt);
