@@ -30,14 +30,20 @@ const skyFrag = /* glsl */ `
     vec3 col = h > 0.0 ? mix(uHorizon, uTop, pow(clamp(h,0.0,1.0),0.55))
                        : mix(uHorizon, uGround, clamp(-h*2.0,0.0,1.0));
 
-    // yumuşak nebula şeritleri (mor-pembe + teal)
-    vec2 sp = vec2(atan(vDir.z, vDir.x) * 1.2, vDir.y * 2.5);
-    float neb = fbm(sp * 1.5 + vec2(uTime * 0.01, 0.0));
-    float mask = smoothstep(0.05, 0.45, vDir.y) * smoothstep(0.95, 0.3, vDir.y);
-    col += vec3(0.55, 0.25, 0.5) * pow(neb, 2.0) * mask * 0.5;
-    col += vec3(0.2, 0.5, 0.5) * pow(fbm(sp * 2.0 + 7.3), 2.5) * mask * 0.3;
+    // --- kuzey ışıkları (aurora): dalgalanan akışkan perdeler ---
+    float az = atan(vDir.z, vDir.x);
+    float wob = fbm(vec2(az * 1.5, uTime * 0.03));
+    float h0 = 0.30 + (wob - 0.5) * 0.45;                 // dalgalı perde yüksekliği
+    float curtain = smoothstep(0.16, 0.0, abs(vDir.y - h0));
+    float streaks = fbm(vec2(az * 9.0 - uTime * 0.05, vDir.y * 4.0)); // dikey çizgiler
+    curtain *= 0.45 + 0.55 * streaks;
+    curtain *= smoothstep(0.02, 0.22, vDir.y);            // ufkun üstünde
+    vec3 aur = mix(vec3(0.15, 0.95, 0.55), vec3(0.45, 0.25, 0.95), smoothstep(0.35, 0.85, streaks));
+    col += aur * curtain * 0.85;
 
-    // ince yıldızlar (üst gökte)
+    // hafif nebula + ince yıldızlar
+    float mask = smoothstep(0.05, 0.5, vDir.y);
+    col += vec3(0.4, 0.2, 0.45) * pow(fbm(vec2(az * 1.2, vDir.y * 2.5) + 5.0), 2.5) * mask * 0.2;
     float star = step(0.992, hash(floor(vDir.xz * 140.0)));
     col += vec3(1.0) * star * smoothstep(0.1, 0.5, vDir.y) * 0.7;
 
@@ -82,22 +88,34 @@ export class Scenery {
     this.scene.add(new THREE.Mesh(new THREE.SphereGeometry(290, 32, 16), this.skyMat));
   }
 
-  _planet() {
+  _ball(color, radius, pos) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(radius, 24, 24), new THREE.MeshBasicMaterial({ color, fog: false }));
+    m.position.copy(pos);
+    this.scene.add(m);
+    return m;
+  }
+
+  _ringedPlanet(color, radius, ringR, ringColor, pos) {
     const g = new THREE.Group();
-    g.add(new THREE.Mesh(new THREE.SphereGeometry(22, 32, 32), new THREE.MeshBasicMaterial({ color: 0xd98ad0, fog: false })));
+    g.add(new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 32), new THREE.MeshBasicMaterial({ color, fog: false })));
     const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(34, 3.2, 2, 64),
-      new THREE.MeshBasicMaterial({ color: 0xffe1a8, fog: false, transparent: true, opacity: 0.85 })
+      new THREE.TorusGeometry(ringR, radius * 0.14, 2, 64),
+      new THREE.MeshBasicMaterial({ color: ringColor, fog: false, transparent: true, opacity: 0.85 })
     );
     ring.rotation.x = Math.PI / 2.3;
     g.add(ring);
-    g.position.set(-120, 70, -150);
+    g.position.copy(pos);
     this.scene.add(g);
-    this.planet = g;
+    return g;
+  }
 
-    const moon = new THREE.Mesh(new THREE.SphereGeometry(9, 24, 24), new THREE.MeshBasicMaterial({ color: 0x9fe6c4, fog: false }));
-    moon.position.set(140, 95, -120);
-    this.scene.add(moon);
+  _planet() {
+    // uzaklarda birkaç ayrı gök cismi (sade, çeşitli)
+    this.planet = this._ringedPlanet(0xd98ad0, 22, 34, 0xffe1a8, V(-120, 70, -150));
+    this._ball(0x9fe6c4, 9, V(140, 95, -120)); // ay
+    this._ball(0xff8f6b, 14, V(95, 55, -195)); // turuncu gezegen
+    this._ball(0x7aa0ff, 7, V(-55, 115, -160)); // küçük mavi
+    this._ringedPlanet(0xc0d860, 10, 16, 0xeff0c8, V(175, 45, -70)); // küçük halkalı
   }
 
   _islands() {
