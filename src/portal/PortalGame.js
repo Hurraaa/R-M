@@ -108,7 +108,8 @@ export class PortalGame {
     this.portals.lastCenter.copy(this.controller.center);
     this.winTimer = 0;
     this._nextPortal = "a";
-    this._onHud?.(i + 1, CHAMBER_COUNT, this.level.hint);
+    this._t = 0;
+    this._onHud?.(i + 1, CHAMBER_COUNT, this.level.hint, this.level.objective);
   }
 
   firePortal(which) {
@@ -148,6 +149,13 @@ export class PortalGame {
     this.camera.position.copy(eye);
     this.camera.lookAt(eye.clone().add(this.controller.getForward()));
 
+    // amaç-nesnesi animasyonu (dönme + süzülme)
+    if (this.level.exitSpin) {
+      this._t += dt;
+      this.level.exitSpin.rotation.y = this._t;
+      this.level.exitSpin.position.y = 1.3 + Math.sin(this._t * 2) * 0.12;
+    }
+
     // çıkışa ulaşma
     if (this.level.exit) {
       const d = this.controller.center.distanceTo(this.level.exit.pos);
@@ -161,13 +169,14 @@ export class PortalGame {
   }
 
   _reachExit() {
+    const story = this.level.story;
     if (this.chamberIndex + 1 < CHAMBER_COUNT) {
-      this._onChamberClear?.(this.chamberIndex + 1);
+      this._onChamberClear?.(this.chamberIndex + 1, story);
       this.loadChamber(this.chamberIndex + 1);
     } else {
       this.state = "won";
       document.exitPointerLock?.();
-      this._onWin?.();
+      this._onWin?.(story);
     }
   }
 

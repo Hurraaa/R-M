@@ -7,7 +7,9 @@ const startScreen = document.getElementById("start-screen");
 const winScreen = document.getElementById("win-screen");
 const hud = document.getElementById("hud");
 const chamberInfo = document.getElementById("chamber-info");
+const objective = document.getElementById("objective");
 const hint = document.getElementById("hint");
+const winStory = document.getElementById("win-story");
 const toast = document.getElementById("toast");
 const loading = document.getElementById("loading");
 
@@ -19,13 +21,15 @@ function showToast(msg, ms = 1600) {
   toastTimer = setTimeout(() => toast.classList.add("hidden"), ms);
 }
 
-game._onHud = (n, total, hintText) => {
+game._onHud = (n, total, hintText, objectiveText) => {
   chamberInfo.textContent = `ODA ${n} / ${total}`;
+  objective.textContent = objectiveText ? "🎯 " + objectiveText : "";
   hint.textContent = hintText || "";
 };
-game._onChamberClear = (next) => showToast(`✓ Oda temizlendi — Oda ${next}`);
+game._onChamberClear = (next, story) => showToast(story || `Oda ${next}`, 3200);
 game._onDeny = () => showToast("Bu yüzeye portal açılamaz", 900);
-game._onWin = () => {
+game._onWin = (story) => {
+  if (winStory && story) winStory.textContent = story;
   hud.classList.add("hidden");
   winScreen.classList.remove("hidden");
 };
