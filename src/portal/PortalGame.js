@@ -8,6 +8,7 @@ import { PortalInput } from "./PortalInput.js";
 import { FPController } from "./FPController.js";
 import { PortalSystem } from "./PortalSystem.js";
 import { buildChamber, CHAMBER_COUNT } from "./Level.js";
+import { Scenery } from "./Scenery.js";
 
 export class PortalGame {
   constructor(canvas) {
@@ -50,21 +51,27 @@ export class PortalGame {
 
   _initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0b0a14);
-    this.scene.fog = new THREE.FogExp2(0x0b0a14, 0.012);
+    this.scene.background = new THREE.Color(0xe9d8a8);
+    // ferah: hafif, ufuk renginde sis — uzak dekoru yumuşatır, yakını berrak bırakır
+    this.scene.fog = new THREE.Fog(0xdcd2bb, 60, 260);
 
-    this.camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 300);
+    this.camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 600);
 
-    this.scene.add(new THREE.HemisphereLight(0x9bb0ff, 0x20182f, 0.8));
-    const sun = new THREE.DirectionalLight(0xfff0d0, 1.0);
-    sun.position.set(12, 26, 8);
+    // yumuşak, dengeli aydınlatma
+    this.scene.add(new THREE.HemisphereLight(0xcfe6ff, 0x8a7a66, 1.05));
+    this.scene.add(new THREE.AmbientLight(0xb8c4d6, 0.35));
+    const sun = new THREE.DirectionalLight(0xfff2d6, 0.8);
+    sun.position.set(18, 30, 14);
     sun.castShadow = true;
     sun.shadow.mapSize.set(this.isMobile ? 1024 : 2048, this.isMobile ? 1024 : 2048);
     sun.shadow.camera.near = 1;
-    sun.shadow.camera.far = 120;
-    const s = 40;
+    sun.shadow.camera.far = 140;
+    sun.shadow.bias = -0.0004;
+    const s = 44;
     Object.assign(sun.shadow.camera, { left: -s, right: s, top: s, bottom: -s });
     this.scene.add(sun);
+
+    this.scenery = new Scenery(this.scene);
     this.levelGroup = null;
   }
 
@@ -74,9 +81,9 @@ export class PortalGame {
     this.composer.addPass(
       new UnrealBloomPass(
         new THREE.Vector2(innerWidth, innerHeight),
-        this.isMobile ? 0.6 : 0.8,
-        0.5,
-        this.isMobile ? 0.22 : 0.15
+        this.isMobile ? 0.32 : 0.45, // yumuşak parlama
+        0.45,
+        this.isMobile ? 0.6 : 0.55 // yüksek eşik: yalnızca portallar parlar
       )
     );
     this.composer.addPass(new OutputPass());
@@ -158,6 +165,7 @@ export class PortalGame {
   _loop() {
     requestAnimationFrame(this._loop);
     const dt = Math.min(0.05, this.clock.getDelta());
+    this.scenery?.update(dt);
     this._update(dt);
     this.composer.render();
     this.input.endFrame();
