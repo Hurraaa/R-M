@@ -70,6 +70,11 @@ export class PortalSystem {
       this.lastCenter.copy(controller.center);
       return;
     }
+    // iki portal neredeyse üst üste -> dejenere döngü, teleport etme
+    if (this.a.position.distanceTo(this.b.position) < this.a.radius * 0.8) {
+      this.lastCenter.copy(controller.center);
+      return;
+    }
     const cur = controller.center;
     for (const [inP, outP] of [[this.a, this.b], [this.b, this.a]]) {
       const prevD = this.lastCenter.clone().sub(inP.position).dot(inP.normal);
@@ -96,7 +101,7 @@ export class PortalSystem {
 
     // konum
     const center = controller.center.applyMatrix4(T);
-    center.addScaledVector(outP.normal, 0.6); // çıkıştan biraz öteye it
+    center.addScaledVector(outP.normal, 0.9); // çıkıştan yeterince öteye it (delikten geri düşmeyi önler)
     controller.position.set(center.x, center.y - HALF_H, center.z);
 
     // hız (büyüklüğü koru, yönü döndür)
@@ -109,7 +114,7 @@ export class PortalSystem {
     const f = controller.getForward().transformDirection(T);
     controller.setForward(f);
 
-    controller.teleportCooldown = 0.2;
+    controller.teleportCooldown = 0.05;
     this.lastCenter.copy(controller.center);
   }
 
