@@ -1,25 +1,25 @@
-# Portal Arena — Interdimensional Shooter
+# Portal Lab — Interdimensional Puzzle
 
-Rick & Morty estetiğinden **esinlenilmiş**, Three.js ile yapılmış tarayıcı-tabanlı 3D portal arena shooter. Telifli karakter/ses/logo kullanılmaz — tüm karakter ve dünya kod içinde, low-poly stilize geometriyle üretilir.
+Valve'ın **Portal** mekaniğinden + Rick & Morty portal estetiğinden **esinlenilmiş**, Three.js ile yapılmış tarayıcı-tabanlı birinci-şahıs portal bulmaca oyunu. İki portal aç, içinden geç, **momentum koruyarak (flinging)** test odalarını çöz. Telifli içerik yok — her şey kod içinde stilize üretilir.
 
-> Durum: **oynanabilir dikey dilim (MVP)** — masaüstü + mobil dokunmatik destekli.
+> Durum: **oynanabilir dikey dilim (MVP)** — 3 test odası, masaüstü + mobil dokunmatik destekli.
 
 ## Oynanış
 
-Çılgın bir bilim insanı olarak alien bir arenada portallardan çıkan boyutlar-arası yaratıkları portal silahınla yok et. Skor arttıkça dalgalar zorlaşır.
+Yüzeylere iki portal (mavi/yeşil) aç. Birine girince diğerinden çıkarsın ve **hızını korursun** — yüksekten bir zemin portalına düşüp duvar portalından fırlayarak (flinging) normalde ulaşamayacağın yerlere geç. Her odanın çıkışına (yeşil ped) ulaş.
+
+Portallar yalnızca **açık panel** yüzeylere açılır (koyu metale açılmaz) — tıpkı Portal'daki gibi.
 
 ### Kontroller
 
 **Masaüstü**
-- `W A S D` — hareket
-- `Fare` — nişan al (imleç kilitlenir)
-- `Sol tık` — ateş
-- `Shift` — koş
+- `W A S D` — hareket · `Fare` — bak (imleç kilitlenir)
+- `Sol tık` — mavi portal · `Sağ tık` — yeşil portal
+- `Space` — zıpla · `R` — odayı sıfırla
 
 **Mobil**
-- Sol joystick — hareket
-- Sağ tarafı sürükle — nişan al
-- Sağ tarafı basılı tut — ateş
+- Sol joystick — hareket · Sağ tarafı sürükle — bak
+- `A` — mavi portal · `B` — yeşil portal · `⤒` — zıpla · `⟲` — sıfırla
 
 ## Çalıştırma
 
@@ -33,32 +33,31 @@ npm run preview  # derlemeyi önizle
 ## Teknik
 
 - **Three.js 0.184** — render, geometri, ışıklar, gölgeler
-- **Custom GLSL** portal shader (dönen girdap + parlayan halka)
-- **UnrealBloom** post-processing (portal/enerji parlaması)
-- Procedural karakter & animasyon (iskelet model yok)
-- Havuzlanmış parçacık sistemi (isabet/patlama)
-- Birleşik girdi katmanı (klavye/fare + dokunmatik)
+- **Custom GLSL** portal shader (yüzeye yapışık dönen girdap + parlayan halka)
+- **Momentum koruyan teleport**: `T = Bworld · rotY(π) · Aworld⁻¹` matris dönüşümü
+- AABB tabanlı birinci-şahıs çarpışma (portal deliğinde çarpışma atlanır)
+- **UnrealBloom** post-processing + gölgeler
+- Birleşik girdi katmanı (klavye/fare pointer-lock + dokunmatik)
 
 ## Mimari
 
 ```
 src/
-  main.js            # giriş, HUD ve menü bağlama
-  style.css          # HUD + menü + mobil dokunmatik UI
-  game/
-    Game.js          # motor: render, post-processing, oyun döngüsü, dalgalar
-    World.js         # arena: zemin, kristaller, kayalar, ışık, sis, yıldızlar
-    Player.js        # stilize bilim insanı + procedural animasyon + silah
-    Portal.js        # GLSL portal shader + açılma animasyonu
-    Enemy.js         # alien yaratık + takip/zıplama davranışı
-    Projectile.js    # portal silahı mermisi
-    Particles.js     # havuzlanmış patlama parçacıkları
-    Input.js         # birleşik klavye/fare/dokunmatik girdi
+  main.js              # giriş, HUD ve menü bağlama
+  style.css            # HUD + menü + mobil dokunmatik UI
+  portal/
+    PortalGame.js      # motor: render, döngü, bölüm yükleme, portal raycast, kazanma
+    PortalSystem.js    # iki portal + yerleştirme + momentum koruyan teleport
+    FPController.js    # birinci-şahıs hareket, yerçekimi, zıplama, AABB çarpışma
+    Level.js           # test odaları (geometri, çarpışma, portallanabilir yüzeyler)
+    PortalInput.js     # birleşik klavye/fare + mobil joystick/buton girdisi
+    portalShader.js    # ortak portal GLSL materyali
+  game/                # (eski) Portal Arena shooter prototipi — referans
 ```
 
 ## Yol Haritası (sonraki adımlar)
 
-- Ses efektleri (sentezlenmiş/telifsiz) ve müzik
-- Güçlendirmeler (hız, hasar, can paketi)
-- Farklı düşman tipleri ve bir "boss" portalı
-- Dalga arası sakin nefes alma anları ve skor tablosu
+- Momentum **flinging** odaklı yeni odalar (derin kuyu → fırlama)
+- Enerji topu / lazer + buton-kapı bulmacaları
+- Taşınabilir küpler (ağırlıkla buton basma)
+- Ses efektleri ve atmosferik müzik (telifsiz/sentez)

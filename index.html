@@ -2,8 +2,8 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PORTAL ARENA — interdimensional shooter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>PORTAL LAB — interdimensional puzzle</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
@@ -11,57 +11,58 @@
 
     <!-- HUD -->
     <div id="hud" class="hidden">
-      <div class="hud-top">
-        <div class="hud-stat">
-          <span class="label">CAN</span>
-          <div class="bar"><div id="health-fill" class="fill"></div></div>
-        </div>
-        <div class="hud-stat right">
-          <span class="label">SKOR</span>
-          <span id="score" class="value">0</span>
-        </div>
-      </div>
-      <div class="hud-bottom">
-        <span id="wave-info">DALGA 1</span>
-      </div>
       <div id="crosshair"></div>
+
+      <div class="hud-top">
+        <span id="chamber-info">ODA 1 / 3</span>
+        <button id="reset-btn" class="hud-btn" title="Odayı sıfırla">⟲</button>
+      </div>
+
+      <div id="hint" class="hint-banner"></div>
 
       <!-- Mobil dokunmatik kontroller -->
       <div id="joystick" class="touch-only"><div id="joy-knob"></div></div>
+      <div class="touch-only touch-buttons">
+        <button id="btn-portal-a" class="touch-btn portal-a">A</button>
+        <button id="btn-portal-b" class="touch-btn portal-b">B</button>
+        <button id="btn-jump" class="touch-btn jump">⤒</button>
+      </div>
     </div>
 
-    <!-- Başlangıç ekranı -->
+    <!-- Başlangıç -->
     <div id="start-screen">
       <div class="panel">
-        <h1>PORTAL <span class="green">ARENA</span></h1>
-        <p class="sub">interdimensional shooter</p>
+        <h1>PORTAL <span class="green">LAB</span></h1>
+        <p class="sub">interdimensional puzzle</p>
+        <p class="desc">İki portal aç, içinden geç, momentumu kullanarak test odalarını çöz.</p>
         <ul class="controls desktop-only">
-          <li><b>W A S D</b> — hareket</li>
-          <li><b>FARE</b> — nişan al</li>
-          <li><b>SOL TIK</b> — portal silahı ateşle</li>
-          <li><b>SHIFT</b> — koş</li>
+          <li><b>W A S D</b> — hareket &nbsp; <b>FARE</b> — bak</li>
+          <li><b>SOL TIK</b> — <span class="c-cyan">mavi</span> portal</li>
+          <li><b>SAĞ TIK</b> — <span class="c-green">yeşil</span> portal</li>
+          <li><b>SPACE</b> — zıpla &nbsp; <b>R</b> — sıfırla</li>
         </ul>
         <ul class="controls touch-only">
           <li><b>SOL JOYSTICK</b> — hareket</li>
-          <li><b>SAĞ TARAF</b> — sürükle: nişan al</li>
-          <li><b>SAĞ TARAF</b> — basılı tut: ateş</li>
+          <li><b>SAĞ TARAF</b> — sürükle: bak</li>
+          <li><b>A</b> mavi portal &nbsp; <b>B</b> yeşil portal</li>
+          <li><b>⤒</b> zıpla &nbsp; <b>⟲</b> sıfırla</li>
         </ul>
-        <button id="start-btn">BOYUTA GİR</button>
-        <p class="hint desktop-only">Fare imleci kilitlenir — çıkmak için ESC</p>
+        <button id="start-btn">LABORATUVARA GİR</button>
+        <p class="hint desktop-only">Fare kilitlenir — çıkmak için ESC</p>
         <p class="hint touch-only">En iyi deneyim için yatay tut 📱</p>
       </div>
     </div>
 
-    <!-- Oyun sonu -->
-    <div id="gameover-screen" class="hidden">
+    <!-- Kazanma -->
+    <div id="win-screen" class="hidden">
       <div class="panel">
-        <h1 class="dead">YOK OLDUN</h1>
-        <p class="sub">başka bir boyutta tekrar dene</p>
-        <p class="final">SKOR: <span id="final-score">0</span></p>
-        <button id="restart-btn">TEKRAR DENE</button>
+        <h1 class="green">TÜM ODALAR<br />TEMİZLENDİ</h1>
+        <p class="sub">portal ustası oldun</p>
+        <button id="again-btn">BAŞTAN OYNA</button>
       </div>
     </div>
 
+    <div id="toast" class="hidden"></div>
     <div id="loading">yükleniyor…</div>
 
     <script type="module" src="/src/main.js"></script>

@@ -1,47 +1,49 @@
-import { Game } from "./game/Game.js";
+import { PortalGame } from "./portal/PortalGame.js";
 
 const canvas = document.getElementById("game");
-const game = new Game(canvas);
+const game = new PortalGame(canvas);
 
-// DOM referansları
 const startScreen = document.getElementById("start-screen");
-const gameoverScreen = document.getElementById("gameover-screen");
+const winScreen = document.getElementById("win-screen");
 const hud = document.getElementById("hud");
-const healthFill = document.getElementById("health-fill");
-const scoreEl = document.getElementById("score");
-const finalScore = document.getElementById("final-score");
-const waveInfo = document.getElementById("wave-info");
+const chamberInfo = document.getElementById("chamber-info");
+const hint = document.getElementById("hint");
+const toast = document.getElementById("toast");
 const loading = document.getElementById("loading");
 
-// HUD güncellemeleri
-game._onHud = () => {
-  healthFill.style.width = Math.max(0, game.player.health) + "%";
-  scoreEl.textContent = game.score;
-};
-game._onWave = (w) => {
-  waveInfo.textContent = "DALGA " + w;
-  waveInfo.style.animation = "none";
-  waveInfo.offsetHeight; // reflow
-  waveInfo.style.animation = "flicker 0.5s 3";
-};
-game._onGameOver = (score) => {
-  finalScore.textContent = score;
-  hud.classList.add("hidden");
-  gameoverScreen.classList.remove("hidden");
-};
-
-function beginGame() {
-  startScreen.classList.add("hidden");
-  gameoverScreen.classList.add("hidden");
-  hud.classList.remove("hidden");
-  game.start();
-  game._onHud();
+let toastTimer = null;
+function showToast(msg, ms = 1600) {
+  toast.textContent = msg;
+  toast.classList.remove("hidden");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.add("hidden"), ms);
 }
 
-document.getElementById("start-btn").addEventListener("click", beginGame);
-document.getElementById("restart-btn").addEventListener("click", beginGame);
+game._onHud = (n, total, hintText) => {
+  chamberInfo.textContent = `ODA ${n} / ${total}`;
+  hint.textContent = hintText || "";
+};
+game._onChamberClear = (next) => showToast(`✓ Oda temizlendi — Oda ${next}`);
+game._onDeny = () => showToast("Bu yüzeye portal açılamaz", 900);
+game._onWin = () => {
+  hud.classList.add("hidden");
+  winScreen.classList.remove("hidden");
+};
 
-// ilk kare çizildiğinde yükleniyor ekranını kaldır
-requestAnimationFrame(() => {
-  setTimeout(() => loading.classList.add("hidden"), 300);
+function begin() {
+  startScreen.classList.add("hidden");
+  winScreen.classList.add("hidden");
+  hud.classList.remove("hidden");
+  game.start();
+}
+
+document.getElementById("start-btn").addEventListener("click", begin);
+document.getElementById("again-btn").addEventListener("click", begin);
+document.getElementById("reset-btn").addEventListener("click", () => game.loadChamber(game.chamberIndex));
+
+// pointer-lock koparsa (ESC) başlangıca dönmeden devam; tekrar kilitlemek için tıkla
+canvas.addEventListener("click", () => {
+  if (game.state === "playing" && !game.input.isTouch && !game.input.locked) game.input.lock();
 });
+
+requestAnimationFrame(() => setTimeout(() => loading.classList.add("hidden"), 300));
