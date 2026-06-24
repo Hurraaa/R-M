@@ -69,6 +69,8 @@ export class FPController {
   // (aynı yüzeye iki portal da açılabilir — ikisini de kontrol et)
   _inPortalHole(collider, portals) {
     if (!portals) return false;
+    // delik yalnızca İKİ portal da açıkken geçilebilir (tek portal katı kalır)
+    if (!portals.a.active || !portals.b.active) return false;
     for (const p of [portals.a, portals.b]) {
       if (p && p.active && p.open >= 0.4 && p.collider === collider && this._holeTest(p)) return true;
     }
