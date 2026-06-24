@@ -119,6 +119,35 @@ export class PortalSystem {
     return outP.normal.clone();
   }
 
+  // genel varlık teleportu (küp gibi center+velocity tabanlı nesneler için)
+  teleportEntity(e) {
+    if (e.teleportCooldown > 0 || !this.a.active || !this.b.active) { e.lastCenter.copy(e.center); return null; }
+    if (this.a.position.distanceTo(this.b.position) < this.a.radius * 0.8) { e.lastCenter.copy(e.center); return null; }
+    const cur = e.center;
+    for (const [inP, outP] of [[this.a, this.b], [this.b, this.a]]) {
+      const prevD = e.lastCenter.clone().sub(inP.position).dot(inP.normal);
+      const curD = cur.clone().sub(inP.position).dot(inP.normal);
+      if (prevD > 0 && curD <= 0) {
+        const rel = cur.clone().sub(inP.position);
+        const planar = rel.addScaledVector(inP.normal, -curD).length();
+        if (planar < inP.radius * 0.95) {
+          const flip = new THREE.Matrix4().makeRotationY(Math.PI);
+          const T = new THREE.Matrix4().copy(this._matrixOf(outP)).multiply(flip).multiply(new THREE.Matrix4().copy(this._matrixOf(inP)).invert());
+          const nc = cur.clone().applyMatrix4(T);
+          nc.addScaledVector(outP.normal, 0.9);
+          e.setCenter(nc);
+          const sp = e.velocity.length();
+          if (sp > 1e-4) e.velocity.transformDirection(T).multiplyScalar(sp);
+          e.teleportCooldown = 0.05;
+          e.lastCenter.copy(e.center);
+          return outP.normal.clone();
+        }
+      }
+    }
+    e.lastCenter.copy(cur);
+    return null;
+  }
+
   update(dt) {
     for (const p of [this.a, this.b]) {
       if (!p.active) continue;

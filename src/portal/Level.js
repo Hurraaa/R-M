@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Cube, Button, Door } from "./Props.js";
 
 // Test odaları. Her oda kendi geometrisini bir Group içine kurar ve
 // çarpışma kutuları + portallanabilir yüzeyler + spawn + çıkış verir.
@@ -137,17 +138,60 @@ function chamber2(ctx) {
   addBox(ctx, V(-7.5, 0, -3), V(-4.5, 3, 0), true);
   addBox(ctx, V(4.5, 0, 23), V(7.5, 4, 26), true);
   ctx.spawn = V(0, 0.1, -4);
-  goal(ctx, V(0, 0, 27), "beacon", 0x46e6ff); // 🔵 Eve Dönüş Vericisi
-  ctx.objective = "Eve dönüş vericisini aktive et — uçurumun karşısında.";
+  goal(ctx, V(0, 0, 27), "beacon", 0x46e6ff); // 🔵 Kontrol Anahtarı
+  ctx.objective = "Kontrol anahtarını al — uçurumun karşısında.";
   ctx.hint = "Yan duvarlara iki portal aç: birini yanına, diğerini boşluğun karşısına. Portala girip geç. Bloklarla momentumu da deneyebilirsin.";
-  ctx.story = "Koordinatlar kilitlendi. Portal tabancası tam güçte — EVE DÖNÜŞ!";
+  ctx.story = "Kontrol odasına eriştin. Ama ana kapı 'AĞIRLIK KİLİDİ' ile mühürlü — bir yük küpünü butona indirmen gerek.";
 }
 
-const builders = [chamber0, chamber1, chamber2];
+// ---- Oda 3: Ağırlık — kutunun altına portal aç, butona düşür, kapı açılsın ----
+function chamber3(ctx) {
+  // zemin: ortada portallanabilir bir PAD, gerisi metal (z-fight'sız, abut)
+  addBox(ctx, V(-8, -0.5, -6), V(8, 0, -2), false); // ön
+  addBox(ctx, V(-8, -0.5, 2), V(8, 0, 24), false); // arka (koridor + hedef oda)
+  addBox(ctx, V(-8, -0.5, -2), V(-3, 0, 2), false); // pad'in solu
+  addBox(ctx, V(3, -0.5, -2), V(8, 0, 2), false); // pad'in sağı
+  addBox(ctx, V(-3, -0.5, -2), V(3, 0, 2), true); // PORTALLANABİLİR PAD (küp burada durur)
+
+  // duvarlar / korkuluklar
+  addBox(ctx, V(-8.5, 0, -6), V(-8, 4, 24), true); // sol duvar portallanabilir (çıkış portalı için)
+  addBox(ctx, V(8, 0, -6), V(8.5, 4, 24), false); // sağ duvar
+  addBox(ctx, V(-8, 0, -6.5), V(8, 4, -6), false); // arka duvar
+  addBox(ctx, V(-8, 0, 24), V(8, 4, 24.5), false); // ön duvar
+
+  // yük küpü pad üstünde durur
+  const cube = new Cube(V(0, 0.6, 0));
+  ctx.group.add(cube.mesh);
+  ctx.colliders.push(cube.collider);
+  ctx.cubes.push(cube);
+
+  // basınç butonu (küp buraya düşecek) — sol duvarın önünde
+  // kapı koridoru z=16'da kapatır
+  const door = new Door(V(-8, 0, 16), V(8, 4, 16.6));
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+
+  const button = new Button(V(-5.5, 0, 11), door);
+  ctx.group.add(button.group);
+  ctx.buttons.push(button);
+
+  ctx.spawn = V(4, 0.1, -4);
+  goal(ctx, V(0, 0, 21), "core", 0x6ee84f); // 🟢 Röle (kapı ardında)
+  ctx.objective = "Yük küpünü butona indir, kapıyı aç ve röleyi al.";
+  ctx.hint = "Küpün durduğu pad'in altına bir portal aç (zemine nişan al), ikinci portalı sol duvara (butonun arkasına) aç. Küp düşüp butona iner, kapı açılır.";
+  ctx.story = "Ağırlık kilidi çözüldü, röle alındı. Güç hattı uzanıyor — daha derine inmen gerek.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
-  const ctx = { group: new THREE.Group(), colliders: [], raycast: [], spawn: new THREE.Vector3(), exit: null, hint: "" };
+  const ctx = {
+    group: new THREE.Group(), colliders: [], raycast: [],
+    spawn: new THREE.Vector3(), exit: null, hint: "",
+    cubes: [], buttons: [], doors: [],
+  };
   builders[index](ctx);
   return ctx;
 }

@@ -107,6 +107,7 @@ export class FPController {
   _collideAxis(axis, colliders, portals) {
     const box = this._aabb(this.position);
     for (const c of colliders) {
+      if (c.disabled) continue;
       if (this._inPortalHole(c, portals)) continue;
       if (
         box.max.x > c.min.x && box.min.x < c.max.x &&

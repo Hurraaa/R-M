@@ -145,6 +145,15 @@ export class PortalGame {
     const exitNormal = this.portals.tryTeleport(this.controller);
     if (exitNormal) this.controller.depenetrateAlong(exitNormal, this.level.colliders, this.portals);
 
+    // interaktif nesneler: yük küpleri, butonlar, kapılar
+    for (const cube of this.level.cubes) {
+      cube.update(dt, this.level, this.portals);
+      const cn = this.portals.teleportEntity(cube);
+      if (cn) cube.depenetrateAlong(cn, this.level.colliders, this.portals);
+    }
+    for (const button of this.level.buttons) button.update(this.level.cubes, this.controller);
+    for (const door of this.level.doors) door.update(dt);
+
     // kamera
     const eye = this.controller.eyePosition;
     this.camera.position.copy(eye);
