@@ -20,6 +20,10 @@ export class FPController {
     this.pitch = 0;
     this.onGround = false;
     this.teleportCooldown = 0;
+    // bakış hassasiyeti çarpanları (Ayarlar menüsünden ayarlanır, reset'te korunur)
+    this.sensXMul = 1;
+    this.sensYMul = 1;
+    this.invertY = false;
   }
 
   reset(spawn) {
@@ -106,9 +110,9 @@ export class FPController {
   update(dt, input, level, portals) {
     this.teleportCooldown = Math.max(0, this.teleportCooldown - dt);
 
-    // bakış
-    this.yaw -= input.aimDX * SENS;
-    this.pitch -= input.aimDY * SENS;
+    // bakış (hassasiyet ayarları uygulanır)
+    this.yaw -= input.aimDX * SENS * this.sensXMul;
+    this.pitch -= input.aimDY * SENS * this.sensYMul * (this.invertY ? -1 : 1);
     this.pitch = THREE.MathUtils.clamp(this.pitch, -1.45, 1.45);
 
     // istenen yatay yön

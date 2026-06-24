@@ -503,3 +503,113 @@ button {
   color: #fff3d6;
   text-shadow: 0 0 10px rgba(255, 174, 59, 0.7), 0 2px 4px rgba(0, 0, 0, 0.6);
 }
+
+/* ===== Ayarlar menüsü + kazanma overlay ===== */
+#win-screen,
+#settings-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(20, 14, 36, 0.75), rgba(5, 4, 10, 0.95));
+  backdrop-filter: blur(4px);
+}
+
+.settings-panel { min-width: min(440px, 90vw); }
+.settings-title {
+  font-size: 34px;
+  letter-spacing: 6px;
+  color: var(--green-glow);
+  text-shadow: 0 0 18px var(--green);
+}
+.settings-sub {
+  margin: 10px 0 22px;
+  font-size: 14px;
+  opacity: 0.75;
+  line-height: 1.4;
+}
+
+.setting { margin: 18px 0; text-align: left; }
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+.setting-val {
+  color: var(--green-glow);
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(110, 232, 79, 0.5), rgba(70, 230, 255, 0.4));
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, var(--green-glow), var(--green));
+  border: 2px solid #fff;
+  box-shadow: 0 0 12px rgba(110, 232, 79, 0.7);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid #fff;
+}
+
+.setting-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.setting-check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--green);
+}
+
+.settings-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* ikincil (hayalet) buton */
+.ghost-btn {
+  position: relative;
+  margin-top: 12px;
+  padding: 12px 30px;
+  font-size: 15px;
+  letter-spacing: 2px;
+  font-weight: bold;
+  color: #cfe6d0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(170, 255, 122, 0.45);
+  border-radius: 11px;
+  transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+.ghost-btn:hover {
+  background: rgba(110, 232, 79, 0.15);
+  box-shadow: 0 0 16px rgba(110, 232, 79, 0.3);
+  transform: translateY(-1px);
+}
+.ghost-btn:active { transform: scale(0.97); }

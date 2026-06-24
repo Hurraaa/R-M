@@ -100,8 +100,8 @@ export class PortalInput {
           this.joy.dy = dy / RADIUS;
           knobEl.style.transform = `translate(${dx}px, ${dy}px)`;
         } else if (t.identifier === this.look.id) {
-          this.aimDX += (t.clientX - this.look.lastX) * 1.6;
-          this.aimDY += (t.clientY - this.look.lastY) * 1.6;
+          this.aimDX += (t.clientX - this.look.lastX) * 2.0;
+          this.aimDY += (t.clientY - this.look.lastY) * 2.0;
           this.look.lastX = t.clientX;
           this.look.lastY = t.clientY;
         }
