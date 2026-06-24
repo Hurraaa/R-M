@@ -360,7 +360,28 @@ function chamber10(ctx) {
   ctx.story = "Hareketli bakım köprüleri hâlâ ritmini koruyor. Neredeyse en alttasın.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10];
+// ---- Oda 11: İnce Köprü — küçük platformlarda zıpla, sonra portalla boşluğu geç ----
+function chamber11(ctx) {
+  addBox(ctx, V(-3, -0.5, -4), V(3, 0, 0), false); // başlangıç
+  // küçük taşlar (hassas zıplama) — altı uçurum
+  addBox(ctx, V(-1, -0.5, 2), V(1, 0, 4), false); // z3
+  addBox(ctx, V(-1, -0.5, 5), V(1, 0, 7), false); // z6
+  addBox(ctx, V(-1, -0.5, 8), V(1, 0, 10), false); // z9
+  // dinlenme platformu + portallanabilir sol duvar
+  addBox(ctx, V(-5, -0.5, 11), V(5, 0, 15), false);
+  addBox(ctx, V(-5.5, 0, 11), V(-5, 5, 27), true); // sol duvar (boşluk boyunca portallanabilir)
+  // boşluk z[15,25]
+  addBox(ctx, V(-5, -0.5, 25), V(5, 0, 29), false); // çıkış platformu
+  addBox(ctx, V(-5, 0, 29), V(5, 4, 29.5), false);
+
+  ctx.spawn = V(0, 0.1, -2);
+  goal(ctx, V(0, 0, 27), "core", 0x6ee84f);
+  ctx.objective = "Küçük taşlarda zıplayarak ilerle, sonra portalla son boşluğu geç. Düşersen başa dönersin!";
+  ctx.hint = "Taşlara dikkatli zıpla. Dinlenme platformunda sol duvara iki portal aç (biri yanına, biri boşluğun ötesine) ve geç.";
+  ctx.story = "Hassasiyet imtihanı. Tesisin eski güvenlik geçidi — bir yanlış adım, en başa.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {

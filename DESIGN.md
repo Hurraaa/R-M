@@ -60,6 +60,9 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 10 | Enerji Topu | zıplayan enerji topunu portalla alıcıya yönlendir | gücü ata | ✅ |
 | 11 | Engel Yağmuru | üstüne gelen engelleri portalla savuştur (refleks) | savunmayı aş | sırada |
 | 12 | Dönen Merdivenler | kayan/hareketli platformlar (Harry Potter tarzı) | tesis canlanıyor | ✅ |
+| 12b | İnce Köprü | küçük platformlarda hassas zıplama + portal, altı uçurum (düşersen ölüm) | imtihan | sırada |
+| 12c | Füze | hareket-sensörlü füze; portalla yer değiştirip füzeyi alt et | takip | sırada |
+| 12d | Şifre | yukarıdan bakınca anlamlı dizilen sayılar (anamorfik); evrensel kod | sır | sırada |
 | 13 | Şebeke | fizzler (portal/küp sıfırlayan alan) | güvenliği aş | planlı |
 | 14 | Zehirli Zemin | tehlikeli zemin (anında respawn) | tesisin çürümesi | planlı |
 | 15 | Hareketli Zemin | kayan platform + zamanlama | AI uyanıyor | planlı |
