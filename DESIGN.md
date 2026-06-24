@@ -56,9 +56,10 @@ basınç butonu → kapı → ileri seviye fırlatma).
 ### Perde IV — Gerçek (tehlike & sistem çökmesi)
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
 |---|----|--------------|-------------|-------|
-| 10 | Şebeke | fizzler (portal/küp sıfırlayan alan) | güvenliği aş | planlı |
-| 11 | Zehirli Zemin | tehlikeli zemin (anında respawn) | tesisin çürümesi | planlı |
-| 12 | Hareketli Zemin | kayan platform + zamanlama | AI uyanıyor | planlı |
+| 10 | Enerji Topu | zıplayan enerji topunu portalla alıcıya yönlendir | gücü ata | sırada |
+| 11 | Şebeke | fizzler (portal/küp sıfırlayan alan) | güvenliği aş | planlı |
+| 12 | Zehirli Zemin | tehlikeli zemin (anında respawn) | tesisin çürümesi | planlı |
+| 13 | Hareketli Zemin | kayan platform + zamanlama | AI uyanıyor | planlı |
 
 ### Perde V — Kaçış (finale)
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
