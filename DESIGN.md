@@ -26,17 +26,44 @@ basınç butonu → kapı → ileri seviye fırlatma).
 7. İleri: derin kuyu fırlatma ustalığı
 8. Finale: tüm mekaniklerle eve dönüş + hikâye düğümü
 
-## Bölüm planı
+## Perdeler & bölüm planı (genişletilmiş)
 
-| # | Ad | Mekanik | Amaç (toplanan) | Hikâye beat |
-|---|-----|---------|------------------|-------------|
-| 1 | Uyanış | portal geçişi | 🟠 Portal Sıvısı | tabanca boş, sıvı bul |
-| 2 | Yön | duvar→zemin flinging | 🟣 Güç Çekirdeği | gücü tak |
-| 3 | Kontrol Odası | açık arena geçişi | 🔵 Kontrol Anahtarı | ana sisteme eriş |
-| 4 | Ağırlık | **yük küpü + buton + kapı** (kutunun altına portal aç, butona düşür) | kapı açılır → 🟢 Röle | "ağırlık kilidi" |
-| 5 | Çifte Yük | iki küp / küp + flinging | parça | güç hattını kur |
-| 6 | Derin Kuyu | flinging ustalığı | parça | dikey erişim |
-| 7 | Eve Dönüş | her şey birlikte + düğüm | 🏠 Eve Dönüş Portalı | kaçış / gerçek |
+Çalışma şekli: her bölümü tek tek detaylı konuşuruz → artı/eksi geri bildirim
+→ revizyon → onay → uygulama. Aşağıdaki liste taslaktır, konuştukça değişir.
 
-> Şu an: 1–3 hazır. **4. bölüm** (yük küpü + buton + kapı) bu adımda ekleniyor.
-> Sonraki bölümleri tek tek, onayınla ekleyeceğiz.
+### Perde I — Uyanış (öğretici: portal & momentum)
+| # | Ad | Yeni mekanik | Hikâye beat | Durum |
+|---|----|--------------|-------------|-------|
+| 1 | Uyanış | portal geçişi | tabanca boş, sıvı bul | ✅ |
+| 2 | Yön | duvar→zemin flinging | gücü tak | ✅ |
+| 3 | Kontrol Odası | açık arena geçişi | ana sisteme eriş | ✅ |
+
+### Perde II — Ağırlığın Yasası (küp & buton)
+| # | Ad | Yeni mekanik | Hikâye beat | Durum |
+|---|----|--------------|-------------|-------|
+| 4 | Ağırlık | yük küpü + buton + kapı | ağırlık kilidi | ✅ |
+| 5 | Çifte Yük | iki buton, tek küp + zamanlı kapı | hattı eşle | tartışılıyor |
+| 6 | Köprü | küpü flingleyerek uzağa taşı | enerji yönlendir | planlı |
+
+### Perde III — Momentum Ustalığı
+| # | Ad | Yeni mekanik | Hikâye beat | Durum |
+|---|----|--------------|-------------|-------|
+| 7 | Derin Kuyu | yüksek fırlatma ile dikey erişim | alt kata in | planlı |
+| 8 | Sıçrama Tabağı | faith plate (fırlatma rampası) | hızlan | planlı |
+| 9 | Çift Sıçrama | faith plate + portal zinciri | uçurumları aş | planlı |
+
+### Perde IV — Gerçek (tehlike & sistem çökmesi)
+| # | Ad | Yeni mekanik | Hikâye beat | Durum |
+|---|----|--------------|-------------|-------|
+| 10 | Şebeke | fizzler (portal/küp sıfırlayan alan) | güvenliği aş | planlı |
+| 11 | Zehirli Zemin | tehlikeli zemin (anında respawn) | tesisin çürümesi | planlı |
+| 12 | Hareketli Zemin | kayan platform + zamanlama | AI uyanıyor | planlı |
+
+### Perde V — Kaçış (finale)
+| # | Ad | Yeni mekanik | Hikâye beat | Durum |
+|---|----|--------------|-------------|-------|
+| 13 | Çöküş | her mekanik bir arada, çok aşamalı | sistem kapanıyor | planlı |
+| 14 | Eve Dönüş | finale arena + düğüm | kaçış / gerçek ortaya çıkar | planlı |
+
+> Bölüm sayısı/sırası esnek; konuştukça ekler/çıkarırız. Hedef: net bir
+> tırmanış ve tatmin edici bir finale.
