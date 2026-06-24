@@ -21,6 +21,10 @@ export class FPController {
     this.onGround = false;
     this.teleportCooldown = 0;
     this.launchCooldown = 0;
+    this.zip = null;
+    this.zipT = 0;
+    this.zipSpeed = 0;
+    this.zipCooldown = 0;
     // bakış hassasiyeti çarpanları (Ayarlar menüsünden ayarlanır, reset'te korunur)
     this.sensXMul = 1;
     this.sensYMul = 1;
@@ -34,6 +38,8 @@ export class FPController {
     this.pitch = 0;
     this.onGround = false;
     this.teleportCooldown = 0;
+    this.zip = null;
+    this.zipCooldown = 0;
   }
 
   get eyePosition() {
@@ -135,11 +141,39 @@ export class FPController {
   update(dt, input, level, portals) {
     this.teleportCooldown = Math.max(0, this.teleportCooldown - dt);
     this.launchCooldown = Math.max(0, this.launchCooldown - dt);
+    this.zipCooldown = Math.max(0, this.zipCooldown - dt);
 
     // bakış (hassasiyet ayarları uygulanır)
     this.yaw -= input.aimDX * SENS * this.sensXMul;
     this.pitch -= input.aimDY * SENS * this.sensYMul * (this.invertY ? -1 : 1);
     this.pitch = THREE.MathUtils.clamp(this.pitch, -1.45, 1.45);
+
+    // zipline (iple kaymaca): tutunup kayma
+    if (this.zip) {
+      this.zipSpeed = Math.min(9, this.zipSpeed + 8 * dt);
+      this.zipT += this.zipSpeed * dt;
+      const t = Math.min(this.zipT, this.zip.length);
+      const p = this.zip.a.clone().addScaledVector(this.zip.dir, t);
+      this.position.set(p.x, p.y - 1.7, p.z); // teelden aşağı sarkar
+      this.velocity.copy(this.zip.dir).multiplyScalar(this.zipSpeed);
+      if (this.zipT >= this.zip.length || input.consumeJump()) {
+        this.zip = null;
+        this.zipCooldown = 0.6; // bırakınca hızla tekrar tutunmasın
+      }
+      return;
+    }
+    if (this.zipCooldown <= 0 && level.ziplines) {
+      for (const z of level.ziplines) {
+        const cl = z.closest(this.center);
+        if (cl.dist < 1.4) {
+          this.zip = z;
+          this.zipT = cl.t;
+          this.zipSpeed = Math.max(3, this.velocity.length());
+          input.consumeJump();
+          break;
+        }
+      }
+    }
 
     // istenen yatay yön
     const fwd = new THREE.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline } from "./Props.js";
 
 // Test odaları. Her oda kendi geometrisini bir Group içine kurar ve
 // çarpışma kutuları + portallanabilir yüzeyler + spawn + çıkış verir.
@@ -263,14 +263,33 @@ function chamber6(ctx) {
   ctx.story = "Eski fırlatıcılar hâlâ çalışıyor. Tesisin derinine bir köprü daha.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6];
+// ---- Oda 7: İp Hattı — yüksek başlangıçtan tele tutunup uçurumu kayarak geç ----
+function chamber7(ctx) {
+  const W = 7;
+  addBox(ctx, V(-W, 0, -6), V(W, 2, 2), false); // yüksek başlangıç platformu (üst y=2)
+  // boşluk z[2,16]
+  addBox(ctx, V(-W, -0.5, 16), V(W, 0, 30), false); // alçak karşı platform (üst y=0)
+  addBox(ctx, V(-W, 2, -6.5), V(W, 6, -6), false); // arka duvar
+  // iple kaymaca: yüksek A -> alçak B (uçurumun karşısı)
+  const zip = new Zipline(V(0, 3.6, 2), V(0, 2.0, 22));
+  ctx.group.add(zip.group);
+  ctx.ziplines.push(zip);
+
+  ctx.spawn = V(0, 2.1, -3);
+  goal(ctx, V(0, 0, 26), "core", 0x6ee84f);
+  ctx.objective = "İp hattına tutunup uçurumu kayarak geç, karşıda röleyi al.";
+  ctx.hint = "Platformun ön kenarına yürü — ipe otomatik tutunursun ve karşıya kayarsın. Zıpla'ya basarsan erken bırakırsın.";
+  ctx.story = "Bakım hattının teli hâlâ gergin. Karşıya geçmenin tek yolu.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
   const ctx = {
     group: new THREE.Group(), colliders: [], raycast: [],
     spawn: new THREE.Vector3(), exit: null, hint: "",
-    cubes: [], buttons: [], doors: [], launchPads: [],
+    cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [],
   };
   builders[index](ctx);
   return ctx;

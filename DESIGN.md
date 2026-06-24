@@ -49,18 +49,20 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
 |---|----|--------------|-------------|-------|
 | 6 | Köprü | fırlatma rampası (küpü+kendini uçur) | eski fırlatıcılar | ✅ |
-| 7 | Serbest Düşüş | kayarak/düşerken HIZLA iki portal aç (refleks yarışı) | acil tahliye | sırada |
-| 8 | Trambolin | zıplama padi + portal ile hedefe sek | esneklik testi | planlı |
-| 9 | İp Hattı | tele tutunup kayarak (zipline) + portal | uçurumu geç | sırada |
+| 7 | İp Hattı | tele tutunup kayarak (zipline) | uçurumu geç | ✅ |
+| 8 | Serbest Düşüş | kayarak/düşerken HIZLA iki portal aç (refleks yarışı) | acil tahliye | sırada |
+| 9 | Trambolin | zıplama padi + portal ile hedefe sek | esneklik testi | sırada |
 | 9b | Çift Sıçrama | rampa/trambolin + portal zinciri | uçurumları aş | planlı |
 
 ### Perde IV — Gerçek (tehlike & sistem çökmesi)
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
 |---|----|--------------|-------------|-------|
 | 10 | Enerji Topu | zıplayan enerji topunu portalla alıcıya yönlendir | gücü ata | sırada |
-| 11 | Şebeke | fizzler (portal/küp sıfırlayan alan) | güvenliği aş | planlı |
-| 12 | Zehirli Zemin | tehlikeli zemin (anında respawn) | tesisin çürümesi | planlı |
-| 13 | Hareketli Zemin | kayan platform + zamanlama | AI uyanıyor | planlı |
+| 11 | Engel Yağmuru | üstüne gelen engelleri portalla savuştur (refleks) | savunmayı aş | sırada |
+| 12 | Dönen Merdivenler | yer değiştiren merdivenler (Harry Potter tarzı) + portal/zamanlama | tesis canlanıyor | sırada |
+| 13 | Şebeke | fizzler (portal/küp sıfırlayan alan) | güvenliği aş | planlı |
+| 14 | Zehirli Zemin | tehlikeli zemin (anında respawn) | tesisin çürümesi | planlı |
+| 15 | Hareketli Zemin | kayan platform + zamanlama | AI uyanıyor | planlı |
 
 ### Perde V — Kaçış (finale)
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |

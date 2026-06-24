@@ -132,6 +132,45 @@ export class LaunchPad {
   }
 }
 
+// Zipline (iple kaymaca): iki direk arası gerili tel; oyuncu tutunup kayar.
+export class Zipline {
+  constructor(a, b) {
+    this.a = a.clone();
+    this.b = b.clone();
+    this.dir = new THREE.Vector3().subVectors(b, a);
+    this.length = this.dir.length();
+    this.dir.normalize();
+
+    this.group = new THREE.Group();
+    const mid = a.clone().add(b).multiplyScalar(0.5);
+    const cable = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.06, 0.06, this.length, 6),
+      new THREE.MeshStandardMaterial({ color: 0x2a2a30, roughness: 0.6, metalness: 0.7 })
+    );
+    cable.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), this.dir);
+    cable.position.copy(mid);
+    this.group.add(cable);
+    // direkler
+    const postMat = new THREE.MeshStandardMaterial({ color: 0x5a5f6a, roughness: 0.7, metalness: 0.4 });
+    for (const e of [a, b]) {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, e.y + 0.5, 8), postMat);
+      post.position.set(e.x, (e.y + 0.5) / 2 - 0.5, e.z);
+      post.castShadow = true;
+      const knob = new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 10), new THREE.MeshStandardMaterial({ color: 0x9cffe0, emissive: 0x3fd0c0, emissiveIntensity: 0.9 }));
+      knob.position.copy(e);
+      this.group.add(post, knob);
+    }
+  }
+  // noktaya en yakın kablo noktası
+  closest(point) {
+    const ap = new THREE.Vector3().subVectors(point, this.a);
+    let t = ap.dot(this.dir);
+    t = Math.max(0, Math.min(this.length, t));
+    const pos = this.a.clone().addScaledVector(this.dir, t);
+    return { t, dist: pos.distanceTo(point), pos };
+  }
+}
+
 export class Button {
   constructor(pos, door) {
     this.pos = pos.clone();
