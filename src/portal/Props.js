@@ -395,6 +395,65 @@ export class Keypad {
   }
 }
 
+// Su asansörü: güç verilince (çarklar döner) su yükselir, platform da yükselir.
+export class WaterLift {
+  constructor(min, max, topY, speed = 1.3) {
+    this.half = new THREE.Vector3().subVectors(max, min).multiplyScalar(0.5);
+    this.cx = (min.x + max.x) / 2;
+    this.cz = (min.z + max.z) / 2;
+    this.baseY = (min.y + max.y) / 2;
+    this.topY = topY;
+    this.y = this.baseY;
+    this.powered = false;
+    this.speed = speed;
+    const size = new THREE.Vector3().subVectors(max, min);
+
+    this.group = new THREE.Group();
+    this.platform = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), new THREE.MeshStandardMaterial({ color: 0x6a6f7a, roughness: 0.6, metalness: 0.3, flatShading: true }));
+    this.platform.castShadow = true;
+    this.platform.receiveShadow = true;
+    // su (yarı saydam mavi), tabandan platforma kadar yükselir
+    this.water = new THREE.Mesh(new THREE.BoxGeometry(size.x * 1.6, 1, size.z * 1.6), new THREE.MeshStandardMaterial({ color: 0x2f8fd0, transparent: true, opacity: 0.55, roughness: 0.2 }));
+    this.group.add(this.platform, this.water);
+
+    // çarklar (yan duvarda dönen tekerlekler)
+    this.gears = [];
+    for (let i = 0; i < 2; i++) {
+      const gear = new THREE.Group();
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.18, 8, 16), new THREE.MeshStandardMaterial({ color: 0x8a7a4a, metalness: 0.6, roughness: 0.5 }));
+      gear.add(rim);
+      for (let s = 0; s < 6; s++) {
+        const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.6, 0.12), new THREE.MeshStandardMaterial({ color: 0x6a5f3a }));
+        spoke.rotation.z = (s / 6) * Math.PI;
+        gear.add(spoke);
+      }
+      gear.position.set(this.cx + (i ? 2.4 : -2.4), this.topY + 1.5, this.cz - this.half.z - 0.3);
+      this.group.add(gear);
+      this.gears.push(gear);
+    }
+
+    this.collider = { min: new THREE.Vector3(), max: new THREE.Vector3(), portalable: false };
+    this._apply();
+  }
+  setOpen(p) { this.powered = p; } // Button bunu çağırır
+  _apply() {
+    this.platform.position.set(this.cx, this.y, this.cz);
+    this.collider.min.set(this.cx - this.half.x, this.y - this.half.y, this.cz - this.half.z);
+    this.collider.max.set(this.cx + this.half.x, this.y + this.half.y, this.cz + this.half.z);
+    const wh = (this.y - this.baseY) + 1;
+    this.water.scale.y = wh;
+    this.water.position.set(this.cx, this.baseY - 0.5 + wh / 2, this.cz);
+  }
+  update(dt, occupied) {
+    // güçlü VE üstünde biri varsa yükselir; değilse tabana döner (tekrar binilebilir)
+    const target = this.powered && occupied ? this.topY : this.baseY;
+    if (this.y < target) this.y = Math.min(target, this.y + this.speed * dt);
+    else this.y = Math.max(target, this.y - this.speed * dt);
+    this._apply();
+    if (this.powered) for (const g of this.gears) g.rotation.z += dt * 3;
+  }
+}
+
 export class Button {
   constructor(pos, door) {
     this.pos = pos.clone();

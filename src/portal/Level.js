@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift } from "./Props.js";
 
 // 3x5 dijit fontu (yukarıdan okunacak sütun desenleri)
 const DIGITS = {
@@ -441,7 +441,45 @@ function chamber12(ctx) {
   ctx.story = "Tesisin evrensel kilidi: dilden bağımsız, saf sayı. Sırrı yalnızca yukarıdan görebilirsin.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12];
+// ---- Oda 13: Çarklar ve Su — küpü butona indir, çarklar dönsün, su asansörü yükselsin ----
+function chamber13(ctx) {
+  // başlangıç + küp teslimat alanı (pad)
+  addBox(ctx, V(-7, -0.5, -6), V(7, 0, -2), false);
+  addBox(ctx, V(-7, -0.5, -2), V(-3, 0, 2), false);
+  addBox(ctx, V(3, -0.5, -2), V(7, 0, 2), false);
+  addBox(ctx, V(-3, -0.5, -2), V(3, 0, 2), true); // PAD (küp)
+  addBox(ctx, V(-7, -0.5, 2), V(7, 0, 6), false);
+  addBox(ctx, V(-7.5, 0, -6), V(-7, 4, 6), true); // sol duvar (portallanabilir)
+  addBox(ctx, V(7, 0, -6), V(7.5, 6, 16), false);
+  addBox(ctx, V(-7, 0, -6.5), V(7, 6, -6), false);
+
+  // su asansörü şaftı (z 7..11), tabandan y8'e yükselir
+  addBox(ctx, V(-3, 0, 6.5), V(-2, 8.5, 11.5), false); // şaft sol duvar
+  addBox(ctx, V(2, 0, 6.5), V(3, 8.5, 11.5), false); // şaft sağ duvar
+  addBox(ctx, V(-3, 0, 11), V(3, 8.5, 11.5), false); // şaft arka
+  const lift = new WaterLift(V(-2, 0, 7), V(2, 0.4, 11), 8.0, 1.3);
+  ctx.group.add(lift.group);
+  ctx.colliders.push(lift.collider);
+  ctx.waterLifts.push(lift);
+
+  // küp + buton (buton lift'i besler)
+  const cube = new Cube(V(0, 0.6, 0));
+  ctx.group.add(cube.mesh); ctx.colliders.push(cube.collider); ctx.cubes.push(cube);
+  const btn = new Button(V(-4.5, 0, 2), lift); // küp buraya iner -> lift güçlenir
+  ctx.group.add(btn.group); ctx.buttons.push(btn);
+
+  // üst hedef platformu (asansör tepesi y~8.2)
+  addBox(ctx, V(-3, 7.8, 11.5), V(3, 8.2, 16), false);
+  addBox(ctx, V(-3, 8.2, 16), V(3, 12, 16.5), false);
+
+  ctx.spawn = V(4, 0.1, -4);
+  goal(ctx, V(0, 8.2, 14), "core", 0x6ee84f);
+  ctx.objective = "Küpü butona indir; çarklar döner, su yükselir, asansöre binip yukarı çık.";
+  ctx.hint = "Küpü sol duvar üzerinden butona indir (Bölüm 4 gibi). Çarklar dönüp su asansörünü yükseltir. Asansör tabandayken üstüne bin, yukarı taşısın.";
+  ctx.story = "Eski su mekanizması yeniden çalışıyor. Yukarı, neredeyse çıkışa.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -449,7 +487,7 @@ export function buildChamber(index) {
     group: new THREE.Group(), colliders: [], raycast: [],
     spawn: new THREE.Vector3(), exit: null, hint: "",
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
-    balls: [], emitters: [], receptacles: [], movers: [], keypads: [],
+    balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [],
   };
   builders[index](ctx);
   return ctx;

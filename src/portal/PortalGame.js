@@ -194,6 +194,12 @@ export class PortalGame {
 
     for (const button of this.level.buttons) button.update(this.level.cubes, this.controller);
     for (const kp of this.level.keypads) kp.update(this.controller);
+    for (const lift of this.level.waterLifts) {
+      const c = lift.collider;
+      const p = this.controller.position;
+      const occ = p.x > c.min.x - 0.4 && p.x < c.max.x + 0.4 && p.z > c.min.z - 0.4 && p.z < c.max.z + 0.4 && Math.abs(p.y - c.max.y) < 0.4;
+      lift.update(dt, occ);
+    }
     for (const door of this.level.doors) door.update(dt);
 
     // kamera
