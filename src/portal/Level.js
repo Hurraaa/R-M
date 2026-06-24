@@ -123,25 +123,23 @@ function chamber1(ctx) {
   ctx.story = "Güç çekirdeği takıldı! Son adım: eve dönüş KOORDİNATLARINI gir — vericiyi aktive et.";
 }
 
-// ---- Oda 2: Oyun alanı — her yer portallanabilir, momentumla oyna ----
+// ---- Oda 2: Açık final arena — yan duvarlardan portalla uçurumu aş ----
 function chamber2(ctx) {
-  addBox(ctx, V(-14, -0.5, -14), V(14, 0, 14), true); // büyük zemin
-  // çevre duvarlar (portallanabilir, orta boy — manzara üstte açık)
-  addBox(ctx, V(-14.5, 0, -14), V(-14, 5, 14), true);
-  addBox(ctx, V(14, 0, -14), V(14.5, 5, 14), true);
-  addBox(ctx, V(-14, 0, -14.5), V(14, 5, -14), true);
-  addBox(ctx, V(-14, 0, 14), V(14, 5, 14.5), true);
-  // derin kuyu (fırlatma için)
-  addBox(ctx, V(-3, -16, -3), V(3, -15.5, 3), true); // kuyu dibi (portallanabilir)
-  addBox(ctx, V(-3, -16, -3.5), V(3, 0, -3), false); // kuyu duvarları
-  addBox(ctx, V(-3, -16, 3), V(3, 0, 3.5), false);
-  addBox(ctx, V(-3.5, -16, -3), V(-3, 0, 3), false);
-  addBox(ctx, V(3, -16, -3), V(3.5, 0, 3), false);
-  addBox(ctx, V(8, 0, 8), V(12, 7, 12), true); // kule (üstünde verici)
-  ctx.spawn = V(0, 0.1, -8);
-  goal(ctx, V(10, 7, 10), "beacon", 0x46e6ff); // 🔵 Eve Dönüş Vericisi
-  ctx.objective = "Eve dönüş vericisini aktive et — kulenin tepesinde.";
-  ctx.hint = "Serbest alan! Yüzeylere portal aç, momentumla oyna. Verici kulenin tepesinde — yüksekten bir zemin portalına düşüp duvar portalından fırlayarak ulaş.";
+  addBox(ctx, V(-9, -0.5, -8), V(9, 0, 6), false); // başlangıç zemini
+  addBox(ctx, V(-9, -0.5, 18), V(9, 0, 32), false); // çıkış platformu (uçurum z 6..18)
+  // yan duvarlar boydan boya portallanabilir (geçiş yüzeyleri)
+  addBox(ctx, V(-9.5, 0, -8), V(-9, 6, 32), true); // sol
+  addBox(ctx, V(9, 0, -8), V(9.5, 6, 32), true); // sağ
+  // korkuluklar (manzara açık)
+  addBox(ctx, V(-9, 0, -8.5), V(9, 1.3, -8), false);
+  addBox(ctx, V(-9, 0, 32), V(9, 1.3, 32.5), false);
+  // momentumla oynamak için iki portallanabilir blok (tuzak değil)
+  addBox(ctx, V(-7.5, 0, -3), V(-4.5, 3, 0), true);
+  addBox(ctx, V(4.5, 0, 23), V(7.5, 4, 26), true);
+  ctx.spawn = V(0, 0.1, -4);
+  goal(ctx, V(0, 0, 27), "beacon", 0x46e6ff); // 🔵 Eve Dönüş Vericisi
+  ctx.objective = "Eve dönüş vericisini aktive et — uçurumun karşısında.";
+  ctx.hint = "Yan duvarlara iki portal aç: birini yanına, diğerini boşluğun karşısına. Portala girip geç. Bloklarla momentumu da deneyebilirsin.";
   ctx.story = "Koordinatlar kilitlendi. Portal tabancası tam güçte — EVE DÖNÜŞ!";
 }
 
