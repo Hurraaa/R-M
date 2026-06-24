@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door } from "./Props.js";
+import { Cube, Button, Door, LaunchPad } from "./Props.js";
 
 // Test odaları. Her oda kendi geometrisini bir Group içine kurar ve
 // çarpışma kutuları + portallanabilir yüzeyler + spawn + çıkış verir.
@@ -209,7 +209,7 @@ function chamber5(ctx) {
   // kapı: boşluğun ötesinde, çıkış platformu girişinde — A VE B basılıysa açılır
   const door = new Door(V(-W, 0, 15), V(W, 4, 15.5));
   door.openSpeed = 4;
-  door.closeSpeed = 0.4; // ~1.25 sn geçiş penceresi (ayarlanabilir)
+  door.closeSpeed = 0.8; // ~0.6 sn geçiş penceresi — hızlı kapanır, portal şart
   ctx.group.add(door.mesh);
   ctx.colliders.push(door.collider);
   ctx.doors.push(door);
@@ -227,14 +227,50 @@ function chamber5(ctx) {
   ctx.story = "İki hat eşlendi. Tesis seni izliyor gibi… daha derine inmen gerek.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5];
+// ---- Oda 6: Köprü — fırlatma rampasıyla küpü (ve kendini) karşıya uçur ----
+function chamber6(ctx) {
+  const W = 7;
+  addBox(ctx, V(-W, -0.5, -6), V(W, 0, 6), false); // başlangıç platformu
+  // boşluk z[6,15]
+  addBox(ctx, V(-W, -0.5, 15), V(W, 0, 32), false); // karşı platform
+  addBox(ctx, V(-W - 0.5, 0, -6), V(-W, 5, 32), true); // sol portallanabilir (yedek)
+  addBox(ctx, V(W, 0, -6), V(W + 0.5, 5, 32), false);
+  addBox(ctx, V(-W, 0, -6.5), V(W, 5, -6), false);
+  addBox(ctx, V(-W, 0, 32), V(W, 5, 32.5), false);
+
+  // fırlatma rampası + üstünde küp (başta fırlar)
+  const pad = new LaunchPad(V(0, 0, 2), V(0, 12, 17));
+  ctx.group.add(pad.group);
+  ctx.launchPads.push(pad);
+  const cube = new Cube(V(0, 0.7, 2));
+  ctx.group.add(cube.mesh);
+  ctx.colliders.push(cube.collider);
+  ctx.cubes.push(cube);
+
+  // kapı + buton (karşı platform) — küp butona inince kapı açılır
+  const door = new Door(V(-W, 0, 24), V(W, 5, 24.5));
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+  const btn = new Button(V(0, 0, 17.5), door);
+  ctx.group.add(btn.group);
+  ctx.buttons.push(btn);
+
+  ctx.spawn = V(4, 0.1, -3);
+  goal(ctx, V(0, 0, 28), "core", 0x6ee84f);
+  ctx.objective = "Küpü fırlatma rampasıyla karşı butona uçur, sonra sen de rampayla geç.";
+  ctx.hint = "Rampadaki küp fırlatılıp karşı butona iner ve kapıyı açar. Sonra rampaya basıp sen de karşıya fırla, açık kapıdan geç.";
+  ctx.story = "Eski fırlatıcılar hâlâ çalışıyor. Tesisin derinine bir köprü daha.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
   const ctx = {
     group: new THREE.Group(), colliders: [], raycast: [],
     spawn: new THREE.Vector3(), exit: null, hint: "",
-    cubes: [], buttons: [], doors: [],
+    cubes: [], buttons: [], doors: [], launchPads: [],
   };
   builders[index](ctx);
   return ctx;

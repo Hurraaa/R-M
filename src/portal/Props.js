@@ -14,6 +14,7 @@ export class Cube {
     this.velocity = new THREE.Vector3();
     this.lastCenter = pos.clone();
     this.teleportCooldown = 0;
+    this.launchCooldown = 0;
     this.onGround = false;
 
     const mat = new THREE.MeshStandardMaterial({ color: 0xd1812f, emissive: 0x281204, emissiveIntensity: 0.5, roughness: 0.6, metalness: 0.2 });
@@ -84,6 +85,7 @@ export class Cube {
   }
   update(dt, level, portals) {
     this.teleportCooldown = Math.max(0, this.teleportCooldown - dt);
+    this.launchCooldown = Math.max(0, this.launchCooldown - dt);
     // yere değince güçlü sürtünme (tahmin edilebilir iniş), havada hafif
     const fr = this.onGround ? 0.6 : 0.999;
     this.velocity.x *= fr;
@@ -96,6 +98,37 @@ export class Cube {
     if (this.pos.y < -50) { this.pos.copy(this.spawn); this.velocity.set(0, 0, 0); this.lastCenter.copy(this.pos); }
     this.mesh.position.copy(this.pos);
     this._sync();
+  }
+}
+
+// Fırlatma rampası (faith plate): üstüne gelen oyuncu/küpü sabit hızla fırlatır.
+export class LaunchPad {
+  constructor(pos, velocity) {
+    this.pos = pos.clone();
+    this.radius = 1.6;
+    this.vel = velocity.clone();
+    this.group = new THREE.Group();
+    this.group.position.copy(pos);
+    const base = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.6, 1.75, 0.25, 6),
+      new THREE.MeshStandardMaterial({ color: 0x2a6f7a, emissive: 0x1aa0b0, emissiveIntensity: 0.7, roughness: 0.4, metalness: 0.3 })
+    );
+    base.position.y = 0.12;
+    const arrow = new THREE.Mesh(
+      new THREE.ConeGeometry(0.5, 1.1, 5),
+      new THREE.MeshStandardMaterial({ color: 0x9cffe0, emissive: 0x3fd0c0, emissiveIntensity: 1.1 })
+    );
+    arrow.position.y = 0.7;
+    this.group.add(base, arrow);
+  }
+  tryLaunch(e) {
+    if (e.launchCooldown > 0) return;
+    const c = e.center;
+    if (Math.hypot(c.x - this.pos.x, c.z - this.pos.z) < this.radius && c.y < this.pos.y + 1.9 && c.y > this.pos.y - 0.6 && e.velocity.y <= 3) {
+      e.velocity.copy(this.vel);
+      e.launchCooldown = 0.7;
+      e.onGround = false;
+    }
   }
 }
 

@@ -20,6 +20,7 @@ export class FPController {
     this.pitch = 0;
     this.onGround = false;
     this.teleportCooldown = 0;
+    this.launchCooldown = 0;
     // bakış hassasiyeti çarpanları (Ayarlar menüsünden ayarlanır, reset'te korunur)
     this.sensXMul = 1;
     this.sensYMul = 1;
@@ -133,6 +134,7 @@ export class FPController {
 
   update(dt, input, level, portals) {
     this.teleportCooldown = Math.max(0, this.teleportCooldown - dt);
+    this.launchCooldown = Math.max(0, this.launchCooldown - dt);
 
     // bakış (hassasiyet ayarları uygulanır)
     this.yaw -= input.aimDX * SENS * this.sensXMul;

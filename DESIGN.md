@@ -48,9 +48,10 @@ basınç butonu → kapı → ileri seviye fırlatma).
 ### Perde III — Momentum Ustalığı
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
 |---|----|--------------|-------------|-------|
-| 7 | Derin Kuyu | yüksek fırlatma ile dikey erişim | alt kata in | planlı |
-| 8 | Sıçrama Tabağı | faith plate (fırlatma rampası) | hızlan | planlı |
-| 9 | Çift Sıçrama | faith plate + portal zinciri | uçurumları aş | planlı |
+| 6 | Köprü | fırlatma rampası (küpü+kendini uçur) | eski fırlatıcılar | ✅ |
+| 7 | Serbest Düşüş | kayarak/düşerken HIZLA iki portal aç (refleks yarışı) | acil tahliye | sırada |
+| 8 | Trambolin | zıplama padi + portal ile hedefe sek | esneklik testi | planlı |
+| 9 | Çift Sıçrama | rampa/trambolin + portal zinciri | uçurumları aş | planlı |
 
 ### Perde IV — Gerçek (tehlike & sistem çökmesi)
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |

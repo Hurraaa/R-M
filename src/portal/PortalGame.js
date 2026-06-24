@@ -151,6 +151,10 @@ export class PortalGame {
       const cn = this.portals.teleportEntity(cube);
       if (cn) cube.depenetrateAlong(cn, this.level.colliders, this.portals);
     }
+    for (const pad of this.level.launchPads) {
+      pad.tryLaunch(this.controller);
+      for (const cube of this.level.cubes) pad.tryLaunch(cube);
+    }
     for (const button of this.level.buttons) button.update(this.level.cubes, this.controller);
     for (const door of this.level.doors) door.update(dt);
 
