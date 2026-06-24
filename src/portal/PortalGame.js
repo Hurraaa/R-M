@@ -193,6 +193,7 @@ export class PortalGame {
     });
 
     for (const button of this.level.buttons) button.update(this.level.cubes, this.controller);
+    for (const kp of this.level.keypads) kp.update(this.controller);
     for (const door of this.level.doors) door.update(dt);
 
     // kamera

@@ -1,5 +1,14 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad } from "./Props.js";
+
+// 3x5 dijit fontu (yukarıdan okunacak sütun desenleri)
+const DIGITS = {
+  0: ["111", "101", "101", "101", "111"], 1: ["010", "110", "010", "010", "111"],
+  2: ["111", "001", "111", "100", "111"], 3: ["111", "001", "111", "001", "111"],
+  4: ["101", "101", "111", "001", "001"], 5: ["111", "100", "111", "001", "111"],
+  6: ["111", "100", "111", "101", "111"], 7: ["111", "001", "010", "100", "100"],
+  8: ["111", "101", "111", "101", "111"], 9: ["111", "101", "111", "001", "111"],
+};
 
 // Test odaları. Her oda kendi geometrisini bir Group içine kurar ve
 // çarpışma kutuları + portallanabilir yüzeyler + spawn + çıkış verir.
@@ -381,7 +390,58 @@ function chamber11(ctx) {
   ctx.story = "Hassasiyet imtihanı. Tesisin eski güvenlik geçidi — bir yanlış adım, en başa.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11];
+// yukarıdan bakınca dijit oluşturan dikili sütunlar (yakından anlamsız)
+function digitField(ctx, cx, oz, d) {
+  const rows = DIGITS[d];
+  const cell = 1.2, h = 2.6;
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) {
+    if (rows[r][c] === "1") {
+      const x = cx + (c - 1) * cell;       // c=0 sol -> -x (yukarıdan doğru okunur)
+      const z = oz + (4 - r) * cell;        // r=0 üst -> büyük z (uzak/üst)
+      addBox(ctx, V(x - 0.45, 0, z - 0.45), V(x + 0.45, h, z + 0.45), false);
+    }
+  }
+}
+
+// ---- Oda 12: Şifre — yukarıdan bak, sayıyı oku, tuş takımına gir ----
+function chamber12(ctx) {
+  addBox(ctx, V(-12, -0.5, -4), V(12, 0, 26), false); // büyük zemin
+  addBox(ctx, V(-12, 0, -4.5), V(12, 6, -4), false); // arka duvar
+  addBox(ctx, V(-12.5, 0, -4), V(-12, 6, 26), true); // sol duvar (portallanabilir)
+  addBox(ctx, V(12, 0, -4), V(12.5, 6, 26), false);
+
+  // yüksek balkon (trambolinle çıkılır) — yukarıdan bakış
+  addBox(ctx, V(-7, 4.5, 2), V(7, 5, 8), false);
+  const tramp = new BouncePad(V(0, 0, -1), 19);
+  ctx.group.add(tramp.group);
+  ctx.bouncePads.push(tramp);
+
+  // kod: 3,1,4  -> üç dijit alanı (yukarıdan okunur)
+  const code = [3, 1, 4];
+  digitField(ctx, -6, 11, code[0]);
+  digitField(ctx, 0, 11, code[1]);
+  digitField(ctx, 6, 11, code[2]);
+
+  // tuş takımı (0-9 plakalar), doğru sırada bas
+  const door = new Door(V(-12, 0, 22.5), V(12, 4, 23));
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+  const pad = new Keypad(code, door);
+  for (let i = 0; i < 10; i++) {
+    const g = pad.addPlate(i, V(-9 + i * 2, 0, 20));
+    ctx.group.add(g);
+  }
+  ctx.keypads.push(pad);
+
+  ctx.spawn = V(0, 0.1, -2);
+  goal(ctx, V(0, 0, 24.5), "core", 0x6ee84f);
+  ctx.objective = "Yukarıdan bakınca beliren 3 haneli sayıyı oku, tuş takımına sırayla bas.";
+  ctx.hint = "Trambolinle balkona çık, aşağıdaki sütunlara yukarıdan bak — anlamlı bir sayı görürsün. İn ve plakalara o sırayla bas, kapı açılır.";
+  ctx.story = "Tesisin evrensel kilidi: dilden bağımsız, saf sayı. Sırrı yalnızca yukarıdan görebilirsin.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -389,7 +449,7 @@ export function buildChamber(index) {
     group: new THREE.Group(), colliders: [], raycast: [],
     spawn: new THREE.Vector3(), exit: null, hint: "",
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
-    balls: [], emitters: [], receptacles: [], movers: [],
+    balls: [], emitters: [], receptacles: [], movers: [], keypads: [],
   };
   builders[index](ctx);
   return ctx;

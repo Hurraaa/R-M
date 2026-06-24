@@ -336,6 +336,65 @@ export class MovingPlatform {
   }
 }
 
+// Tuş takımı: numaralı basınç plakaları; doğru sırada basılınca kapı açılır.
+function numTexture(n) {
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const x = c.getContext("2d");
+  x.fillStyle = "#0c1016";
+  x.fillRect(0, 0, 128, 128);
+  x.fillStyle = "#bfe8ff";
+  x.font = "bold 96px sans-serif";
+  x.textAlign = "center";
+  x.textBaseline = "middle";
+  x.fillText(String(n), 64, 70);
+  return new THREE.CanvasTexture(c);
+}
+
+export class Keypad {
+  constructor(code, door) {
+    this.code = code.slice();
+    this.door = door;
+    this.seq = [];
+    this.plates = [];
+    this.solved = false;
+  }
+  addPlate(value, pos) {
+    const g = new THREE.Group();
+    g.position.copy(pos);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.85, 0.2, 18), new THREE.MeshStandardMaterial({ color: 0x3a3f4a, metalness: 0.4, roughness: 0.5 }));
+    base.position.y = 0.1;
+    let label;
+    if (typeof document !== "undefined") {
+      label = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.0), new THREE.MeshBasicMaterial({ map: numTexture(value), transparent: true }));
+    } else {
+      label = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: 0x6688aa }));
+    }
+    label.rotation.x = -Math.PI / 2;
+    label.position.y = 0.22;
+    g.add(base, label);
+    this.plates.push({ value, pos: pos.clone(), radius: 0.85, on: false, base });
+    return g;
+  }
+  update(player) {
+    if (this.solved) return;
+    for (const p of this.plates) {
+      const on = Math.hypot(player.position.x - p.pos.x, player.position.z - p.pos.z) < p.radius && Math.abs(player.position.y - p.pos.y) < 1.3;
+      if (on && !p.on) {
+        this.seq.push(p.value);
+        if (this.seq.length > this.code.length) this.seq.shift();
+        p.base.material.emissive = new THREE.Color(0x2f9a3e);
+        p.base.material.emissiveIntensity = 1.0;
+        if (this.seq.length === this.code.length && this.code.every((v, i) => v === this.seq[i])) {
+          this.solved = true;
+          if (this.door) this.door.setOpen(true);
+        }
+      }
+      p.on = on;
+    }
+  }
+}
+
 export class Button {
   constructor(pos, door) {
     this.pos = pos.clone();
