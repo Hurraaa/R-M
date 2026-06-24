@@ -450,8 +450,8 @@ function chamber13(ctx) {
   // su asansörü şaftı (z 6..10), tabandan y8'e yükselir (biniş hizalı, boşluksuz)
   addBox(ctx, V(-3, 0, 5.5), V(-2, 8.5, 10.5), false); // şaft sol duvar
   addBox(ctx, V(2, 0, 5.5), V(3, 8.5, 10.5), false); // şaft sağ duvar
-  addBox(ctx, V(-3, 0, 10), V(3, 8.5, 10.5), false); // şaft arka
-  const lift = new WaterLift(V(-2, 0, 6), V(2, 0.4, 10), 8.0, 0.9);
+  addBox(ctx, V(-3, 0, 10), V(3, 6, 10.5), false); // şaft arka (alçak: tepeden çıkışı engellemesin)
+  const lift = new WaterLift(V(-2, -0.4, 6), V(2, 0, 10), 8.0, 0.9); // ÜST zeminle hizalı (basamak yok)
   ctx.group.add(lift.group);
   ctx.colliders.push(lift.collider);
   ctx.waterLifts.push(lift);

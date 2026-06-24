@@ -125,6 +125,18 @@ export class FPController {
         box.max.y > c.min.y && box.min.y < c.max.y &&
         box.max.z > c.min.z && box.min.z < c.max.z
       ) {
+        // küçük basamak çıkma: yatay eksende, normal çekimde, yalnızca DÜŞMÜYORKEN
+        // (gerçek boşluğa düşerken çalışmaz -> hassas zıplama bozulmaz)
+        if (axis !== "y" && this.gravityDir > 0 && this.velocity.y > -1.5) {
+          const rise = c.max.y - this.position.y;
+          if (rise > 0.001 && rise <= 0.45) {
+            this.position.y = c.max.y + 0.001;
+            this.onGround = true;
+            box.min.y = this.position.y;
+            box.max.y = this.position.y + HEIGHT;
+            continue;
+          }
+        }
         const v = this.velocity[axis];
         if (v > 0) {
           const push = c.min[axis] - box.max[axis];
