@@ -183,7 +183,51 @@ function chamber3(ctx) {
   ctx.story = "Ağırlık kilidi çözüldü, röle alındı. Güç hattı uzanıyor — daha derine inmen gerek.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3];
+// ---- Oda 5: Çifte Yük — iki buton (küp + sen) + zamanlı kapı ----
+function chamber5(ctx) {
+  const W = 7;
+  // zemin parçaları (z-fight'sız abut) + portallanabilir pad
+  addBox(ctx, V(-W, -0.5, -6), V(W, 0, -2), false); // ön
+  addBox(ctx, V(-W, -0.5, -2), V(-3, 0, 2), false);
+  addBox(ctx, V(3, -0.5, -2), V(W, 0, 2), false);
+  addBox(ctx, V(-3, -0.5, -2), V(3, 0, 2), true); // PAD (küp burada durur)
+  addBox(ctx, V(-W, -0.5, 2), V(W, 0, 8), false); // orta (B butonu)
+  // boşluk z[8,14] (atlanamaz)
+  addBox(ctx, V(-W, -0.5, 14), V(W, 0, 24), false); // çıkış platformu
+
+  addBox(ctx, V(-W - 0.5, 0, -6), V(-W, 4, 24), true); // sol duvar portallanabilir (teslimat + geçiş)
+  addBox(ctx, V(W, 0, -6), V(W + 0.5, 4, 24), false);
+  addBox(ctx, V(-W, 0, -6.5), V(W, 4, -6), false);
+  addBox(ctx, V(-W, 0, 24), V(W, 4, 24.5), false);
+
+  // yük küpü
+  const cube = new Cube(V(0, 0.6, 0));
+  ctx.group.add(cube.mesh);
+  ctx.colliders.push(cube.collider);
+  ctx.cubes.push(cube);
+
+  // kapı: boşluğun ötesinde, çıkış platformu girişinde — A VE B basılıysa açılır
+  const door = new Door(V(-W, 0, 15), V(W, 4, 15.5));
+  door.openSpeed = 4;
+  door.closeSpeed = 0.4; // ~1.25 sn geçiş penceresi (ayarlanabilir)
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+
+  const bA = new Button(V(-4.5, 0, -2), null); // küp buraya iner
+  const bB = new Button(V(-3, 0, 5), null); // oyuncu basar
+  ctx.group.add(bA.group, bB.group);
+  ctx.buttons.push(bA, bB);
+  door.requires = [bA, bB];
+
+  ctx.spawn = V(4, 0.1, -4);
+  goal(ctx, V(0, 0, 20), "core", 0x6ee84f);
+  ctx.objective = "İki butonu birden bas: birini küple, birini kendinle — kapı kapanmadan karşıya geç.";
+  ctx.hint = "1) Küpü sol duvar üzerinden A butonuna indir (Bölüm 4 gibi). 2) Portalları sol duvara taşı: biri B'nin yanına, diğeri boşluğun ötesine. 3) B'ye bas, hemen yan portala dal — kapı kapanmadan karşı platforma fırla ve kapıdan geç.";
+  ctx.story = "İki hat eşlendi. Tesis seni izliyor gibi… daha derine inmen gerek.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {

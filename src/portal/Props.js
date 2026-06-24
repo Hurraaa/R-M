@@ -144,10 +144,16 @@ export class Door {
     this.collider = { min: min.clone(), max: max.clone(), portalable: false };
     this.open = 0;
     this.target = 0;
+    this.requires = null; // çoklu kilit: [buton, buton] hepsi basılıysa açılır
+    this.openSpeed = 4; // saniyede (hızlı açılır)
+    this.closeSpeed = 0.5; // saniyede (yavaş kapanır -> adil zamanlama penceresi)
   }
   setOpen(o) { this.target = o ? 1 : 0; }
   update(dt) {
-    this.open += (this.target - this.open) * Math.min(1, dt * 4);
+    if (this.requires) this.target = this.requires.every((b) => b.pressed) ? 1 : 0;
+    const sp = this.target > this.open ? this.openSpeed : this.closeSpeed;
+    if (this.target > this.open) this.open = Math.min(this.target, this.open + sp * dt);
+    else this.open = Math.max(this.target, this.open - sp * dt);
     this.mesh.position.y = this.baseY + this.open * this.openOffset;
     this.collider.disabled = this.open > 0.5;
   }

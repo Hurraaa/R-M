@@ -42,7 +42,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
 |---|----|--------------|-------------|-------|
 | 4 | Ağırlık | yük küpü + buton + kapı | ağırlık kilidi | ✅ |
-| 5 | Çifte Yük | iki buton, tek küp + zamanlı kapı | hattı eşle | tartışılıyor |
+| 5 | Çifte Yük | iki buton, tek küp + zamanlı kapı | hattı eşle | ✅ |
 | 6 | Köprü | küpü flingleyerek uzağa taşı | enerji yönlendir | planlı |
 
 ### Perde III — Momentum Ustalığı
