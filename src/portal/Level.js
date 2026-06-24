@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad } from "./Props.js";
 
 // 3x5 dijit fontu (yukarıdan okunacak sütun desenleri)
 const DIGITS = {
@@ -479,7 +479,42 @@ function chamber13(ctx) {
   ctx.story = "Eski su mekanizması yeniden çalışıyor. Yukarı, neredeyse çıkışa.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13];
+// ---- Oda 14: Ay Yürüyüşü — düşük yerçekiminde uzun, süzülen zıplamalar ----
+function chamber14(ctx) {
+  ctx.gravityScale = 0.35; // ay çekimi
+  addBox(ctx, V(-6, -0.5, -6), V(6, 0, 0), false); // başlangıç
+  addBox(ctx, V(-6, -0.5, 8), V(6, 0, 12), false); // ada 1 (boşluk z0-8)
+  addBox(ctx, V(-6, -0.5, 20), V(6, 0, 26), false); // ada 2 (boşluk z12-20)
+  addBox(ctx, V(-6, 0, -6.5), V(6, 1.3, -6), false);
+  ctx.spawn = V(0, 0.1, -3);
+  goal(ctx, V(0, 0, 23), "core", 0x6ee84f);
+  ctx.objective = "Düşük yerçekiminde uzun zıplamalarla adaları geç.";
+  ctx.hint = "Ay yürüyüşü! Zıplaman çok uzun ve süzülür — geniş boşlukları koşup zıplayarak aş.";
+  ctx.story = "Yerçekimi alanı zayıflamış. Adımların ayda gibi… ama hedefe götürüyor.";
+}
+
+// ---- Oda 15: Yer Çekimi — çekimi ters çevir, tavanda yürü, boşluğu aş ----
+function chamber15(ctx) {
+  addBox(ctx, V(-6, -0.5, -6), V(6, 0, 6), false); // başlangıç zemini
+  // boşluk z[6,14] (zeminden geçilemez)
+  addBox(ctx, V(-6, -0.5, 14), V(6, 0, 20), false); // karşı zemin (hedef)
+  addBox(ctx, V(-6, 8, -6), V(6, 8.5, 20), false); // TAVAN (ters çekimde yürünür, sürekli)
+  addBox(ctx, V(-6.5, 0, -6), V(-6, 8.5, 20), false);
+  addBox(ctx, V(6, 0, -6), V(6.5, 8.5, 20), false);
+  addBox(ctx, V(-6, 0, -6.5), V(6, 8.5, -6), false);
+  addBox(ctx, V(-6, 0, 20), V(6, 8.5, 20.5), false);
+  const f1 = new FlipPad(V(0, 0, 2)); // zeminde: yukarı çevir
+  const f2 = new FlipPad(V(0, 8, 16)); // tavanda: aşağı çevir
+  ctx.group.add(f1.group, f2.group);
+  ctx.flipPads.push(f1, f2);
+  ctx.spawn = V(0, 0.1, -3);
+  goal(ctx, V(0, 0, 17), "core", 0x6ee84f);
+  ctx.objective = "Yerçekimini ters çevir, tavanda yürüyerek boşluğu aş.";
+  ctx.hint = "Mor pad'e bas — tavana düşersin. Tavanda yürüyüp karşıya geç, oradaki pad'le tekrar zemine in.";
+  ctx.story = "Yerçekimi denetleyicisi arızalı. Aşağısı yukarı, yukarısı aşağı oluyor.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -487,7 +522,8 @@ export function buildChamber(index) {
     group: new THREE.Group(), colliders: [], raycast: [],
     spawn: new THREE.Vector3(), exit: null, hint: "",
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
-    balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [],
+    balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [], flipPads: [],
+    gravityScale: 1,
   };
   builders[index](ctx);
   return ctx;

@@ -104,6 +104,7 @@ export class PortalGame {
     this.levelGroup = this.level.group;
     this.scene.add(this.levelGroup);
     this.controller.reset(this.level.spawn);
+    this.controller.gravityScale = this.level.gravityScale ?? 1; // bölüm yerçekimi (ay yürüyüşü vb.)
     this.portals.reset();
     this.portals.lastCenter.copy(this.controller.center);
     this.winTimer = 0;
@@ -200,6 +201,7 @@ export class PortalGame {
       const occ = p.x > c.min.x - 0.4 && p.x < c.max.x + 0.4 && p.z > c.min.z - 0.4 && p.z < c.max.z + 0.4 && Math.abs(p.y - c.max.y) < 0.4;
       lift.update(dt, occ);
     }
+    for (const fp of this.level.flipPads) fp.tryFlip(this.controller);
     for (const door of this.level.doors) door.update(dt);
 
     // kamera

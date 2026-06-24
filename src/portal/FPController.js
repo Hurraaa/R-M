@@ -25,6 +25,9 @@ export class FPController {
     this.zipT = 0;
     this.zipSpeed = 0;
     this.zipCooldown = 0;
+    this.gravityScale = 1; // bölüm başına (ay yürüyüşü vb.)
+    this.gravityDir = 1; // +1 aşağı, -1 yukarı (ters çekim)
+    this.flipCooldown = 0;
     // bakış hassasiyeti çarpanları (Ayarlar menüsünden ayarlanır, reset'te korunur)
     this.sensXMul = 1;
     this.sensYMul = 1;
@@ -40,6 +43,7 @@ export class FPController {
     this.teleportCooldown = 0;
     this.zip = null;
     this.zipCooldown = 0;
+    this.gravityDir = 1; // respawn'da yön sıfırlanır (gravityScale bölümden korunur)
   }
 
   get eyePosition() {
@@ -125,10 +129,11 @@ export class FPController {
         if (v > 0) {
           const push = c.min[axis] - box.max[axis];
           this.position[axis] += push;
+          if (axis === "y" && this.gravityDir < 0) this.onGround = true; // tavana indi (ters çekim)
         } else if (v < 0) {
           const push = c.max[axis] - box.min[axis];
           this.position[axis] += push;
-          if (axis === "y") this.onGround = true;
+          if (axis === "y" && this.gravityDir > 0) this.onGround = true; // zemine indi
         }
         this.velocity[axis] = 0;
         // kutuyu güncelle
@@ -142,6 +147,7 @@ export class FPController {
     this.teleportCooldown = Math.max(0, this.teleportCooldown - dt);
     this.launchCooldown = Math.max(0, this.launchCooldown - dt);
     this.zipCooldown = Math.max(0, this.zipCooldown - dt);
+    this.flipCooldown = Math.max(0, this.flipCooldown - dt);
 
     // bakış (hassasiyet ayarları uygulanır)
     this.yaw -= input.aimDX * SENS * this.sensXMul;
@@ -197,14 +203,14 @@ export class FPController {
     this.velocity.x = hv.x;
     this.velocity.z = hv.z;
 
-    // zıplama
+    // zıplama (yerçekimi yönüne ters)
     if (this.onGround && input.consumeJump()) {
-      this.velocity.y = JUMP_V;
+      this.velocity.y = JUMP_V * this.gravityDir;
       this.onGround = false;
     }
 
-    // yerçekimi
-    this.velocity.y -= GRAVITY * dt;
+    // yerçekimi (ölçek + yön)
+    this.velocity.y -= GRAVITY * this.gravityScale * this.gravityDir * dt;
 
     // eksen-eksen entegrasyon + çarpışma
     this.onGround = false;

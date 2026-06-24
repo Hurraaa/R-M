@@ -454,6 +454,29 @@ export class WaterLift {
   }
 }
 
+// Yerçekimi-ters pad'i: üstüne gelince yerçekimini ters çevirir (tavana düşersin).
+export class FlipPad {
+  constructor(pos) {
+    this.pos = pos.clone();
+    this.radius = 1.7;
+    this.group = new THREE.Group();
+    this.group.position.copy(pos);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.7, 0.18, 20), new THREE.MeshStandardMaterial({ color: 0x4a2f6a, emissive: 0x6a2fae, emissiveIntensity: 0.7, roughness: 0.4 }));
+    const arrow = new THREE.Mesh(new THREE.OctahedronGeometry(0.6, 0), new THREE.MeshStandardMaterial({ color: 0xc89cff, emissive: 0x9c5cff, emissiveIntensity: 1.0 }));
+    arrow.position.y = 0.5;
+    this.group.add(base, arrow);
+  }
+  tryFlip(ctrl) {
+    if (ctrl.flipCooldown > 0) return;
+    const p = ctrl.position;
+    if (Math.hypot(p.x - this.pos.x, p.z - this.pos.z) < this.radius && Math.abs(p.y - this.pos.y) < 2.4) {
+      ctrl.gravityDir *= -1;
+      ctrl.flipCooldown = 0.8;
+      ctrl.onGround = false;
+    }
+  }
+}
+
 export class Button {
   constructor(pos, door) {
     this.pos = pos.clone();
