@@ -81,6 +81,29 @@ export class FPController {
     return false;
   }
 
+  _aabbOverlap(box, c) {
+    return (
+      box.max.x > c.min.x && box.min.x < c.max.x &&
+      box.max.y > c.min.y && box.min.y < c.max.y &&
+      box.max.z > c.min.z && box.min.z < c.max.z
+    );
+  }
+
+  // teleport sonrası: oyuncu çıkış yüzeyine gömülüyse onu çıkış normali
+  // boyunca dışarı it (yukarı pop'layıp duvarın üstünde kalmayı önler)
+  depenetrateAlong(normal, colliders, portals) {
+    for (let it = 0; it < 12; it++) {
+      const box = this._aabb(this.position);
+      let hit = false;
+      for (const c of colliders) {
+        if (this._inPortalHole(c, portals)) continue;
+        if (this._aabbOverlap(box, c)) { hit = true; break; }
+      }
+      if (!hit) return;
+      this.position.addScaledVector(normal, 0.12);
+    }
+  }
+
   _collideAxis(axis, colliders, portals) {
     const box = this._aabb(this.position);
     for (const c of colliders) {

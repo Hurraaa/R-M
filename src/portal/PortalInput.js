@@ -68,8 +68,9 @@ export class PortalInput {
     const onStart = (e) => {
       for (const t of e.changedTouches) {
         if (inButton(t)) continue;
-        const leftHalf = t.clientX < innerWidth * 0.5;
-        if (leftHalf && !this.joy.active) {
+        // joystick yalnızca SOL-ALT bölgede; gerisi (sol-üst dahil) bakış
+        const inJoyZone = t.clientX < innerWidth * 0.5 && t.clientY > innerHeight * 0.5;
+        if (inJoyZone && !this.joy.active) {
           this.joy.active = true;
           this.joy.id = t.identifier;
           this.joy.baseX = t.clientX;
@@ -77,7 +78,7 @@ export class PortalInput {
           joyEl.style.left = t.clientX + "px";
           joyEl.style.top = t.clientY + "px";
           joyEl.classList.add("visible");
-        } else if (!leftHalf && !this.look.active) {
+        } else if (!this.look.active) {
           this.look.active = true;
           this.look.id = t.identifier;
           this.look.lastX = t.clientX;

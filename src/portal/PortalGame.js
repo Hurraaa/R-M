@@ -142,7 +142,8 @@ export class PortalGame {
 
     this.controller.update(dt, this.input, this.level, this.portals);
     this.portals.update(dt);
-    this.portals.tryTeleport(this.controller);
+    const exitNormal = this.portals.tryTeleport(this.controller);
+    if (exitNormal) this.controller.depenetrateAlong(exitNormal, this.level.colliders, this.portals);
 
     // kamera
     const eye = this.controller.eyePosition;

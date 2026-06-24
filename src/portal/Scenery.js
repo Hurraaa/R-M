@@ -119,17 +119,54 @@ export class Scenery {
   }
 
   _islands() {
-    const topMat = new THREE.MeshStandardMaterial({ color: 0x6fcf8f, roughness: 1, flatShading: true });
-    const rockMat = new THREE.MeshStandardMaterial({ color: 0x8a6f9c, roughness: 1, flatShading: true });
-    for (let i = 0; i < 9; i++) {
-      const a = (i / 9) * Math.PI * 2 + 0.3;
-      const r = 75 + Math.random() * 90;
-      const s = 6 + Math.random() * 12;
+    const palette = [0x6fcf8f, 0x7fc0a8, 0x9bbf6a, 0xb98ac4, 0x6f9ccf, 0xd0a070];
+    const rockMat = new THREE.MeshStandardMaterial({ color: 0x7d6a92, roughness: 1, flatShading: true });
+    const mk = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 1, flatShading: true });
+
+    for (let i = 0; i < 11; i++) {
+      const a = (i / 11) * Math.PI * 2 + 0.3;
+      const r = 70 + Math.random() * 95;
+      const s = 5 + Math.random() * 10;
+      const top = mk(palette[i % palette.length]);
       const g = new THREE.Group();
-      const top = new THREE.Mesh(new THREE.CylinderGeometry(s, s * 0.9, s * 0.4, 7), topMat);
-      const base = new THREE.Mesh(new THREE.ConeGeometry(s * 0.9, s * 1.6, 7), rockMat);
-      base.position.y = -s * 0.9;
-      g.add(top, base);
+      const type = i % 5;
+
+      if (type === 0) {
+        // plato + tepesinde kaya
+        const plat = new THREE.Mesh(new THREE.CylinderGeometry(s, s * 0.8, s * 0.5, 6), top);
+        const base = new THREE.Mesh(new THREE.ConeGeometry(s * 0.8, s * 1.4, 6), rockMat);
+        base.position.y = -s * 0.85;
+        const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(s * 0.32, 0), rockMat);
+        rock.position.set(s * 0.25, s * 0.45, 0);
+        g.add(plat, base, rock);
+      } else if (type === 1) {
+        // yuvarlak kaya yığını
+        g.add(new THREE.Mesh(new THREE.IcosahedronGeometry(s * 0.9, 0), top));
+        const r2 = new THREE.Mesh(new THREE.IcosahedronGeometry(s * 0.5, 0), rockMat);
+        r2.position.set(s * 0.6, -s * 0.4, s * 0.2);
+        g.add(r2);
+      } else if (type === 2) {
+        // ince yüksek kule
+        const spire = new THREE.Mesh(new THREE.CylinderGeometry(s * 0.18, s * 0.5, s * 2.2, 6), top);
+        const cap = new THREE.Mesh(new THREE.ConeGeometry(s * 0.28, s * 0.6, 6), top);
+        cap.position.y = s * 1.4;
+        g.add(spire, cap);
+      } else if (type === 3) {
+        // eğik düz tabaka
+        const slab = new THREE.Mesh(new THREE.BoxGeometry(s * 1.6, s * 0.4, s * 1.2), top);
+        slab.rotation.z = (Math.random() - 0.5) * 0.4;
+        const base = new THREE.Mesh(new THREE.ConeGeometry(s * 0.5, s, 5), rockMat);
+        base.position.y = -s * 0.6;
+        g.add(slab, base);
+      } else {
+        // küçük kaya kümesi
+        for (let k = 0; k < 4; k++) {
+          const rk = new THREE.Mesh(new THREE.DodecahedronGeometry(s * (0.3 + Math.random() * 0.3), 0), k % 2 ? rockMat : top);
+          rk.position.set((Math.random() - 0.5) * s, (Math.random() - 0.5) * s * 0.6, (Math.random() - 0.5) * s);
+          g.add(rk);
+        }
+      }
+
       g.position.set(Math.cos(a) * r, 8 + Math.random() * 55, Math.sin(a) * r - 30);
       g.rotation.y = Math.random() * Math.PI;
       this.scene.add(g);
@@ -166,14 +203,22 @@ export class Scenery {
   }
 
   _crystals() {
-    // havada süzülen, dönen teal kristaller
-    for (let i = 0; i < 7; i++) {
+    // havada süzülen, dönen kristaller — renk ve şekil çeşitli
+    const cols = [
+      [0x5ad6e6, 0x1c7d8c], // teal
+      [0xb98ae6, 0x4a2c7d], // mor
+      [0xff8fd0, 0x7d2c5a], // pembe
+      [0x8fe6a0, 0x2c7d3c], // yeşil
+    ];
+    for (let i = 0; i < 8; i++) {
       const h = 2 + Math.random() * 4;
+      const [c0, c1] = cols[i % cols.length];
       const mat = new THREE.MeshStandardMaterial({
-        color: 0x5ad6e6, emissive: 0x1c7d8c, emissiveIntensity: 0.8, roughness: 0.2, flatShading: true,
+        color: c0, emissive: c1, emissiveIntensity: 0.8, roughness: 0.2, flatShading: true,
         transparent: true, opacity: 0.92,
       });
-      const c = new THREE.Mesh(new THREE.ConeGeometry(h * 0.4, h, 5), mat);
+      const geo = i % 3 === 0 ? new THREE.OctahedronGeometry(h * 0.5, 0) : new THREE.ConeGeometry(h * 0.4, h, 5);
+      const c = new THREE.Mesh(geo, mat);
       const a = Math.random() * Math.PI * 2;
       const r = 45 + Math.random() * 60;
       c.position.set(Math.cos(a) * r, 14 + Math.random() * 40, Math.sin(a) * r - 20);

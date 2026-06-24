@@ -84,12 +84,12 @@ export class PortalSystem {
         const rel = cur.clone().sub(inP.position);
         const planar = rel.addScaledVector(inP.normal, -curD).length();
         if (planar < inP.radius * 0.95) {
-          this._teleport(controller, inP, outP);
-          return;
+          return this._teleport(controller, inP, outP);
         }
       }
     }
     this.lastCenter.copy(cur);
+    return null;
   }
 
   _teleport(controller, inP, outP) {
@@ -116,6 +116,7 @@ export class PortalSystem {
 
     controller.teleportCooldown = 0.05;
     this.lastCenter.copy(controller.center);
+    return outP.normal.clone();
   }
 
   update(dt) {
