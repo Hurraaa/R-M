@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad } from "./Props.js";
 
 // Test odaları. Her oda kendi geometrisini bir Group içine kurar ve
 // çarpışma kutuları + portallanabilir yüzeyler + spawn + çıkış verir.
@@ -282,14 +282,36 @@ function chamber7(ctx) {
   ctx.story = "Bakım hattının teli hâlâ gergin. Karşıya geçmenin tek yolu.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7];
+// ---- Oda 8: Trambolin — zıplama padiyle yüksek rafa sek ----
+function chamber8(ctx) {
+  const W = 7;
+  addBox(ctx, V(-W, -0.5, -6), V(W, 0, 8), false); // zemin
+  addBox(ctx, V(-W - 0.5, 0, -6), V(-W, 6, 16), true); // sol duvar (portallanabilir, yedek)
+  addBox(ctx, V(W, 0, -6), V(W + 0.5, 6, 16), false);
+  addBox(ctx, V(-W, 0, -6.5), V(W, 6, -6), false);
+  // yüksek hedef rafı (zıplamadan ulaşılamaz)
+  addBox(ctx, V(-5, 3.0, 9), V(5, 3.5, 16), false); // raf üst y=3.5
+  addBox(ctx, V(-W, 0, 16), V(W, 6, 16.5), false); // arka duvar
+
+  const tramp = new BouncePad(V(0, 0, 2), 18);
+  ctx.group.add(tramp.group);
+  ctx.bouncePads.push(tramp);
+
+  ctx.spawn = V(0, 0.1, -4);
+  goal(ctx, V(0, 3.5, 12.5), "core", 0x6ee84f);
+  ctx.objective = "Trambolinle yüksek rafa sek ve röleyi al.";
+  ctx.hint = "Trambolinin üstüne gel; seni yukarı fırlatır. Havadayken ileriye doğru yönlenip rafa in.";
+  ctx.story = "Eski bakım yayları hâlâ esnek. Yukarı çıkmanın eğlenceli yolu.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
   const ctx = {
     group: new THREE.Group(), colliders: [], raycast: [],
     spawn: new THREE.Vector3(), exit: null, hint: "",
-    cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [],
+    cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
   };
   builders[index](ctx);
   return ctx;

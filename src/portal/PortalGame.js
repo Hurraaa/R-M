@@ -155,6 +155,11 @@ export class PortalGame {
       pad.tryLaunch(this.controller);
       for (const cube of this.level.cubes) pad.tryLaunch(cube);
     }
+    for (const bp of this.level.bouncePads) {
+      bp.tryBounce(this.controller);
+      for (const cube of this.level.cubes) bp.tryBounce(cube);
+      bp.update(dt);
+    }
     for (const button of this.level.buttons) button.update(this.level.cubes, this.controller);
     for (const door of this.level.doors) door.update(dt);
 

@@ -171,6 +171,39 @@ export class Zipline {
   }
 }
 
+// Trambolin: üstüne düşeni yukarı sektirir (yatay hız korunur -> havada yönlendir).
+export class BouncePad {
+  constructor(pos, bounceVy = 18) {
+    this.pos = pos.clone();
+    this.radius = 1.8;
+    this.bounceVy = bounceVy;
+    this.group = new THREE.Group();
+    this.group.position.copy(pos);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.9, 0.2, 24), new THREE.MeshStandardMaterial({ color: 0x4a2f5c, roughness: 0.6, metalness: 0.2 }));
+    base.position.y = 0.1;
+    const top = new THREE.Mesh(new THREE.CylinderGeometry(1.55, 1.55, 0.12, 24), new THREE.MeshStandardMaterial({ color: 0xff5ad0, emissive: 0x7d1a64, emissiveIntensity: 0.8, roughness: 0.3 }));
+    top.position.y = 0.24;
+    this.top = top;
+    this.group.add(base, top);
+    this.flash = 0;
+  }
+  tryBounce(e) {
+    if (e.launchCooldown > 0) return;
+    const c = e.center;
+    if (Math.hypot(c.x - this.pos.x, c.z - this.pos.z) < this.radius && c.y < this.pos.y + 1.9 && c.y > this.pos.y - 0.6 && e.velocity.y <= 1) {
+      e.velocity.y = this.bounceVy;
+      e.launchCooldown = 0.15;
+      e.onGround = false;
+      this.flash = 1;
+    }
+  }
+  update(dt) {
+    if (this.flash > 0) this.flash = Math.max(0, this.flash - dt * 4);
+    this.top.scale.y = 1 - this.flash * 0.5;
+    this.top.material.emissiveIntensity = 0.8 + this.flash * 1.5;
+  }
+}
+
 export class Button {
   constructor(pos, door) {
     this.pos = pos.clone();
