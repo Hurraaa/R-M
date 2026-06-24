@@ -204,6 +204,104 @@ export class BouncePad {
   }
 }
 
+// Enerji topu: yerçekimsiz, sabit hızda uçar, duvarlardan seker, portaldan geçer.
+export class Ball {
+  constructor(pos, vel) {
+    this.r = 0.4;
+    this.pos = pos.clone();
+    this.velocity = vel.clone();
+    this.lastCenter = pos.clone();
+    this.teleportCooldown = 0;
+    this.life = 8;
+    this.dead = false;
+    this.mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(this.r, 14, 14),
+      new THREE.MeshStandardMaterial({ color: 0xaef6ff, emissive: 0x46e6ff, emissiveIntensity: 2.2, roughness: 0.2 })
+    );
+    this.mesh.position.copy(pos);
+    this.light = new THREE.PointLight(0x46e6ff, 2.5, 8, 2);
+    this.mesh.add(this.light);
+  }
+  get center() { return this.pos.clone(); }
+  setCenter(v) { this.pos.copy(v); }
+  _inHole(c, portals) {
+    if (!portals || !portals.a.active || !portals.b.active) return false;
+    for (const p of [portals.a, portals.b]) {
+      if (p.active && p.open >= 0.4 && p.collider === c) {
+        const rel = this.pos.clone().sub(p.position);
+        const along = rel.dot(p.normal);
+        const planar = rel.addScaledVector(p.normal, -along).length();
+        if (planar < p.radius * 0.9 && Math.abs(along) < 2.5) return true;
+      }
+    }
+    return false;
+  }
+  update(dt, level, portals) {
+    this.teleportCooldown = Math.max(0, this.teleportCooldown - dt);
+    this.life -= dt;
+    if (this.life <= 0) { this.dead = true; return; }
+    this.pos.addScaledVector(this.velocity, dt);
+    for (const c of level.colliders) {
+      if (c.disabled || c.dynamic) continue;
+      if (this._inHole(c, portals)) continue;
+      const cx = Math.max(c.min.x, Math.min(this.pos.x, c.max.x));
+      const cy = Math.max(c.min.y, Math.min(this.pos.y, c.max.y));
+      const cz = Math.max(c.min.z, Math.min(this.pos.z, c.max.z));
+      const dx = this.pos.x - cx, dy = this.pos.y - cy, dz = this.pos.z - cz;
+      const d2 = dx * dx + dy * dy + dz * dz;
+      if (d2 < this.r * this.r) {
+        let n;
+        if (d2 > 1e-8) { const d = Math.sqrt(d2); n = new THREE.Vector3(dx / d, dy / d, dz / d); this.pos.set(cx, cy, cz).addScaledVector(n, this.r); }
+        else { n = new THREE.Vector3(0, 1, 0); }
+        const vn = this.velocity.dot(n);
+        if (vn < 0) this.velocity.addScaledVector(n, -2 * vn); // yansıt
+      }
+    }
+    this.mesh.position.copy(this.pos);
+  }
+}
+
+export class BallEmitter {
+  constructor(pos, dir, speed = 12) {
+    this.pos = pos.clone();
+    this.dir = dir.clone().normalize();
+    this.speed = speed;
+    this.timer = 0.5;
+    const g = new THREE.Group();
+    g.position.copy(pos);
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.6, 12), new THREE.MeshStandardMaterial({ color: 0x3a3f4a, metalness: 0.6, roughness: 0.4 })));
+    this.group = g;
+  }
+  spawn() { return new Ball(this.pos.clone().addScaledVector(this.dir, 0.8), this.dir.clone().multiplyScalar(this.speed)); }
+}
+
+export class Receptacle {
+  constructor(pos, door) {
+    this.pos = pos.clone();
+    this.radius = 1.0;
+    this.door = door;
+    this.active = false;
+    this.group = new THREE.Group();
+    this.group.position.copy(pos);
+    this.ring = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.16, 10, 24), new THREE.MeshStandardMaterial({ color: 0x886a3a, emissive: 0x3a2a10, emissiveIntensity: 0.5, roughness: 0.5, metalness: 0.4 }));
+    this.group.add(this.ring);
+  }
+  check(balls) {
+    if (this.active) return;
+    for (const b of balls) {
+      if (!b.dead && b.pos.distanceTo(this.pos) < this.radius + b.r) {
+        this.active = true;
+        b.dead = true;
+        if (this.door) this.door.setOpen(true);
+        this.ring.material.color.setHex(0x6ee84f);
+        this.ring.material.emissive.setHex(0x2f9a3e);
+        this.ring.material.emissiveIntensity = 1.4;
+        break;
+      }
+    }
+  }
+}
+
 export class Button {
   constructor(pos, door) {
     this.pos = pos.clone();

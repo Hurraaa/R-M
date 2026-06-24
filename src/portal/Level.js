@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle } from "./Props.js";
 
 // Test odaları. Her oda kendi geometrisini bir Group içine kurar ve
 // çarpışma kutuları + portallanabilir yüzeyler + spawn + çıkış verir.
@@ -304,7 +304,46 @@ function chamber8(ctx) {
   ctx.story = "Eski bakım yayları hâlâ esnek. Yukarı çıkmanın eğlenceli yolu.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8];
+// ---- Oda 9: Enerji Topu — topu portallarla alıcıya yönlendir ----
+function chamber9(ctx) {
+  // ana oda
+  addBox(ctx, V(-7, -0.5, -6), V(7, 0, 12), false); // zemin
+  addBox(ctx, V(-7.5, 0, -6), V(-7, 6, 12), false); // sol duvar (yayıcı)
+  addBox(ctx, V(7, 0, -6), V(7.5, 6, 12), true); // SAĞ duvar (portallanabilir)
+  addBox(ctx, V(-7, 0, -6.5), V(7, 6, -6), true); // ARKA duvar (portallanabilir)
+  // ön duvar: sağ kısım metal, sol kısımda kapı
+  addBox(ctx, V(-3, 0, 12), V(7, 6, 12.5), false); // ön duvar (sağ)
+  addBox(ctx, V(-7, 4, 12), V(-3, 6, 12.5), false); // kapı üstü lento
+  // hedef alkovu (kapı ardında, sol-ön)
+  addBox(ctx, V(-7, -0.5, 12), V(-3, 0, 17), false);
+  addBox(ctx, V(-7.5, 0, 12), V(-7, 6, 17), false);
+  addBox(ctx, V(-7, 0, 17), V(-3, 6, 17.5), false);
+  addBox(ctx, V(-3, 0, 12.5), V(-2.5, 6, 17), false); // alkov iç duvarı
+
+  // kapı (sol-ön), alıcı dolunca açılır
+  const door = new Door(V(-7, 0, 12), V(-3, 4, 12.5));
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+
+  // yayıcı (sol duvar) +x'e atar
+  const emitter = new BallEmitter(V(-6.9, 2.5, 0), V(1, 0, 0), 12);
+  ctx.group.add(emitter.group);
+  ctx.emitters.push(emitter);
+
+  // alıcı (ön duvarda, top buraya gelmeli)
+  const recept = new Receptacle(V(0, 2.5, 11.7), door);
+  ctx.group.add(recept.group);
+  ctx.receptacles.push(recept);
+
+  ctx.spawn = V(4, 0.1, -3);
+  goal(ctx, V(-5, 0, 14.5), "core", 0x6ee84f);
+  ctx.objective = "Enerji topunu portallarla alıcıya sok, kapı açılsın.";
+  ctx.hint = "Top sağ duvara çarpıyor. Sağ duvara bir portal, arka duvara ikinci portalı aç — top arka duvardan çıkıp karşıdaki alıcıya gider. Sonra açılan kapıdan röleyi al.";
+  ctx.story = "Enerji hattı yeniden yüklendi. Tesisin güvenlik sistemi geriliyor…";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -312,6 +351,7 @@ export function buildChamber(index) {
     group: new THREE.Group(), colliders: [], raycast: [],
     spawn: new THREE.Vector3(), exit: null, hint: "",
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
+    balls: [], emitters: [], receptacles: [],
   };
   builders[index](ctx);
   return ctx;

@@ -160,6 +160,28 @@ export class PortalGame {
       for (const cube of this.level.cubes) bp.tryBounce(cube);
       bp.update(dt);
     }
+    // enerji topları: yayıcı + uçuş + portal + alıcı
+    for (const em of this.level.emitters) {
+      em.timer -= dt;
+      const live = this.level.balls.some((b) => !b.dead);
+      if (!live && em.timer <= 0) {
+        const b = em.spawn();
+        this.scene.add(b.mesh);
+        this.level.balls.push(b);
+        em.timer = 1.0;
+      }
+    }
+    for (const b of this.level.balls) {
+      if (b.dead) continue;
+      b.update(dt, this.level, this.portals);
+      this.portals.teleportEntity(b);
+    }
+    for (const r of this.level.receptacles) r.check(this.level.balls);
+    this.level.balls = this.level.balls.filter((b) => {
+      if (b.dead) { this.scene.remove(b.mesh); return false; }
+      return true;
+    });
+
     for (const button of this.level.buttons) button.update(this.level.cubes, this.controller);
     for (const door of this.level.doors) door.update(dt);
 

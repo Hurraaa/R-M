@@ -57,7 +57,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 ### Perde IV — Gerçek (tehlike & sistem çökmesi)
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
 |---|----|--------------|-------------|-------|
-| 10 | Enerji Topu | zıplayan enerji topunu portalla alıcıya yönlendir | gücü ata | sırada |
+| 10 | Enerji Topu | zıplayan enerji topunu portalla alıcıya yönlendir | gücü ata | ✅ |
 | 11 | Engel Yağmuru | üstüne gelen engelleri portalla savuştur (refleks) | savunmayı aş | sırada |
 | 12 | Dönen Merdivenler | yer değiştiren merdivenler (Harry Potter tarzı) + portal/zamanlama | tesis canlanıyor | sırada |
 | 13 | Şebeke | fizzler (portal/küp sıfırlayan alan) | güvenliği aş | planlı |
