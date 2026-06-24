@@ -51,7 +51,8 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 6 | Köprü | fırlatma rampası (küpü+kendini uçur) | eski fırlatıcılar | ✅ |
 | 7 | Serbest Düşüş | kayarak/düşerken HIZLA iki portal aç (refleks yarışı) | acil tahliye | sırada |
 | 8 | Trambolin | zıplama padi + portal ile hedefe sek | esneklik testi | planlı |
-| 9 | Çift Sıçrama | rampa/trambolin + portal zinciri | uçurumları aş | planlı |
+| 9 | İp Hattı | tele tutunup kayarak (zipline) + portal | uçurumu geç | sırada |
+| 9b | Çift Sıçrama | rampa/trambolin + portal zinciri | uçurumları aş | planlı |
 
 ### Perde IV — Gerçek (tehlike & sistem çökmesi)
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
