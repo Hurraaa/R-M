@@ -59,7 +59,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 |---|----|--------------|-------------|-------|
 | 10 | Enerji Topu | zıplayan enerji topunu portalla alıcıya yönlendir | gücü ata | ✅ |
 | 11 | Engel Yağmuru | üstüne gelen engelleri portalla savuştur (refleks) | savunmayı aş | sırada |
-| 12 | Dönen Merdivenler | yer değiştiren merdivenler (Harry Potter tarzı) + portal/zamanlama | tesis canlanıyor | sırada |
+| 12 | Dönen Merdivenler | kayan/hareketli platformlar (Harry Potter tarzı) | tesis canlanıyor | ✅ |
 | 13 | Şebeke | fizzler (portal/küp sıfırlayan alan) | güvenliği aş | planlı |
 | 14 | Zehirli Zemin | tehlikeli zemin (anında respawn) | tesisin çürümesi | planlı |
 | 15 | Hareketli Zemin | kayan platform + zamanlama | AI uyanıyor | planlı |

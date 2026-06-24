@@ -302,6 +302,40 @@ export class Receptacle {
   }
 }
 
+// Hareketli platform (Harry Potter merdiveni tarzı): bir eksende gidip gelir,
+// üstündeki oyuncuyu taşır.
+export class MovingPlatform {
+  constructor(min, max, axis, amp, speed, phase = 0) {
+    this.half = new THREE.Vector3().subVectors(max, min).multiplyScalar(0.5);
+    this.center0 = new THREE.Vector3().addVectors(min, max).multiplyScalar(0.5);
+    this.axis = axis.clone().normalize();
+    this.amp = amp;
+    this.speed = speed;
+    this.t = phase;
+    const size = new THREE.Vector3().subVectors(max, min);
+    this.mesh = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), new THREE.MeshStandardMaterial({ color: 0x6a6f7a, roughness: 0.6, metalness: 0.3, flatShading: true }));
+    this.mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(this.mesh.geometry), new THREE.LineBasicMaterial({ color: 0x20242c })));
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
+    this.collider = { min: new THREE.Vector3(), max: new THREE.Vector3(), portalable: false };
+    this.delta = new THREE.Vector3();
+    this.prev = this.center0.clone();
+    this._apply();
+  }
+  _apply() {
+    const c = this.center0.clone().addScaledVector(this.axis, Math.sin(this.t) * this.amp);
+    this.delta.subVectors(c, this.prev);
+    this.prev.copy(c);
+    this.mesh.position.copy(c);
+    this.collider.min.set(c.x - this.half.x, c.y - this.half.y, c.z - this.half.z);
+    this.collider.max.set(c.x + this.half.x, c.y + this.half.y, c.z + this.half.z);
+  }
+  update(dt) {
+    this.t += dt * this.speed;
+    this._apply();
+  }
+}
+
 export class Button {
   constructor(pos, door) {
     this.pos = pos.clone();

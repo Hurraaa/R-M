@@ -140,6 +140,16 @@ export class PortalGame {
       }
     }
 
+    // hareketli platformlar: önce hareket et, üstündeki oyuncuyu taşı
+    for (const mp of this.level.movers) mp.update(dt);
+    for (const mp of this.level.movers) {
+      const p = this.controller.position;
+      const c = mp.collider;
+      if (p.x > c.min.x - 0.35 && p.x < c.max.x + 0.35 && p.z > c.min.z - 0.35 && p.z < c.max.z + 0.35 && Math.abs(p.y - c.max.y) < 0.3) {
+        p.add(mp.delta);
+      }
+    }
+
     this.controller.update(dt, this.input, this.level, this.portals);
     this.portals.update(dt);
     const exitNormal = this.portals.tryTeleport(this.controller);

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform } from "./Props.js";
 
 // Test odaları. Her oda kendi geometrisini bir Group içine kurar ve
 // çarpışma kutuları + portallanabilir yüzeyler + spawn + çıkış verir.
@@ -343,7 +343,24 @@ function chamber9(ctx) {
   ctx.story = "Enerji hattı yeniden yüklendi. Tesisin güvenlik sistemi geriliyor…";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9];
+// ---- Oda 10: Dönen Merdivenler — kayan platformları zamanlayıp karşıya geç ----
+function chamber10(ctx) {
+  addBox(ctx, V(-6, -0.5, -6), V(6, 0, 0), false); // başlangıç
+  addBox(ctx, V(-6, -0.5, 8), V(6, 0, 12), false); // orta ada
+  addBox(ctx, V(-6, -0.5, 20), V(6, 0, 26), false); // çıkış adası
+  addBox(ctx, V(-6, 0, -6.5), V(6, 1.3, -6), false); // arka korkuluk
+  // gap1 z[0,8], gap2 z[12,20] — kayan platformlar köprüler
+  const p1 = new MovingPlatform(V(-2, -0.5, 3), V(2, 0, 5), V(0, 0, 1), 3, 1.1, 0);
+  const p2 = new MovingPlatform(V(-2, -0.5, 15), V(2, 0, 17), V(0, 0, 1), 3, 1.1, Math.PI);
+  for (const p of [p1, p2]) { ctx.group.add(p.mesh); ctx.colliders.push(p.collider); ctx.movers.push(p); }
+  ctx.spawn = V(0, 0.1, -3);
+  goal(ctx, V(0, 0, 23), "core", 0x6ee84f);
+  ctx.objective = "Kayan platformları zamanla; üstüne bin, karşıya geç.";
+  ctx.hint = "Platform kenara gelince üstüne adımla — seni taşır. Tam karşıya gelince in, diğerine geç. Acelen varsa portalla da geçebilirsin.";
+  ctx.story = "Hareketli bakım köprüleri hâlâ ritmini koruyor. Neredeyse en alttasın.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -351,7 +368,7 @@ export function buildChamber(index) {
     group: new THREE.Group(), colliders: [], raycast: [],
     spawn: new THREE.Vector3(), exit: null, hint: "",
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
-    balls: [], emitters: [], receptacles: [],
+    balls: [], emitters: [], receptacles: [], movers: [],
   };
   builders[index](ctx);
   return ctx;
