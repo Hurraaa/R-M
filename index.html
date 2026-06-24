@@ -18,12 +18,13 @@
         <div class="hud-actions">
           <button id="settings-btn" class="hud-btn" title="Ayarlar">⚙</button>
           <button id="hint-btn" class="hud-btn" title="İpucu">?</button>
-          <button id="reset-btn" class="hud-btn" title="Odayı sıfırla">⟲</button>
+          <button id="reset-btn" class="hud-btn restart" title="Bölümü baştan oyna (R)">⟲ YENİLE</button>
         </div>
       </div>
 
       <div id="objective" class="objective-banner"></div>
       <div id="hint" class="hint-banner hidden"></div>
+      <div id="stuck-hint" class="desktop-only">Sıkıştın mı? <b>R</b> ile yenile</div>
 
       <!-- Mobil dokunmatik kontroller -->
       <div id="joystick" class="touch-only"><div id="joy-knob"></div></div>
@@ -52,6 +53,7 @@
           <li><b>⤒</b> zıpla &nbsp; <b>⟲</b> sıfırla</li>
         </ul>
         <button id="start-btn">LABORATUVARA GİR</button>
+        <button id="select-btn" class="ghost-btn">🧪 BÖLÜM SEÇ (TEST)</button>
         <button id="open-settings-btn" class="ghost-btn">⚙ AYARLAR</button>
         <p class="hint desktop-only">Fare kilitlenir — çıkmak için ESC</p>
         <p class="hint touch-only">En iyi deneyim için yatay tut 📱</p>
@@ -89,6 +91,16 @@
           <button id="settings-reset" class="ghost-btn">VARSAYILAN</button>
           <button id="settings-close">KAPAT</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Bölüm seç (test modu) -->
+    <div id="select-screen" class="hidden">
+      <div class="panel settings-panel">
+        <h2 class="settings-title">BÖLÜM SEÇ</h2>
+        <p class="settings-sub">Test modu — tüm bölümler açık. İstediğine atla.</p>
+        <div id="select-grid"></div>
+        <button id="select-close" class="ghost-btn">GERİ</button>
       </div>
     </div>
 

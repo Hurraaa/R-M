@@ -404,6 +404,7 @@ export class WaterLift {
     this.baseY = (min.y + max.y) / 2;
     this.topY = topY;
     this.y = this.baseY;
+    this.waterY = this.baseY; // su seviyesi (görsel, güçle hemen yükselir)
     this.powered = false;
     this.speed = speed;
     const size = new THREE.Vector3().subVectors(max, min);
@@ -440,15 +441,18 @@ export class WaterLift {
     this.platform.position.set(this.cx, this.y, this.cz);
     this.collider.min.set(this.cx - this.half.x, this.y - this.half.y, this.cz - this.half.z);
     this.collider.max.set(this.cx + this.half.x, this.y + this.half.y, this.cz + this.half.z);
-    const wh = (this.y - this.baseY) + 1;
+    const wh = (this.waterY - this.baseY) + 1; // su seviyesine göre
     this.water.scale.y = wh;
     this.water.position.set(this.cx, this.baseY - 0.5 + wh / 2, this.cz);
   }
   update(dt, occupied) {
-    // güçlü VE üstünde biri varsa yükselir; değilse tabana döner (tekrar binilebilir)
-    const target = this.powered && occupied ? this.topY : this.baseY;
-    if (this.y < target) this.y = Math.min(target, this.y + this.speed * dt);
-    else this.y = Math.max(target, this.y - this.speed * dt);
+    // SU: güç gelince hemen yükselir (görsel geri bildirim)
+    const wt = this.powered ? this.topY : this.baseY;
+    this.waterY += Math.sign(wt - this.waterY) * Math.min(Math.abs(wt - this.waterY), 1.6 * dt);
+    // PLATFORM: güç + üstünde biri varsa yükselir (binince taşır, kaçırmazsın)
+    const pt = this.powered && occupied ? this.topY : this.baseY;
+    if (this.y < pt) this.y = Math.min(pt, this.y + this.speed * dt);
+    else this.y = Math.max(pt, this.y - this.speed * dt);
     this._apply();
     if (this.powered) for (const g of this.gears) g.rotation.z += dt * 3;
   }

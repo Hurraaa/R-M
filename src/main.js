@@ -1,4 +1,5 @@
 import { PortalGame } from "./portal/PortalGame.js";
+import { CHAMBER_COUNT } from "./portal/Level.js";
 
 const canvas = document.getElementById("game");
 const game = new PortalGame(canvas);
@@ -35,15 +36,36 @@ game._onWin = (story) => {
   winScreen.classList.remove("hidden");
 };
 
-function begin() {
+function begin(index = 0) {
   startScreen.classList.add("hidden");
   winScreen.classList.add("hidden");
+  selectScreen.classList.add("hidden");
   hud.classList.remove("hidden");
-  game.start();
+  game.start(index);
 }
 
-document.getElementById("start-btn").addEventListener("click", begin);
-document.getElementById("again-btn").addEventListener("click", begin);
+document.getElementById("start-btn").addEventListener("click", () => begin(0));
+document.getElementById("again-btn").addEventListener("click", () => begin(0));
+
+// ---- Bölüm seç (test modu) ----
+const selectScreen = document.getElementById("select-screen");
+const selectGrid = document.getElementById("select-grid");
+const CH_NAMES = ["Uyanış", "Yön", "Kontrol", "Ağırlık", "Çifte Yük", "Köprü", "İp Hattı", "Trambolin", "Enerji Topu", "Dönen Merdivenler", "İnce Köprü", "Şifre", "Çarklar ve Su", "Ay Yürüyüşü", "Yer Çekimi"];
+for (let i = 0; i < CHAMBER_COUNT; i++) {
+  const b = document.createElement("button");
+  b.className = "select-cell";
+  b.innerHTML = `<span class="cn">${i + 1}</span><span class="ct">${CH_NAMES[i] || ""}</span>`;
+  b.addEventListener("click", () => begin(i));
+  selectGrid.appendChild(b);
+}
+document.getElementById("select-btn").addEventListener("click", () => {
+  startScreen.classList.add("hidden");
+  selectScreen.classList.remove("hidden");
+});
+document.getElementById("select-close").addEventListener("click", () => {
+  selectScreen.classList.add("hidden");
+  startScreen.classList.remove("hidden");
+});
 document.getElementById("reset-btn").addEventListener("click", () => game.loadChamber(game.chamberIndex));
 document.getElementById("hint-btn").addEventListener("click", () => hint.classList.toggle("hidden"));
 

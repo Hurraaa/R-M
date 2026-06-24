@@ -272,45 +272,39 @@ function chamber6(ctx) {
   ctx.story = "Eski fırlatıcılar hâlâ çalışıyor. Tesisin derinine bir köprü daha.";
 }
 
-// ---- Oda 7: İp Hattı — yüksek başlangıçtan tele tutunup uçurumu kayarak geç ----
+// ---- Oda 7: İp Hattı — doğru anda ipi bırakıp hedefe in (zamanlama) ----
 function chamber7(ctx) {
-  const W = 7;
-  addBox(ctx, V(-W, 0, -6), V(W, 2, 2), false); // yüksek başlangıç platformu (üst y=2)
-  // boşluk z[2,16]
-  addBox(ctx, V(-W, -0.5, 16), V(W, 0, 30), false); // alçak karşı platform (üst y=0)
+  const W = 6;
+  addBox(ctx, V(-W, 0, -6), V(W, 2, 2), false); // yüksek başlangıç (üst y=2)
   addBox(ctx, V(-W, 2, -6.5), V(W, 6, -6), false); // arka duvar
-  // iple kaymaca: yüksek A -> alçak B (uçurumun karşısı)
-  const zip = new Zipline(V(0, 3.6, 2), V(0, 2.0, 22));
+  // hedef platform: zipline ortasının ALTINDA, küçük (doğru anda bırakıp ineceksin)
+  addBox(ctx, V(-3, -0.5, 13), V(3, 0, 18), false);
+  // zipline yüksek A -> uzak/alçak B; B boşlukta biter (sona kadar gidersen düşersin)
+  const zip = new Zipline(V(0, 4, 2), V(0, 1, 30));
   ctx.group.add(zip.group);
   ctx.ziplines.push(zip);
-
   ctx.spawn = V(0, 2.1, -3);
-  goal(ctx, V(0, 0, 26), "core", 0x6ee84f);
-  ctx.objective = "İp hattına tutunup uçurumu kayarak geç, karşıda röleyi al.";
-  ctx.hint = "Platformun ön kenarına yürü — ipe otomatik tutunursun ve karşıya kayarsın. Zıpla'ya basarsan erken bırakırsın.";
-  ctx.story = "Bakım hattının teli hâlâ gergin. Karşıya geçmenin tek yolu.";
+  goal(ctx, V(0, 0, 15.5), "core", 0x6ee84f);
+  ctx.objective = "İpe tutun; hedef platformun ÜSTÜNE gelince Zıpla ile BIRAK ve in. Geç kalırsan uçuruma düşersin!";
+  ctx.hint = "İp seni hızla taşır. Aşağıdaki platformun tam üstündeyken Zıpla'ya bas (ipi bırak) ve üstüne düş. Erken/geç bırakırsan kaçarsın — R ile yenile.";
+  ctx.story = "Hat seni uçurumun ortasına taşıyor; doğru anda bırakmak sende.";
 }
 
-// ---- Oda 8: Trambolin — zıplama padiyle yüksek rafa sek ----
+// ---- Oda 8: Trambolin — sek, HAVADA yönlenerek yandaki küçük rafa in ----
 function chamber8(ctx) {
-  const W = 7;
-  addBox(ctx, V(-W, -0.5, -6), V(W, 0, 8), false); // zemin
-  addBox(ctx, V(-W - 0.5, 0, -6), V(-W, 6, 16), true); // sol duvar (portallanabilir, yedek)
-  addBox(ctx, V(W, 0, -6), V(W + 0.5, 6, 16), false);
-  addBox(ctx, V(-W, 0, -6.5), V(W, 6, -6), false);
-  // yüksek hedef rafı (zıplamadan ulaşılamaz)
-  addBox(ctx, V(-5, 3.0, 9), V(5, 3.5, 16), false); // raf üst y=3.5
-  addBox(ctx, V(-W, 0, 16), V(W, 6, 16.5), false); // arka duvar
-
-  const tramp = new BouncePad(V(0, 0, 2), 18);
+  const W = 8;
+  addBox(ctx, V(-W, -0.5, -6), V(W, 0, 6), false); // zemin (z6 sonrası boşluk)
+  addBox(ctx, V(-W, 0, -6.5), V(W, 6, -6), false); // arka duvar
+  // küçük, sola kaçık hedef raf (steer etmezsen x0'da kalıp boşluğa düşersin)
+  addBox(ctx, V(-6, 2.1, 8), V(-1.2, 2.5, 12), false);
+  const tramp = new BouncePad(V(0, 0, 2), 14);
   ctx.group.add(tramp.group);
   ctx.bouncePads.push(tramp);
-
   ctx.spawn = V(0, 0.1, -4);
-  goal(ctx, V(0, 3.5, 12.5), "core", 0x6ee84f);
-  ctx.objective = "Trambolinle yüksek rafa sek ve röleyi al.";
-  ctx.hint = "Trambolinin üstüne gel; seni yukarı fırlatır. Havadayken ileriye doğru yönlenip rafa in.";
-  ctx.story = "Eski bakım yayları hâlâ esnek. Yukarı çıkmanın eğlenceli yolu.";
+  goal(ctx, V(-3.5, 2.5, 10), "core", 0x6ee84f);
+  ctx.objective = "Trambolinle sek, HAVADA yönlenerek yandaki küçük rafa in.";
+  ctx.hint = "Trambolinde sek; havadayken sola-ileri yönlen ve küçük rafa konmaya çalış. Iskalarsan düşersin — R ile yenile.";
+  ctx.story = "Yay seni fırlatıyor ama hedef küçük ve yanda; havada ustalık ister.";
 }
 
 // ---- Oda 9: Enerji Topu — topu portallarla alıcıya yönlendir ----
@@ -448,16 +442,16 @@ function chamber13(ctx) {
   addBox(ctx, V(-7, -0.5, -2), V(-3, 0, 2), false);
   addBox(ctx, V(3, -0.5, -2), V(7, 0, 2), false);
   addBox(ctx, V(-3, -0.5, -2), V(3, 0, 2), true); // PAD (küp)
-  addBox(ctx, V(-7, -0.5, 2), V(7, 0, 6), false);
+  addBox(ctx, V(-7, -0.5, 2), V(7, 0, 6), false); // şaftla aynı hizada biter (z=6)
   addBox(ctx, V(-7.5, 0, -6), V(-7, 4, 6), true); // sol duvar (portallanabilir)
   addBox(ctx, V(7, 0, -6), V(7.5, 6, 16), false);
   addBox(ctx, V(-7, 0, -6.5), V(7, 6, -6), false);
 
-  // su asansörü şaftı (z 7..11), tabandan y8'e yükselir
-  addBox(ctx, V(-3, 0, 6.5), V(-2, 8.5, 11.5), false); // şaft sol duvar
-  addBox(ctx, V(2, 0, 6.5), V(3, 8.5, 11.5), false); // şaft sağ duvar
-  addBox(ctx, V(-3, 0, 11), V(3, 8.5, 11.5), false); // şaft arka
-  const lift = new WaterLift(V(-2, 0, 7), V(2, 0.4, 11), 8.0, 1.3);
+  // su asansörü şaftı (z 6..10), tabandan y8'e yükselir (biniş hizalı, boşluksuz)
+  addBox(ctx, V(-3, 0, 5.5), V(-2, 8.5, 10.5), false); // şaft sol duvar
+  addBox(ctx, V(2, 0, 5.5), V(3, 8.5, 10.5), false); // şaft sağ duvar
+  addBox(ctx, V(-3, 0, 10), V(3, 8.5, 10.5), false); // şaft arka
+  const lift = new WaterLift(V(-2, 0, 6), V(2, 0.4, 10), 8.0, 0.9);
   ctx.group.add(lift.group);
   ctx.colliders.push(lift.collider);
   ctx.waterLifts.push(lift);
@@ -469,11 +463,11 @@ function chamber13(ctx) {
   ctx.group.add(btn.group); ctx.buttons.push(btn);
 
   // üst hedef platformu (asansör tepesi y~8.2)
-  addBox(ctx, V(-3, 7.8, 11.5), V(3, 8.2, 16), false);
-  addBox(ctx, V(-3, 8.2, 16), V(3, 12, 16.5), false);
+  addBox(ctx, V(-3, 7.8, 10.5), V(3, 8.2, 15), false);
+  addBox(ctx, V(-3, 8.2, 15), V(3, 12, 15.5), false);
 
   ctx.spawn = V(4, 0.1, -4);
-  goal(ctx, V(0, 8.2, 14), "core", 0x6ee84f);
+  goal(ctx, V(0, 8.2, 13), "core", 0x6ee84f);
   ctx.objective = "Küpü butona indir; çarklar döner, su yükselir, asansöre binip yukarı çık.";
   ctx.hint = "Küpü sol duvar üzerinden butona indir (Bölüm 4 gibi). Çarklar dönüp su asansörünü yükseltir. Asansör tabandayken üstüne bin, yukarı taşısın.";
   ctx.story = "Eski su mekanizması yeniden çalışıyor. Yukarı, neredeyse çıkışa.";

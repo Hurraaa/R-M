@@ -90,10 +90,10 @@ export class PortalGame {
     this.composer.addPass(new OutputPass());
   }
 
-  start() {
+  start(index = 0) {
     this.state = "playing";
-    this.chamberIndex = 0;
-    this.loadChamber(0);
+    this.chamberIndex = index;
+    this.loadChamber(index);
     this.input.lock();
   }
 
@@ -198,7 +198,7 @@ export class PortalGame {
     for (const lift of this.level.waterLifts) {
       const c = lift.collider;
       const p = this.controller.position;
-      const occ = p.x > c.min.x - 0.4 && p.x < c.max.x + 0.4 && p.z > c.min.z - 0.4 && p.z < c.max.z + 0.4 && Math.abs(p.y - c.max.y) < 0.4;
+      const occ = p.x > c.min.x - 0.4 && p.x < c.max.x + 0.4 && p.z > c.min.z - 0.4 && p.z < c.max.z + 0.4 && Math.abs(p.y - c.max.y) < 0.5;
       lift.update(dt, occ);
     }
     for (const fp of this.level.flipPads) fp.tryFlip(this.controller);
