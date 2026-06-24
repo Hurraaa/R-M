@@ -1,57 +1,49 @@
 import * as THREE from "three";
 
-// Ferah, özgün, hafifçe canlı Rick & Morty alien gökyüzü ve uzak dekor.
-// Hepsi uzak/çarpışmasız/gölgesiz — sadece atmosfer. update() ile yumuşak hareket.
+// Ferah Rick & Morty gökyüzü + KÜBİST (Picasso tarzı) gök figürleri:
+// keskin geometrik fasetler, cesur düz renkler, siyah konturlar.
+// Hepsi uzak/çarpışmasız/gölgesiz. update() ile yumuşak hareket.
 
 const skyVert = /* glsl */ `
   varying vec3 vDir;
-  void main() {
-    vDir = normalize(position);
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
+  void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
 `;
 const skyFrag = /* glsl */ `
   precision highp float;
   varying vec3 vDir;
-  uniform vec3 uTop;
-  uniform vec3 uHorizon;
-  uniform vec3 uGround;
+  uniform vec3 uTop, uHorizon, uGround;
   uniform float uTime;
-
   float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-  float noise(vec2 p){
-    vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.0-2.0*f);
-    return mix(mix(hash(i),hash(i+vec2(1,0)),u.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x), u.y);
-  }
+  float noise(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+    return mix(mix(hash(i),hash(i+vec2(1,0)),u.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x), u.y); }
   float fbm(vec2 p){ float v=0.0,a=0.5; for(int i=0;i<4;i++){v+=a*noise(p);p*=2.0;a*=0.5;} return v; }
-
-  void main() {
+  void main(){
     float h = vDir.y;
-    vec3 col = h > 0.0 ? mix(uHorizon, uTop, pow(clamp(h,0.0,1.0),0.55))
-                       : mix(uHorizon, uGround, clamp(-h*2.0,0.0,1.0));
-
-    // --- kuzey ışıkları (aurora): dalgalanan akışkan perdeler ---
+    vec3 col = h>0.0 ? mix(uHorizon,uTop,pow(clamp(h,0.0,1.0),0.55)) : mix(uHorizon,uGround,clamp(-h*2.0,0.0,1.0));
     float az = atan(vDir.z, vDir.x);
-    float wob = fbm(vec2(az * 1.5, uTime * 0.03));
-    float h0 = 0.30 + (wob - 0.5) * 0.45;                 // dalgalı perde yüksekliği
-    float curtain = smoothstep(0.16, 0.0, abs(vDir.y - h0));
-    float streaks = fbm(vec2(az * 9.0 - uTime * 0.05, vDir.y * 4.0)); // dikey çizgiler
-    curtain *= 0.45 + 0.55 * streaks;
-    curtain *= smoothstep(0.02, 0.22, vDir.y);            // ufkun üstünde
-    vec3 aur = mix(vec3(0.15, 0.95, 0.55), vec3(0.45, 0.25, 0.95), smoothstep(0.35, 0.85, streaks));
-    col += aur * curtain * 0.5;
-
-    // hafif nebula + ince yıldızlar (kısık, göz almasın)
-    float mask = smoothstep(0.05, 0.5, vDir.y);
-    col += vec3(0.4, 0.2, 0.45) * pow(fbm(vec2(az * 1.2, vDir.y * 2.5) + 5.0), 2.5) * mask * 0.15;
-    float star = step(0.995, hash(floor(vDir.xz * 140.0)));
-    col += vec3(0.8) * star * smoothstep(0.1, 0.5, vDir.y) * 0.35;
-
-    gl_FragColor = vec4(col, 1.0);
+    float wob = fbm(vec2(az*1.5, uTime*0.03));
+    float h0 = 0.30 + (wob-0.5)*0.45;
+    float curtain = smoothstep(0.16,0.0,abs(vDir.y-h0));
+    float streaks = fbm(vec2(az*9.0 - uTime*0.05, vDir.y*4.0));
+    curtain *= 0.45 + 0.55*streaks;
+    curtain *= smoothstep(0.02,0.22,vDir.y);
+    vec3 aur = mix(vec3(0.15,0.95,0.55), vec3(0.45,0.25,0.95), smoothstep(0.35,0.85,streaks));
+    col += aur*curtain*0.5;
+    float mask = smoothstep(0.05,0.5,vDir.y);
+    col += vec3(0.4,0.2,0.45)*pow(fbm(vec2(az*1.2,vDir.y*2.5)+5.0),2.5)*mask*0.15;
+    float star = step(0.995, hash(floor(vDir.xz*140.0)));
+    col += vec3(0.8)*star*smoothstep(0.1,0.5,vDir.y)*0.35;
+    gl_FragColor = vec4(col,1.0);
   }
 `;
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
+
+// Picasso esinli palet
+const ART = {
+  blue: 0x2b4a7a, teal: 0x2f8f8f, ochre: 0xd99a3c, terra: 0xc75b3f,
+  cream: 0xe8dcc0, rose: 0xb56a7a, green: 0x6fae5a, plum: 0x6a4a86, charcoal: 0x20202a,
+};
 
 export class Scenery {
   constructor(scene) {
@@ -59,25 +51,45 @@ export class Scenery {
     this.t = 0;
     this.spinners = [];
     this.clouds = [];
-    this.islands = [];
+    this.figures = []; // kübist ağaç/figürler
+    this.birds = [];
     this.crystals = [];
-    this.creatures = [];
+    this._edgeMat = new THREE.LineBasicMaterial({ color: 0x171019 });
+
     this._sky();
     this._planet();
-    this._islands();
+    this._cubistFigures();
+    this._cubistBirds();
     this._farPortals();
     this._clouds();
     this._crystals();
-    this._creatures();
+  }
+
+  // ---- kübist yardımcılar ----
+  _facet(group, pts, color, z = 0) {
+    const shape = new THREE.Shape();
+    shape.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) shape.lineTo(pts[i][0], pts[i][1]);
+    shape.closePath();
+    const geo = new THREE.ShapeGeometry(shape);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
+    mesh.position.z = z;
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), this._edgeMat);
+    edges.position.z = z + 0.02;
+    group.add(mesh, edges);
+  }
+  _disc(group, x, y, r, color, z = 0) {
+    const geo = new THREE.CircleGeometry(r, 18);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
+    mesh.position.set(x, y, z);
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), this._edgeMat);
+    edges.position.set(x, y, z + 0.02);
+    group.add(mesh, edges);
   }
 
   _sky() {
     this.skyMat = new THREE.ShaderMaterial({
-      vertexShader: skyVert,
-      fragmentShader: skyFrag,
-      side: THREE.BackSide,
-      depthWrite: false,
-      fog: false,
+      vertexShader: skyVert, fragmentShader: skyFrag, side: THREE.BackSide, depthWrite: false, fog: false,
       uniforms: {
         uTop: { value: new THREE.Color(0x274f7a) },
         uHorizon: { value: new THREE.Color(0x8f7e86) },
@@ -94,83 +106,92 @@ export class Scenery {
     this.scene.add(m);
     return m;
   }
-
   _ringedPlanet(color, radius, ringR, ringColor, pos) {
     const g = new THREE.Group();
     g.add(new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 32), new THREE.MeshBasicMaterial({ color, fog: false })));
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(ringR, radius * 0.14, 2, 64),
-      new THREE.MeshBasicMaterial({ color: ringColor, fog: false, transparent: true, opacity: 0.85 })
-    );
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(ringR, radius * 0.14, 2, 64),
+      new THREE.MeshBasicMaterial({ color: ringColor, fog: false, transparent: true, opacity: 0.85 }));
     ring.rotation.x = Math.PI / 2.3;
     g.add(ring);
     g.position.copy(pos);
     this.scene.add(g);
     return g;
   }
-
   _planet() {
-    // uzaklarda birkaç ayrı gök cismi (sade, çeşitli)
     this.planet = this._ringedPlanet(0xd98ad0, 22, 34, 0xffe1a8, V(-120, 70, -150));
-    this._ball(0x9fe6c4, 9, V(140, 95, -120)); // ay
-    this._ball(0xff8f6b, 14, V(95, 55, -195)); // turuncu gezegen
-    this._ball(0x7aa0ff, 7, V(-55, 115, -160)); // küçük mavi
-    this._ringedPlanet(0xc0d860, 10, 16, 0xeff0c8, V(175, 45, -70)); // küçük halkalı
+    this._ball(0x9fe6c4, 9, V(140, 95, -120));
+    this._ball(0xff8f6b, 14, V(95, 55, -195));
+    this._ball(0x7aa0ff, 7, V(-55, 115, -160));
+    this._ringedPlanet(0xc0d860, 10, 16, 0xeff0c8, V(175, 45, -70));
   }
 
-  _islands() {
-    const palette = [0x6fcf8f, 0x7fc0a8, 0x9bbf6a, 0xb98ac4, 0x6f9ccf, 0xd0a070];
-    const rockMat = new THREE.MeshStandardMaterial({ color: 0x7d6a92, roughness: 1, flatShading: true });
-    const mk = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 1, flatShading: true });
-
+  // ---- kübist gök figürleri (soyut ağaç/natürmort) ----
+  _cubistFigures() {
+    const A = ART;
     for (let i = 0; i < 11; i++) {
-      const a = (i / 11) * Math.PI * 2 + 0.3;
-      const r = 70 + Math.random() * 95;
-      const s = 5 + Math.random() * 10;
-      const top = mk(palette[i % palette.length]);
       const g = new THREE.Group();
-      const type = i % 5;
+      const v = i % 4;
 
-      if (type === 0) {
-        // plato + tepesinde kaya
-        const plat = new THREE.Mesh(new THREE.CylinderGeometry(s, s * 0.8, s * 0.5, 6), top);
-        const base = new THREE.Mesh(new THREE.ConeGeometry(s * 0.8, s * 1.4, 6), rockMat);
-        base.position.y = -s * 0.85;
-        const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(s * 0.32, 0), rockMat);
-        rock.position.set(s * 0.25, s * 0.45, 0);
-        g.add(plat, base, rock);
-      } else if (type === 1) {
-        // yuvarlak kaya yığını
-        g.add(new THREE.Mesh(new THREE.IcosahedronGeometry(s * 0.9, 0), top));
-        const r2 = new THREE.Mesh(new THREE.IcosahedronGeometry(s * 0.5, 0), rockMat);
-        r2.position.set(s * 0.6, -s * 0.4, s * 0.2);
-        g.add(r2);
-      } else if (type === 2) {
-        // ince yüksek kule
-        const spire = new THREE.Mesh(new THREE.CylinderGeometry(s * 0.18, s * 0.5, s * 2.2, 6), top);
-        const cap = new THREE.Mesh(new THREE.ConeGeometry(s * 0.28, s * 0.6, 6), top);
-        cap.position.y = s * 1.4;
-        g.add(spire, cap);
-      } else if (type === 3) {
-        // eğik düz tabaka
-        const slab = new THREE.Mesh(new THREE.BoxGeometry(s * 1.6, s * 0.4, s * 1.2), top);
-        slab.rotation.z = (Math.random() - 0.5) * 0.4;
-        const base = new THREE.Mesh(new THREE.ConeGeometry(s * 0.5, s, 5), rockMat);
-        base.position.y = -s * 0.6;
-        g.add(slab, base);
+      if (v === 0) {
+        // yapraklı ağaç — üst üste fasetli taç
+        this._facet(g, [[-0.18, -1.2], [0.18, -1.2], [0.12, 0.3], [-0.12, 0.3]], A.charcoal, 0);
+        this._facet(g, [[-1.0, 0.0], [0.9, 0.25], [0.0, 1.5]], A.teal, 0.05);
+        this._facet(g, [[-0.85, 0.35], [0.7, 0.1], [1.05, 1.05], [0.0, 1.7], [-1.05, 0.95]], A.green, 0.1);
+        this._facet(g, [[0.0, 0.5], [1.2, 0.8], [0.35, 1.6]], A.blue, 0.15);
+        this._facet(g, [[-0.55, 0.8], [0.05, 0.7], [-0.25, 1.35]], A.ochre, 0.2);
+      } else if (v === 1) {
+        // soyut natürmort shardları + güneş
+        this._facet(g, [[-1.0, -1.0], [0.6, -0.8], [0.25, 0.6], [-1.0, 0.4]], A.terra, 0);
+        this._facet(g, [[-0.3, -0.6], [1.1, -0.4], [0.9, 0.9], [-0.1, 0.7]], A.ochre, 0.06);
+        this._facet(g, [[0.0, 0.2], [0.95, 0.55], [0.3, 1.3]], A.blue, 0.12);
+        this._disc(g, 0.2, 1.2, 0.45, A.cream, 0.18);
+      } else if (v === 2) {
+        // uzun kübist servi
+        this._facet(g, [[-0.32, -1.3], [0.32, -1.3], [0.16, 1.6], [-0.16, 1.6]], A.teal, 0);
+        this._facet(g, [[-0.55, -0.2], [0.55, 0.1], [0.0, 1.95]], A.green, 0.06);
+        this._facet(g, [[-0.28, 0.5], [0.38, 0.4], [0.0, 1.55]], A.cream, 0.12);
+        this._facet(g, [[-0.4, -1.0], [0.4, -1.0], [0.2, -0.3], [-0.2, -0.3]], A.charcoal, 0.04);
       } else {
-        // küçük kaya kümesi
-        for (let k = 0; k < 4; k++) {
-          const rk = new THREE.Mesh(new THREE.DodecahedronGeometry(s * (0.3 + Math.random() * 0.3), 0), k % 2 ? rockMat : top);
-          rk.position.set((Math.random() - 0.5) * s, (Math.random() - 0.5) * s * 0.6, (Math.random() - 0.5) * s);
-          g.add(rk);
-        }
+        // tepe + güneş + uçan kuş silüeti (tek figürde kompozisyon)
+        this._facet(g, [[-1.3, -0.5], [1.3, -0.3], [0.3, 0.7], [-1.1, 0.5]], A.green, 0);
+        this._facet(g, [[-1.3, -1.1], [1.3, -1.1], [1.3, -0.4], [-1.3, -0.55]], A.plum, -0.04);
+        this._disc(g, 0.5, 1.0, 0.5, A.ochre, 0.1);
+        this._facet(g, [[-0.9, 0.9], [-0.4, 1.05], [-0.65, 1.25]], A.charcoal, 0.16);
       }
 
-      g.position.set(Math.cos(a) * r, 8 + Math.random() * 55, Math.sin(a) * r - 30);
-      g.rotation.y = Math.random() * Math.PI;
+      const s = 4 + Math.random() * 7;
+      g.scale.setScalar(s);
+      const a = (i / 11) * Math.PI * 2 + 0.3;
+      const r = 72 + Math.random() * 95;
+      g.position.set(Math.cos(a) * r, 12 + Math.random() * 46, Math.sin(a) * r - 30);
+      g.rotation.y = Math.atan2(-g.position.x, -g.position.z); // +z'yi merkeze çevir
       this.scene.add(g);
-      this.islands.push({ mesh: g, baseY: g.position.y, phase: Math.random() * 6.28, amp: 1 + Math.random() * 2 });
+      this.figures.push({ mesh: g, baseY: g.position.y, baseYaw: g.rotation.y, phase: Math.random() * 6.28, amp: 1 + Math.random() * 2 });
+    }
+  }
+
+  // ---- kübist kuşlar ----
+  _cubistBirds() {
+    const A = ART;
+    const wingCols = [A.teal, A.blue, A.rose, A.ochre];
+    for (let i = 0; i < 6; i++) {
+      const g = new THREE.Group();
+      const body = new THREE.Group();
+      this._facet(body, [[-0.7, 0], [0.7, 0.12], [0.15, -0.45]], A.terra, 0); // gövde shard
+      this._facet(body, [[0.5, 0.06], [1.05, 0.2], [0.55, -0.14]], A.ochre, 0.02); // baş/gaga
+      const wL = new THREE.Group();
+      this._facet(wL, [[0, 0], [-1.15, 0.95], [0.25, 0.28]], wingCols[i % wingCols.length], 0);
+      const wR = new THREE.Group();
+      this._facet(wR, [[0, 0], [-1.15, -0.95], [0.25, -0.28]], wingCols[(i + 2) % wingCols.length], 0);
+      g.add(body, wL, wR);
+      g.scale.setScalar(2.6 + Math.random() * 2.4);
+      this.scene.add(g);
+      this.birds.push({
+        mesh: g, wL, wR,
+        r: 55 + Math.random() * 72, h: 24 + Math.random() * 42,
+        angle: Math.random() * 6.28, speed: (0.05 + Math.random() * 0.08) * (Math.random() < 0.5 ? -1 : 1),
+        phase: Math.random() * 6.28,
+      });
     }
   }
 
@@ -190,7 +211,7 @@ export class Scenery {
   }
 
   _clouds() {
-    const mat = new THREE.MeshBasicMaterial({ color: 0xf2e6d0, fog: false, transparent: true, opacity: 0.5 });
+    const mat = new THREE.MeshBasicMaterial({ color: 0xece0cc, fog: false, transparent: true, opacity: 0.45 });
     for (let i = 0; i < 7; i++) {
       const c = new THREE.Mesh(new THREE.SphereGeometry(10 + Math.random() * 10, 10, 8), mat);
       c.scale.set(2.4, 0.5, 1.4);
@@ -203,20 +224,11 @@ export class Scenery {
   }
 
   _crystals() {
-    // havada süzülen, dönen kristaller — renk ve şekil çeşitli
-    const cols = [
-      [0x5ad6e6, 0x1c7d8c], // teal
-      [0xb98ae6, 0x4a2c7d], // mor
-      [0xff8fd0, 0x7d2c5a], // pembe
-      [0x8fe6a0, 0x2c7d3c], // yeşil
-    ];
+    const cols = [[0x5ad6e6, 0x1c7d8c], [0xb98ae6, 0x4a2c7d], [0xff8fd0, 0x7d2c5a], [0x8fe6a0, 0x2c7d3c]];
     for (let i = 0; i < 8; i++) {
       const h = 2 + Math.random() * 4;
       const [c0, c1] = cols[i % cols.length];
-      const mat = new THREE.MeshStandardMaterial({
-        color: c0, emissive: c1, emissiveIntensity: 0.8, roughness: 0.2, flatShading: true,
-        transparent: true, opacity: 0.92,
-      });
+      const mat = new THREE.MeshStandardMaterial({ color: c0, emissive: c1, emissiveIntensity: 0.8, roughness: 0.2, flatShading: true, transparent: true, opacity: 0.92 });
       const geo = i % 3 === 0 ? new THREE.OctahedronGeometry(h * 0.5, 0) : new THREE.ConeGeometry(h * 0.4, h, 5);
       const c = new THREE.Mesh(geo, mat);
       const a = Math.random() * Math.PI * 2;
@@ -225,31 +237,6 @@ export class Scenery {
       c.rotation.z = Math.random() * Math.PI;
       this.scene.add(c);
       this.crystals.push({ mesh: c, baseY: c.position.y, phase: Math.random() * 6.28, spin: 0.2 + Math.random() * 0.4 });
-    }
-  }
-
-  _creatures() {
-    // süzülen "uzay vatozları" — basit chevron siluetleri
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array([
-      0, 0, 1.0, -1.0, 0, -0.6, 0, 0.1, -0.2,
-      0, 0, 1.0, 0, 0.1, -0.2, 1.0, 0, -0.6,
-    ]), 3));
-    geo.computeVertexNormals();
-    for (let i = 0; i < 5; i++) {
-      const mat = new THREE.MeshBasicMaterial({ color: 0x33223f, transparent: true, opacity: 0.85, side: THREE.DoubleSide });
-      const m = new THREE.Mesh(geo, mat);
-      const s = 2.5 + Math.random() * 3;
-      m.scale.setScalar(s);
-      this.scene.add(m);
-      this.creatures.push({
-        mesh: m,
-        r: 55 + Math.random() * 70,
-        h: 22 + Math.random() * 45,
-        angle: Math.random() * 6.28,
-        speed: (0.05 + Math.random() * 0.08) * (Math.random() < 0.5 ? -1 : 1),
-        phase: Math.random() * 6.28,
-      });
     }
   }
 
@@ -264,18 +251,21 @@ export class Scenery {
       c.mesh.position.x += dt * c.speed;
       if (c.mesh.position.x > c.r + 60) c.mesh.position.x = -c.r - 60;
     }
-    for (const is of this.islands) is.mesh.position.y = is.baseY + Math.sin(t * 0.4 + is.phase) * is.amp;
+    for (const f of this.figures) {
+      f.mesh.position.y = f.baseY + Math.sin(t * 0.4 + f.phase) * f.amp;
+      f.mesh.rotation.y = f.baseYaw + Math.sin(t * 0.3 + f.phase) * 0.12; // hafif salınım
+    }
     for (const cr of this.crystals) {
       cr.mesh.rotation.y += dt * cr.spin;
       cr.mesh.position.y = cr.baseY + Math.sin(t * 0.6 + cr.phase) * 1.5;
     }
-    for (const cre of this.creatures) {
-      cre.angle += dt * cre.speed;
-      const x = Math.cos(cre.angle) * cre.r;
-      const z = Math.sin(cre.angle) * cre.r - 20;
-      cre.mesh.position.set(x, cre.h + Math.sin(t * 0.5 + cre.phase) * 3, z);
-      cre.mesh.rotation.y = -cre.angle + (cre.speed > 0 ? Math.PI : 0);
-      cre.mesh.rotation.z = Math.sin(t * 3 + cre.phase) * 0.35; // kanat çırpma hissi
+    for (const b of this.birds) {
+      b.angle += dt * b.speed;
+      b.mesh.position.set(Math.cos(b.angle) * b.r, b.h + Math.sin(t * 0.5 + b.phase) * 3, Math.sin(b.angle) * b.r - 20);
+      b.mesh.rotation.y = -b.angle + (b.speed > 0 ? Math.PI : 0);
+      const flap = Math.sin(t * 4 + b.phase) * 0.6;
+      b.wL.rotation.x = flap;
+      b.wR.rotation.x = -flap;
     }
   }
 }
