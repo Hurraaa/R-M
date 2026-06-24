@@ -39,13 +39,13 @@ const skyFrag = /* glsl */ `
     curtain *= 0.45 + 0.55 * streaks;
     curtain *= smoothstep(0.02, 0.22, vDir.y);            // ufkun üstünde
     vec3 aur = mix(vec3(0.15, 0.95, 0.55), vec3(0.45, 0.25, 0.95), smoothstep(0.35, 0.85, streaks));
-    col += aur * curtain * 0.85;
+    col += aur * curtain * 0.5;
 
-    // hafif nebula + ince yıldızlar
+    // hafif nebula + ince yıldızlar (kısık, göz almasın)
     float mask = smoothstep(0.05, 0.5, vDir.y);
-    col += vec3(0.4, 0.2, 0.45) * pow(fbm(vec2(az * 1.2, vDir.y * 2.5) + 5.0), 2.5) * mask * 0.2;
-    float star = step(0.992, hash(floor(vDir.xz * 140.0)));
-    col += vec3(1.0) * star * smoothstep(0.1, 0.5, vDir.y) * 0.7;
+    col += vec3(0.4, 0.2, 0.45) * pow(fbm(vec2(az * 1.2, vDir.y * 2.5) + 5.0), 2.5) * mask * 0.15;
+    float star = step(0.995, hash(floor(vDir.xz * 140.0)));
+    col += vec3(0.8) * star * smoothstep(0.1, 0.5, vDir.y) * 0.35;
 
     gl_FragColor = vec4(col, 1.0);
   }
@@ -79,9 +79,9 @@ export class Scenery {
       depthWrite: false,
       fog: false,
       uniforms: {
-        uTop: { value: new THREE.Color(0x2f6fb0) },
-        uHorizon: { value: new THREE.Color(0xe9d8a8) },
-        uGround: { value: new THREE.Color(0x6a5a7a) },
+        uTop: { value: new THREE.Color(0x274f7a) },
+        uHorizon: { value: new THREE.Color(0x8f7e86) },
+        uGround: { value: new THREE.Color(0x352f48) },
         uTime: { value: 0 },
       },
     });

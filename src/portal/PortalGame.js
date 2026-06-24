@@ -47,19 +47,19 @@ export class PortalGame {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.toneMappingExposure = 0.98;
   }
 
   _initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xe9d8a8);
+    this.scene.background = new THREE.Color(0x8f7e86);
     // ferah: hafif, ufuk renginde sis — uzak dekoru yumuşatır, yakını berrak bırakır
-    this.scene.fog = new THREE.Fog(0xdcd2bb, 60, 260);
+    this.scene.fog = new THREE.Fog(0x8a7e84, 60, 260);
 
     this.camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 600);
 
     // yumuşak, dengeli aydınlatma
-    this.scene.add(new THREE.HemisphereLight(0xcfe6ff, 0x8a7a66, 1.05));
+    this.scene.add(new THREE.HemisphereLight(0xbcd2ee, 0x6a5f55, 0.9));
     this.scene.add(new THREE.AmbientLight(0xb8c4d6, 0.35));
     const sun = new THREE.DirectionalLight(0xfff2d6, 0.8);
     sun.position.set(18, 30, 14);
