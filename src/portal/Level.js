@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible } from "./Props.js";
 
 // 3x5 dijit fontu (yukarıdan okunacak sütun desenleri)
 const DIGITS = {
@@ -508,7 +508,34 @@ function chamber15(ctx) {
   ctx.story = "Yerçekimi denetleyicisi arızalı. Aşağısı yukarı, yukarısı aşağı oluyor.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15];
+// ---- Oda 16: Sütun Patlatma — yolu kapatan sütunu enerji topuyla patlat ----
+function chamber16(ctx) {
+  addBox(ctx, V(-7, -0.5, -6), V(7, 0, 16), false); // zemin
+  addBox(ctx, V(-7.5, 0, -6), V(-7, 6, 16), false); // sol (yayıcı)
+  addBox(ctx, V(7, 0, -6), V(7.5, 6, 16), true); // SAĞ duvar portallanabilir
+  addBox(ctx, V(-7, 0, -6.5), V(7, 6, -6), true); // ARKA duvar portallanabilir
+  addBox(ctx, V(-7, 0, 16), V(7, 6, 16.5), false); // ön duvar
+  // bariyer (z11): kenarlar sağlam, ortada YIKILABİLİR sütun (kapı)
+  addBox(ctx, V(-7, 0, 11), V(-1.5, 6, 11.7), false);
+  addBox(ctx, V(1.5, 0, 11), V(7, 6, 11.7), false);
+  addBox(ctx, V(-1.5, 4, 11), V(1.5, 6, 11.7), false); // üst lento
+  const pillar = new Destructible(V(-1.5, 0, 11), V(1.5, 4, 11.7), 0xff6a4a);
+  ctx.group.add(pillar.group);
+  ctx.colliders.push(pillar.collider);
+  ctx.destructibles.push(pillar);
+  // yayıcı: sol duvar, +x'e atar
+  const em = new BallEmitter(V(-6.9, 2.5, 3), V(1, 0, 0), 12);
+  ctx.group.add(em.group);
+  ctx.emitters.push(em);
+
+  ctx.spawn = V(0, 0.1, -3);
+  goal(ctx, V(0, 0, 14), "core", 0x6ee84f);
+  ctx.objective = "Yolu kapatan sütunu enerji topuyla patlat — topu portallarla üstüne yönlendir.";
+  ctx.hint = "Top sağ duvara çarpıyor. Sağ duvara bir portal, arka duvara ikinci portalı aç — top arka duvardan çıkıp sütuna gider ve patlatır. Sonra açılan kapıdan geç.";
+  ctx.story = "Yol bir enerji sütunuyla mühürlü. Tek çare: topu üstüne sürmek.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -517,6 +544,7 @@ export function buildChamber(index) {
     spawn: new THREE.Vector3(), exit: null, hint: "",
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
     balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [], flipPads: [],
+    destructibles: [],
     gravityScale: 1,
   };
   builders[index](ctx);

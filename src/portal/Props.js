@@ -250,6 +250,7 @@ export class Ball {
       const dx = this.pos.x - cx, dy = this.pos.y - cy, dz = this.pos.z - cz;
       const d2 = dx * dx + dy * dy + dz * dz;
       if (d2 < this.r * this.r) {
+        if (c.destructible) { c.destructible.hit(); this.dead = true; return; } // sütunu patlat
         let n;
         if (d2 > 1e-8) { const d = Math.sqrt(d2); n = new THREE.Vector3(dx / d, dy / d, dz / d); this.pos.set(cx, cy, cz).addScaledVector(n, this.r); }
         else { n = new THREE.Vector3(0, 1, 0); }
@@ -477,6 +478,59 @@ export class FlipPad {
       ctrl.gravityDir *= -1;
       ctrl.flipCooldown = 0.8;
       ctrl.onGround = false;
+    }
+  }
+}
+
+// Yıkılabilir sütun: enerji topu çarpınca patlar (parçalara ayrılıp kaybolur).
+export class Destructible {
+  constructor(min, max, color = 0xff6a4a) {
+    const size = new THREE.Vector3().subVectors(max, min);
+    this.center = new THREE.Vector3().addVectors(min, max).multiplyScalar(0.5);
+    this.mat = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.35, roughness: 0.4, metalness: 0.2 });
+    this.mesh = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), this.mat);
+    this.mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(this.mesh.geometry), new THREE.LineBasicMaterial({ color: 0x3a1208 })));
+    this.mesh.position.copy(this.center);
+    this.mesh.castShadow = true;
+    this.group = new THREE.Group();
+    this.group.add(this.mesh);
+    this.collider = { min: min.clone(), max: max.clone(), portalable: false, destructible: this };
+    this.size = size;
+    this.fragments = [];
+    this.breaking = false;
+    this.t = 0;
+    this.dead = false;
+  }
+  hit() {
+    if (this.dead) return;
+    this.dead = true;
+    this.collider.disabled = true;
+    this.mesh.visible = false;
+    this.breaking = true;
+    for (let i = 0; i < 16; i++) {
+      const m = this.mat.clone();
+      m.transparent = true;
+      const f = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), m);
+      f.position.copy(this.center).add(new THREE.Vector3((Math.random() - 0.5) * this.size.x, (Math.random() - 0.5) * this.size.y, (Math.random() - 0.5) * this.size.z));
+      f.userData.vel = new THREE.Vector3((Math.random() - 0.5) * 8, Math.random() * 7 + 1, (Math.random() - 0.5) * 8);
+      this.group.add(f);
+      this.fragments.push(f);
+    }
+  }
+  update(dt) {
+    if (!this.breaking) return;
+    this.t += dt;
+    for (const f of this.fragments) {
+      f.userData.vel.y -= 22 * dt;
+      f.position.addScaledVector(f.userData.vel, dt);
+      f.rotation.x += dt * 5;
+      f.rotation.y += dt * 4;
+      f.material.opacity = Math.max(0, 1 - this.t * 1.1);
+    }
+    if (this.t > 1.0) {
+      for (const f of this.fragments) this.group.remove(f);
+      this.fragments = [];
+      this.breaking = false;
     }
   }
 }

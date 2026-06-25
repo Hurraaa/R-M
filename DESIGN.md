@@ -63,7 +63,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 12b | İnce Köprü | küçük platformlarda hassas zıplama + portal, altı uçurum (düşersen ölüm) | imtihan | sırada |
 | 12c | Füze | hareket-sensörlü füze; portalla yer değiştirip füzeyi alt et | takip | sırada |
 | 12d | Şifre | yukarıdan bakınca anlamlı dizilen sayılar (anamorfik); evrensel kod | sır | ✅ |
-| 12e | Sütun Patlatma | sütunu nasıl yok ederiz? (örn. enerji topunu/küpü sütuna yönlendir) | engeli kaldır | sırada |
+| 12e | Sütun Patlatma | enerji topunu portalla sütuna sürüp patlat (parçalanır) | engeli kaldır | ✅ |
 | 12f | Çarklar ve Su | küp->buton->çarklar döner->su yükselir->asansör platformu çıkar | mekanizma | ✅ |
 | 12g | Ay Yürüyüşü | düşük yerçekimi, uzun süzülen zıplamalar | zayıf alan | ✅ |
 | 12h | Yer Çekimi | çekimi ters çevir, tavanda yürü | arızalı denetleyici | ✅ |

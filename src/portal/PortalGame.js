@@ -211,6 +211,7 @@ export class PortalGame {
       lift.update(dt, occ);
     }
     for (const fp of this.level.flipPads) fp.tryFlip(this.controller);
+    for (const d of this.level.destructibles) d.update(dt);
     for (const door of this.level.doors) door.update(dt);
 
     // kamera
