@@ -125,7 +125,16 @@ export class PortalGame {
       return false;
     }
     const normal = hit.face.normal.clone().transformDirection(mesh.matrixWorld).normalize();
-    this.portals.place(which, hit.point, normal, mesh.userData.collider);
+    const col = mesh.userData.collider;
+    // portalı yüzey kenarından içeri sıkıştır (disk taşmasın -> küp/oyuncu temiz çıksın)
+    const r = this.portals.a.radius;
+    const p = hit.point.clone();
+    for (const ax of ["x", "y", "z"]) {
+      if (Math.abs(normal[ax]) > 0.5) continue; // normal ekseni atla
+      const lo = col.min[ax] + r, hi = col.max[ax] - r;
+      p[ax] = lo <= hi ? Math.min(hi, Math.max(lo, p[ax])) : (col.min[ax] + col.max[ax]) / 2;
+    }
+    this.portals.place(which, p, normal, col);
     return true;
   }
 

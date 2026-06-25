@@ -443,7 +443,7 @@ function chamber13(ctx) {
   addBox(ctx, V(3, -0.5, -2), V(7, 0, 2), false);
   addBox(ctx, V(-3, -0.5, -2), V(3, 0, 2), true); // PAD (küp)
   addBox(ctx, V(-7, -0.5, 2), V(7, 0, 6), false); // şaftla aynı hizada biter (z=6)
-  addBox(ctx, V(-7.5, 0, -6), V(-7, 4, 6), true); // sol duvar (portallanabilir)
+  addBox(ctx, V(-7.5, 0, -6), V(-7, 6, 6), true); // sol duvar (portallanabilir, yüksek: portal kenara taşmaz)
   addBox(ctx, V(7, 0, -6), V(7.5, 6, 16), false);
   addBox(ctx, V(-7, 0, -6.5), V(7, 6, -6), false);
 
