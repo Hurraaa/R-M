@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher, LightBridge } from "./Props.js";
 
 // 3x5 dijit fontu (yukarıdan okunacak sütun desenleri)
 const DIGITS = {
@@ -641,7 +641,29 @@ function chamber19(ctx) {
   ctx.story = "Zemin çökmüş, önünde dipsiz bir şaft. Düşüşünü bir portalla ileri çevir — momentum seni karşıya taşısın.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19];
+// ---- Oda 20: Işık Köprüsü — köprüyü portalla yakala, uçurumun karşısına çevir ----
+function chamber20(ctx) {
+  addBox(ctx, V(-8, -0.5, 0), V(8, 0, 6), false); // başlangıç platformu
+  addBox(ctx, V(-8, -0.5, 16), V(8, 0, 24), false); // çıkış platformu (uçurum z 6..16)
+  addBox(ctx, V(-8.5, 0, 0), V(-8, 6, 24), false); // sol duvar (yayıcı burada)
+  addBox(ctx, V(8, 0, 0), V(8.5, 6, 24), true); // SAĞ duvar portallanabilir (köprü buraya çarpar)
+  addBox(ctx, V(-8, 0, -0.5), V(8, 6, 0), true); // ARKA duvar portallanabilir (köprüyü +z'ye çevir)
+  addBox(ctx, V(-8, 0, 24), V(8, 6, 24.5), false); // ön duvar
+
+  // ışık köprüsü yayıcısı: sol duvarda, +x'e ateşler (uçuruma paralel — boşa gider)
+  const lb = new LightBridge(V(-7.8, 0.2, 3), V(1, 0, 0), 40);
+  ctx.group.add(lb.group);
+  ctx.lightBridges.push(lb);
+  for (const c of lb.colliders) ctx.colliders.push(c);
+
+  ctx.spawn = V(-5, 0.1, 3);
+  goal(ctx, V(4, 0, 20), "beacon", 0x46e6ff);
+  ctx.objective = "Işık köprüsünü portalla yakalayıp uçurumun karşısına çevir, üstünde yürü.";
+  ctx.hint = "Yayıcı köprüyü sağ duvara (uçuruma paralel) atıyor — boşa. Köprünün çarptığı SAĞ duvara bir portal, ARKA duvara (uçuruma bakan yer) ikinci portalı aç. Köprü arka portaldan yeniden doğup uçurumu boydan boya geçer. Portal B'yi hedefin hizasına (x) koy, köprüye çıkıp karşıya yürü.";
+  ctx.story = "Geçit çökmüş. Eski bir ışık köprüsü yayıcısı hâlâ çalışıyor — ışığı portalla büküp kendine bir yol döşe.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -650,7 +672,7 @@ export function buildChamber(index) {
     spawn: new THREE.Vector3(), exit: null, hint: "",
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
     balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [], flipPads: [],
-    destructibles: [], missiles: [], missileLaunchers: [],
+    destructibles: [], missiles: [], missileLaunchers: [], lightBridges: [],
     gravityScale: 1, ballsHarmful: false,
   };
   builders[index](ctx);

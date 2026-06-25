@@ -71,6 +71,17 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 14 | Zehirli Zemin | tehlikeli zemin (anında respawn) | tesisin çürümesi | planlı |
 | 15 | Hareketli Zemin | kayan platform + zamanlama | AI uyanıyor | planlı |
 
+### Perde III ek — Yeni Araçlar
+| # | Ad | Yeni mekanik | Hikâye beat | Durum |
+|---|----|--------------|-------------|-------|
+| 20 | Işık Köprüsü | portaldan geçince devam eden katı ışık köprüsü; yakala + yönlendir | yol döşe | ✅ |
+
+> Tasarım pusulası: bir mekanik ilk kez tanıtılmıyorsa çeşitlendir
+> (tuzak/şaşırtmaca/kombinasyon). Hiçbir bölüm bir öncekine çok benzemesin.
+> "2 portal açtım bitti" olmasın — portalın YERİNİ planlamak gereksin.
+> Momentum/uçuş bölümlerini (19 tarzı) çoğalt: düşüş→trambolin→peş peşe
+> platform, zamanlama/ayar.
+
 ### Perde V — Kaçış (finale)
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
 |---|----|--------------|-------------|-------|

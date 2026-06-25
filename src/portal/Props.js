@@ -682,3 +682,126 @@ export class Door {
     this.collider.disabled = this.open > 0.5;
   }
 }
+
+// ---- Işık Köprüsü ----
+// Yayıcıdan eksen yönünde katı, üstünde yürünen ışık plakası fırlatır.
+// Yol aktif bir portal çiftinin içinden geçerse köprü diğer portaldan
+// devam eder (tek yönlendirme). Segmentler her kare yeniden hesaplanır;
+// çarpışma kutuları level.colliders'a eklenir, oyuncu üstünde yürür.
+export class LightBridge {
+  constructor(pos, dir, maxLen = 40) {
+    this.origin = pos.clone();
+    this.y = pos.y;
+    this.dir = this._snap(dir);
+    this.maxLen = maxLen;
+    this.width = 2.4;
+    this.thick = 0.24;
+    this.group = new THREE.Group();
+    const housing = new THREE.Mesh(
+      new THREE.BoxGeometry(1.1, 1.1, 1.1),
+      new THREE.MeshStandardMaterial({ color: 0x2a3a44, metalness: 0.6, roughness: 0.4, emissive: 0x0c2b34, emissiveIntensity: 0.6 })
+    );
+    housing.position.copy(pos);
+    this.group.add(housing);
+    const lens = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.42, 0.42, 0.2, 18),
+      new THREE.MeshStandardMaterial({ color: 0x9ff0ff, emissive: 0x46d6f0, emissiveIntensity: 2.0 })
+    );
+    lens.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), this.dir);
+    lens.position.copy(pos).addScaledVector(this.dir, 0.6);
+    this.group.add(lens);
+    this.seg = [this._mkSeg(), this._mkSeg()];
+    for (const s of this.seg) this.group.add(s.mesh);
+  }
+  _snap(d) {
+    return Math.abs(d.x) >= Math.abs(d.z)
+      ? new THREE.Vector3(Math.sign(d.x) || 1, 0, 0)
+      : new THREE.Vector3(0, 0, Math.sign(d.z) || 1);
+  }
+  _mkSeg() {
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshStandardMaterial({ color: 0x8fecff, emissive: 0x35c6ea, emissiveIntensity: 1.7, transparent: true, opacity: 0.52, roughness: 0.25 })
+    );
+    mesh.visible = false;
+    const collider = { min: new THREE.Vector3(), max: new THREE.Vector3(), disabled: true, portalable: false, bridge: true };
+    return { mesh, collider };
+  }
+  get colliders() { return [this.seg[0].collider, this.seg[1].collider]; }
+
+  _march(P, D, level, portals, ignore) {
+    let tWall = this.maxLen;
+    for (const c of level.colliders) {
+      if (c.disabled || c.bridge || c.dynamic) continue;
+      const t = rayAABB(P, D, c.min, c.max);
+      if (t != null && t > 0.02 && t < tWall) tWall = t;
+    }
+    let best = null;
+    if (portals.a.active && portals.b.active) {
+      for (const p of [portals.a, portals.b]) {
+        if (p === ignore) continue;
+        const denom = D.dot(p.normal);
+        if (denom > -0.1) continue; // portalın ön yüzüne girmiyor
+        const t = p.position.clone().sub(P).dot(p.normal) / denom;
+        if (t > 0.02 && t < tWall) {
+          const rel = P.clone().addScaledVector(D, t).sub(p.position);
+          const along = rel.dot(p.normal);
+          const planar = rel.addScaledVector(p.normal, -along).length();
+          if (planar < p.radius * 0.92) { best = { t, portal: p }; tWall = t; }
+        }
+      }
+    }
+    const point = P.clone().addScaledVector(D, tWall);
+    return best ? { point, portal: best.portal } : { point, portal: null };
+  }
+
+  update(dt, level, portals) {
+    const h1 = this._march(this.origin, this.dir, level, portals, null);
+    this._setSeg(0, this.origin, h1.point, this.dir);
+    if (h1.portal) {
+      const exit = h1.portal === portals.a ? portals.b : portals.a;
+      const d2 = this._snap(exit.normal);
+      const start2 = exit.position.clone();
+      const h2 = this._march(start2, d2, level, portals, exit);
+      this._setSeg(1, start2, h2.point, d2);
+    } else {
+      this._setSeg(1, null);
+    }
+  }
+
+  _setSeg(i, start, end, dir) {
+    const s = this.seg[i];
+    if (!start) { s.collider.disabled = true; s.mesh.visible = false; return; }
+    const min = new THREE.Vector3(), max = new THREE.Vector3();
+    min.y = this.y - this.thick / 2; max.y = this.y + this.thick / 2;
+    if (Math.abs(dir.x) > 0.5) {
+      min.x = Math.min(start.x, end.x); max.x = Math.max(start.x, end.x);
+      min.z = start.z - this.width / 2; max.z = start.z + this.width / 2;
+    } else {
+      min.z = Math.min(start.z, end.z); max.z = Math.max(start.z, end.z);
+      min.x = start.x - this.width / 2; max.x = start.x + this.width / 2;
+    }
+    const len = Math.abs(dir.x) > 0.5 ? max.x - min.x : max.z - min.z;
+    if (len < 0.15) { s.collider.disabled = true; s.mesh.visible = false; return; }
+    s.collider.min.copy(min); s.collider.max.copy(max); s.collider.disabled = false;
+    s.mesh.position.set((min.x + max.x) / 2, (min.y + max.y) / 2, (min.z + max.z) / 2);
+    s.mesh.scale.set(Math.max(0.02, max.x - min.x), Math.max(0.02, max.y - min.y), Math.max(0.02, max.z - min.z));
+    s.mesh.visible = true;
+  }
+}
+
+// ışın-AABB giriş mesafesi (slab yöntemi); ışın kutuya girmiyorsa null
+function rayAABB(P, D, min, max) {
+  let tmin = -Infinity, tmax = Infinity;
+  for (const a of ["x", "y", "z"]) {
+    if (Math.abs(D[a]) < 1e-8) { if (P[a] < min[a] || P[a] > max[a]) return null; }
+    else {
+      let t1 = (min[a] - P[a]) / D[a], t2 = (max[a] - P[a]) / D[a];
+      if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
+      if (t1 > tmin) tmin = t1;
+      if (t2 < tmax) tmax = t2;
+    }
+  }
+  if (tmax < tmin || tmax < 0) return null;
+  return tmin > 1e-4 ? tmin : null;
+}

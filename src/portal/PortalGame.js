@@ -153,6 +153,9 @@ export class PortalGame {
       }
     }
 
+    // ışık köprüleri: portal/yön değişince segmentleri yeniden hesapla
+    for (const lb of this.level.lightBridges) lb.update(dt, this.level, this.portals);
+
     // hareketli platformlar: önce hareket et, üstündeki oyuncuyu taşı
     for (const mp of this.level.movers) mp.update(dt);
     for (const mp of this.level.movers) {
