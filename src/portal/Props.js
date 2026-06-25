@@ -507,6 +507,7 @@ export class Destructible {
     this.collider.disabled = true;
     this.mesh.visible = false;
     this.breaking = true;
+    if (this.door) this.door.setOpen(true);
     for (let i = 0; i < 16; i++) {
       const m = this.mat.clone();
       m.transparent = true;
@@ -532,6 +533,91 @@ export class Destructible {
       this.fragments = [];
       this.breaking = false;
     }
+  }
+}
+
+// Hareket-sensörlü füze: oyuncuyu takip eder, portaldan geçer; çekirdeğe
+// çarparsa onu patlatır, oyuncuya çarparsa oyuncu başa döner.
+export class Missile {
+  constructor(pos, dir, speed = 8) {
+    this.r = 0.35;
+    this.pos = pos.clone();
+    this.speed = speed;
+    this.velocity = dir.clone().normalize().multiplyScalar(speed);
+    this.lastCenter = pos.clone();
+    this.teleportCooldown = 0;
+    this.life = 8;
+    this.dead = false;
+    this.hitPlayer = false;
+    this.mesh = new THREE.Mesh(
+      new THREE.ConeGeometry(0.22, 0.9, 10),
+      new THREE.MeshStandardMaterial({ color: 0xff5a4a, emissive: 0xff3a2a, emissiveIntensity: 1.6, roughness: 0.4 })
+    );
+    this.mesh.position.copy(pos);
+    this.light = new THREE.PointLight(0xff5a3a, 2, 6, 2);
+    this.mesh.add(this.light);
+  }
+  get center() { return this.pos.clone(); }
+  setCenter(v) { this.pos.copy(v); }
+  _inHole(c, portals) {
+    if (!portals || !portals.a.active || !portals.b.active) return false;
+    for (const p of [portals.a, portals.b]) {
+      if (p.active && p.open >= 0.4 && p.collider === c) {
+        const rel = this.pos.clone().sub(p.position);
+        const along = rel.dot(p.normal);
+        const planar = rel.addScaledVector(p.normal, -along).length();
+        if (planar < p.radius * 0.9 && Math.abs(along) < 2.5) return true;
+      }
+    }
+    return false;
+  }
+  update(dt, level, portals, target) {
+    this.teleportCooldown = Math.max(0, this.teleportCooldown - dt);
+    this.life -= dt;
+    if (this.life <= 0) { this.dead = true; return; }
+    // takip: yönü oyuncuya doğru sınırlı dönüş hızıyla çevir
+    const desired = new THREE.Vector3().subVectors(target, this.pos).normalize();
+    const cur = this.velocity.clone().normalize();
+    cur.lerp(desired, Math.min(1, (this._turnRate ?? 0.7) * dt)).normalize(); // yumuşak takip: keskin kaçışı izleyemez
+    this.velocity.copy(cur).multiplyScalar(this.speed);
+    this.pos.addScaledVector(this.velocity, dt);
+    this.mesh.position.copy(this.pos);
+    this.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), cur);
+    // çekirdek / duvar çarpışması
+    for (const c of level.colliders) {
+      if (c.disabled || c.dynamic) continue;
+      if (this._inHole(c, portals)) continue;
+      const cx = Math.max(c.min.x, Math.min(this.pos.x, c.max.x));
+      const cy = Math.max(c.min.y, Math.min(this.pos.y, c.max.y));
+      const cz = Math.max(c.min.z, Math.min(this.pos.z, c.max.z));
+      const dx = this.pos.x - cx, dy = this.pos.y - cy, dz = this.pos.z - cz;
+      if (dx * dx + dy * dy + dz * dz < this.r * this.r) {
+        if (c.destructible) c.destructible.hit();
+        this.dead = true;
+        return;
+      }
+    }
+    // oyuncuya çarpma
+    if (this.pos.distanceTo(target) < 0.9) { this.dead = true; this.hitPlayer = true; }
+  }
+}
+
+export class MissileLauncher {
+  constructor(pos, speed = 8) {
+    this.pos = pos.clone();
+    this.speed = speed;
+    this.timer = 1.0;
+    const g = new THREE.Group();
+    g.position.copy(pos);
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), new THREE.MeshStandardMaterial({ color: 0x33373f, metalness: 0.6, roughness: 0.4 })));
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 1.2, 10), new THREE.MeshStandardMaterial({ color: 0x55202a, emissive: 0x5a1010, emissiveIntensity: 0.5 })));
+    this.group = g;
+  }
+  spawn(target) {
+    const dir = new THREE.Vector3().subVectors(target, this.pos).normalize();
+    const m = new Missile(this.pos.clone().addScaledVector(dir, 0.9), dir, this.speed);
+    if (this._turn != null) m._turnRate = this._turn;
+    return m;
   }
 }
 

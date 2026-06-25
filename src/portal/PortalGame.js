@@ -197,6 +197,28 @@ export class PortalGame {
       this.portals.teleportEntity(b);
     }
     for (const r of this.level.receptacles) r.check(this.level.balls);
+
+    // hareket-sensörlü füzeler
+    for (const ml of this.level.missileLaunchers) {
+      ml.timer -= dt;
+      const live = this.level.missiles.some((m) => !m.dead);
+      if (!live && ml.timer <= 0) {
+        const m = ml.spawn(this.controller.center);
+        this.scene.add(m.mesh);
+        this.level.missiles.push(m);
+        ml.timer = 2.5;
+      }
+    }
+    for (const m of this.level.missiles) {
+      if (m.dead) continue;
+      m.update(dt, this.level, this.portals, this.controller.center);
+      this.portals.teleportEntity(m);
+      if (m.hitPlayer) { this.controller.reset(this.level.spawn); this._onDeny?.(); }
+    }
+    this.level.missiles = this.level.missiles.filter((m) => {
+      if (m.dead) { this.scene.remove(m.mesh); return false; }
+      return true;
+    });
     this.level.balls = this.level.balls.filter((b) => {
       if (b.dead) { this.scene.remove(b.mesh); return false; }
       return true;

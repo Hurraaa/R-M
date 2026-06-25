@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher } from "./Props.js";
 
 // 3x5 dijit fontu (yukarıdan okunacak sütun desenleri)
 const DIGITS = {
@@ -535,7 +535,45 @@ function chamber16(ctx) {
   ctx.story = "Yol bir enerji sütunuyla mühürlü. Tek çare: topu üstüne sürmek.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16];
+// ---- Oda 17: Füze — seni kovalayan füzeyi portaldan içeri çekip çekirdeğe sok ----
+function chamber17(ctx) {
+  addBox(ctx, V(-9, -0.5, -8), V(9, 0, 15), false); // zemin
+  addBox(ctx, V(-9.5, 0, -8), V(-9, 6, 15), false); // sol (kapı burada)
+  addBox(ctx, V(9, 0, -8), V(9.5, 6, 15), true); // SAĞ duvar portallanabilir (çekirdek önünde)
+  addBox(ctx, V(-9, 0, -8.5), V(9, 6, -8), false); // arka (fırlatıcı)
+  addBox(ctx, V(-9, 0, 15), V(9, 6, 15.5), true); // ÖN duvar portallanabilir (kaçış portalı)
+
+  // sol duvarda kapı — çekirdek patlayınca açılır; ardında hedef
+  const door = new Door(V(-9.5, 0, 1), V(-9, 4, 5));
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+  addBox(ctx, V(-13, -0.5, 1), V(-9, 0, 5), false); // hedef alkovu
+  addBox(ctx, V(-13, 0, 0.5), V(-9, 6, 1), false);
+  addBox(ctx, V(-13, 0, 5), V(-9, 6, 5.5), false);
+  addBox(ctx, V(-13, 0, 1), V(-12.5, 6, 5), false);
+
+  // çekirdek (sağ duvarın önünde, alçak) — füze buradan çıkıp çarpar
+  const core = new Destructible(V(7.3, 0.0, 4.2), V(8.5, 2.0, 5.8), 0xff3a3a);
+  core.door = door;
+  ctx.group.add(core.group);
+  ctx.colliders.push(core.collider);
+  ctx.destructibles.push(core);
+
+  // füze fırlatıcı (arka duvar, oyuncu hizasında) -> sana kilitlenip yavaşça izler
+  const ml = new MissileLauncher(V(0, 1.2, -7.8), 7.5);
+  ml._turn = 0.3; // zayıf takip: net bir yan adım onu atlatır, düz gidip portala girer
+  ctx.group.add(ml.group);
+  ctx.missileLaunchers.push(ml);
+
+  ctx.spawn = V(0, 0.1, 11);
+  goal(ctx, V(-11, 0, 3), "core", 0x6ee84f);
+  ctx.objective = "Sana kilitlenen füzeyi portala sok; çekirdekten çıkıp onu patlatsın.";
+  ctx.hint = "Füze arka duvardan sana kilitlenir. Tam karşındaki ÖN duvara bir portal, sağ duvara (alçak çekirdeğin önüne) ikinci portalı aç. Füze üstüne gelirken son anda YANA KAÇ — füze düz gidip ön portala girer, çekirdekten çıkıp patlatır. Sonra açılan kapıdan geç.";
+  ctx.story = "Güvenlik füzesi seni hedef aldı. Onu kendi çekirdeğine çevir.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -544,7 +582,7 @@ export function buildChamber(index) {
     spawn: new THREE.Vector3(), exit: null, hint: "",
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
     balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [], flipPads: [],
-    destructibles: [],
+    destructibles: [], missiles: [], missileLaunchers: [],
     gravityScale: 1,
   };
   builders[index](ctx);

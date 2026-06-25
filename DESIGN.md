@@ -61,7 +61,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 11 | Engel Yağmuru | üstüne gelen engelleri portalla savuştur (refleks) | savunmayı aş | sırada |
 | 12 | Dönen Merdivenler | kayan/hareketli platformlar (Harry Potter tarzı) | tesis canlanıyor | ✅ |
 | 12b | İnce Köprü | küçük platformlarda hassas zıplama + portal, altı uçurum (düşersen ölüm) | imtihan | sırada |
-| 12c | Füze | hareket-sensörlü füze; portalla yer değiştirip füzeyi alt et | takip | sırada |
+| 12c | Füze | sana kilitlenen füzeyi yana kaçıp portala sok, çekirdeğe çevir | takip | ✅ |
 | 12d | Şifre | yukarıdan bakınca anlamlı dizilen sayılar (anamorfik); evrensel kod | sır | ✅ |
 | 12e | Sütun Patlatma | enerji topunu portalla sütuna sürüp patlat (parçalanır) | engeli kaldır | ✅ |
 | 12f | Çarklar ve Su | küp->buton->çarklar döner->su yükselir->asansör platformu çıkar | mekanizma | ✅ |
