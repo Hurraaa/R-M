@@ -568,8 +568,8 @@ function chamber17(ctx) {
 
   ctx.spawn = V(0, 0.1, 11);
   goal(ctx, V(-11, 0, 3), "core", 0x6ee84f);
-  ctx.objective = "Sana kilitlenen füzeyi portala sok; çekirdekten çıkıp onu patlatsın.";
-  ctx.hint = "Füze arka duvardan sana kilitlenir. Tam karşındaki ÖN duvara bir portal, sağ duvara (alçak çekirdeğin önüne) ikinci portalı aç. Füze üstüne gelirken son anda YANA KAÇ — füze düz gidip ön portala girer, çekirdekten çıkıp patlatır. Sonra açılan kapıdan geç.";
+  ctx.objective = "Sana kilitlenen füzeyi ön portala sok; çekirdeğin önündeki portaldan çıkıp çekirdeğe çarpsın.";
+  ctx.hint = "Füze arka duvardan sana kilitlenir. Tam karşındaki ÖN duvara bir portal, SAĞ duvara (alçak kırmızı çekirdeğin tam önüne) ikinci portalı aç. Füze üstüne gelirken son anda YANA KAÇ — füze düz gidip ön portala girer, çekirdeğin önündeki portaldan çıkıp çekirdeğe çarpar ve onu patlatır. Sonra açılan kapıdan geç.";
   ctx.story = "Güvenlik füzesi seni hedef aldı. Onu kendi çekirdeğine çevir.";
 }
 
