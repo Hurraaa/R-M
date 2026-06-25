@@ -68,6 +68,7 @@ document.getElementById("select-close").addEventListener("click", () => {
 });
 document.getElementById("reset-btn").addEventListener("click", () => game.loadChamber(game.chamberIndex));
 document.getElementById("hint-btn").addEventListener("click", () => hint.classList.toggle("hidden"));
+document.getElementById("perf-btn").addEventListener("click", () => game.perf.toggle());
 
 // pointer-lock koparsa (ESC) başlangıca dönmeden devam; tekrar kilitlemek için tıkla
 canvas.addEventListener("click", () => {
