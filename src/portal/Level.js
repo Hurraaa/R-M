@@ -663,35 +663,27 @@ function chamber20(ctx) {
   ctx.story = "Geçit çökmüş. Eski bir ışık köprüsü yayıcısı hâlâ çalışıyor — ışığı portalla büküp kendine bir yol döşe.";
 }
 
-// ---- Oda 21: Sıçrama Hattı — düşüş-fırlatmayla başla, trambolinlerle platformları zincirle ----
+// ---- Oda 21: İkinci Köprü — köprüyü farklı bir düzende kur, geniş uçurumu geç ----
 function chamber21(ctx) {
-  // --- AÇILIŞ: düşüş-fırlatma (Oda 19 mantığı; +x'e yürü, +z'ye fırla) ---
-  addBox(ctx, V(-5, -0.5, 0), V(0, 0, 4), false); // başlangıç platformu
-  addBox(ctx, V(0, -12.5, 0), V(3, -12, 4), true); // şaft dibi (portal A)
-  addBox(ctx, V(3, -12, 0), V(3.5, 1, 4), false); // uzak x-duvarı (kaymayı yakalar)
-  addBox(ctx, V(-0.5, -12, 0), V(0, 0, 4), false); // yakın x-duvarı
-  addBox(ctx, V(0, -12, -0.5), V(3, 2, 0), true); // ARKA duvar (portal B, +z'ye fırlatır)
-  addBox(ctx, V(0, -12, 4), V(3, -6, 4.5), false); // ön eşik (alçak)
+  addBox(ctx, V(-8, -0.5, 0), V(8, 0, 6), false); // yakın platform
+  addBox(ctx, V(-8.5, 0, 0), V(-8, 6, 6), false); // sol (köprü yayıcı)
+  addBox(ctx, V(8, 0, 0), V(8.5, 6, 6), true); // SAĞ duvar portallanabilir (köprü çarpar)
+  addBox(ctx, V(-8, 0, -0.5), V(8, 6, 0), true); // ARKA duvar portallanabilir (köprüyü +z'ye çevir)
+  // uçurum z6..20 (14 birim, ölümcül — atlanamaz)
+  addBox(ctx, V(-8, -0.5, 20), V(8, 0, 28), false); // UZAK platform
+  addBox(ctx, V(-8, 0, 28), V(8, 6, 28.5), false); // uzak ön duvar (köprü buraya kadar)
+  addBox(ctx, V(-8.5, 0, 20), V(-8, 6, 28), false); // uzak sol
+  addBox(ctx, V(8, 0, 20), V(8.5, 6, 28), false); // uzak sağ
 
-  // --- P1: iniş şeridi; uzak duvar +z momentumunu yutar, zincir +x'e döner ---
-  addBox(ctx, V(-3, -4.5, 8), V(8, -4, 18), false); // uzun iniş zemini
-  addBox(ctx, V(-3, -4, 18), V(8, 3, 18.5), false); // uzak duvar (fırlatma hızını durdurur)
-  const t1 = new BouncePad(V(6, -4, 16), 18); // +x kenarında, iniş hattının dışında
-  ctx.group.add(t1.group); ctx.bouncePads.push(t1);
+  const lb = new LightBridge(V(-7.8, 0.2, 3), V(1, 0, 0), 60);
+  ctx.group.add(lb.group); ctx.lightBridges.push(lb);
+  for (const c of lb.colliders) ctx.colliders.push(c);
 
-  // --- P2: +x'e, hafif +z kaymış (havada ayar) ---
-  addBox(ctx, V(11, -4.5, 14), V(20, -4, 24), false);
-  const t2 = new BouncePad(V(15, -4, 19), 18);
-  ctx.group.add(t2.group); ctx.bouncePads.push(t2);
-
-  // --- P3: çıkış (+x devam; geniş iniş alanı) ---
-  addBox(ctx, V(21, -4.5, 15), V(32, -4, 26), false);
-  goal(ctx, V(27, -4, 21), "core", 0x6ee84f);
-
-  ctx.spawn = V(-2.5, 0.1, 2);
-  ctx.objective = "Düşüş-fırlatmayla ilk platforma uç, sonra trambolinlerle platformları zıplayarak çıkışa ulaş.";
-  ctx.hint = "Önce: şaftın DİBİNE ve ARKA duvarına portal aç, boşluğa düş — ileri fırlayıp ilk platforma inersin. Sonra trambolinlere bas; havadayken yönünü AYARLA (platformlar sağa-sola kaymış) ki bir sonraki platforma in. Düşersen başa dönersin.";
-  ctx.story = "Tahliye hattı parçalanmış. Tek çıkış: momentumu bir fırlatmayla başlatıp trambolinlerle sekerek aşmak.";
+  ctx.spawn = V(-4, 0.1, 3);
+  goal(ctx, V(4, 0, 24), "beacon", 0x46e6ff);
+  ctx.objective = "Işık köprüsünü kur ve 14 birimlik uçurumu geç — köprü şeridini hedefe göre hizala.";
+  ctx.hint = "Yayıcı köprüyü sağ duvara atar (boşa). Köprünün çarptığı SAĞ duvara bir portal, ARKA duvara ikinci portalı aç — köprü arka portaldan +z'ye doğar ve uçurumu boydan boya geçer. Portal B'yi açtığın YÜKSEKLİK/x köprünün şeridini belirler; hedefe (sağ tarafta) ulaşacak şeridi seç, köprüye çıkıp karşıya yürü. Düşersen başa.";
+  ctx.story = "Bir köprü daha döşemen gerek — ama bu sefer uçurum daha geniş, şeridi doğru seçmelisin.";
 }
 
 // ---- Oda 22: Lazer — ışını portalla büküp karşı duvardaki alıcıya düşür ----

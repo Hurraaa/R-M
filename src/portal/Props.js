@@ -744,7 +744,7 @@ export class LightBridge {
   _mkSeg() {
     const mesh = new THREE.Mesh(
       new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshStandardMaterial({ color: 0x8fecff, emissive: 0x35c6ea, emissiveIntensity: 1.7, transparent: true, opacity: 0.52, roughness: 0.25 })
+      new THREE.MeshStandardMaterial({ color: 0x6fc8e0, emissive: 0x1f7e96, emissiveIntensity: 0.7, transparent: true, opacity: 0.4, roughness: 0.3 })
     );
     mesh.visible = false;
     const collider = { min: new THREE.Vector3(), max: new THREE.Vector3(), disabled: true, portalable: false, bridge: true };
