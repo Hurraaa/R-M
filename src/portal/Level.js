@@ -538,12 +538,15 @@ function chamber16(ctx) {
 // ---- Oda 17: Füze — seni kovalayan füzeyi portaldan içeri çekip çekirdeğe sok ----
 function chamber17(ctx) {
   addBox(ctx, V(-9, -0.5, -8), V(9, 0, 15), false); // zemin
-  addBox(ctx, V(-9.5, 0, -8), V(-9, 6, 15), false); // sol (kapı burada)
+  // sol duvar — kapı boşluğu (z 1..5) bırakacak şekilde bölündü
+  addBox(ctx, V(-9.5, 0, -8), V(-9, 6, 1), false); // kapının arkası
+  addBox(ctx, V(-9.5, 0, 5), V(-9, 6, 15), false); // kapının önü
+  addBox(ctx, V(-9.5, 4, 1), V(-9, 6, 5), false); // kapı üstü lento
   addBox(ctx, V(9, 0, -8), V(9.5, 6, 15), true); // SAĞ duvar portallanabilir (çekirdek önünde)
   addBox(ctx, V(-9, 0, -8.5), V(9, 6, -8), false); // arka (fırlatıcı)
   addBox(ctx, V(-9, 0, 15), V(9, 6, 15.5), true); // ÖN duvar portallanabilir (kaçış portalı)
 
-  // sol duvarda kapı — çekirdek patlayınca açılır; ardında hedef
+  // sol duvardaki kapı boşluğunu kapatır — çekirdek patlayınca açılır; ardında hedef
   const door = new Door(V(-9.5, 0, 1), V(-9, 4, 5));
   ctx.group.add(door.mesh);
   ctx.colliders.push(door.collider);
