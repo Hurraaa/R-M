@@ -104,7 +104,10 @@ export class PortalGame {
   }
 
   loadChamber(i) {
-    if (this.levelGroup) this.scene.remove(this.levelGroup);
+    if (this.levelGroup) {
+      this.scene.remove(this.levelGroup);
+      this._disposeGroup(this.levelGroup); // GPU sızıntısını önle (özellikle R ile yenilemede)
+    }
     this.chamberIndex = i;
     this.level = buildChamber(i);
     this.levelGroup = this.level.group;
@@ -117,6 +120,24 @@ export class PortalGame {
     this._nextPortal = "a";
     this._t = 0;
     this._onHud?.(i + 1, CHAMBER_COUNT, this.level.hint, this.level.objective);
+  }
+
+  // bölüm grubundaki geometri/materyal/texture'ları GPU'dan serbest bırak.
+  // levelGroup yalnızca bölüme özgü (paylaşılmayan) nesneler içerir -> güvenli.
+  _disposeGroup(group) {
+    group.traverse((obj) => {
+      if (obj.geometry) obj.geometry.dispose();
+      const mat = obj.material;
+      if (!mat) return;
+      const mats = Array.isArray(mat) ? mat : [mat];
+      for (const m of mats) {
+        for (const key in m) {
+          const v = m[key];
+          if (v && v.isTexture) v.dispose();
+        }
+        m.dispose();
+      }
+    });
   }
 
   firePortal(which) {
