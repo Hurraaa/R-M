@@ -608,7 +608,37 @@ function chamber18(ctx) {
   ctx.story = "Koridoru bir enerji barajı tarıyor. Akışı kendi alıcısına çevir, sus pus olsun.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18];
+// ---- Oda 19: Serbest Düşüş — şafta düş, dipteki portaldan yan duvara fırla, karşıya uç ----
+function chamber19(ctx) {
+  // başlangıç platformu (oyuncu burada durur, sağına/+x'e doğru şaft var)
+  addBox(ctx, V(-5, -0.5, 0), V(0, 0, 4), false);
+  // korkuluklar (yanlış yöne düşmeyi önle, manzara açık)
+  addBox(ctx, V(-5, 0, -0.5), V(0, 1.2, 0), false); // arka
+  addBox(ctx, V(-5.5, 0, 0), V(-5, 1.2, 4), false); // sol
+  addBox(ctx, V(-5, 0, 4), V(0, 1.2, 4.5), false); // ön (şaftın yanı değil)
+
+  // ŞAFT: x[0,3] dipte y=-12'de PORTALLANABİLİR zemin (portal A buraya)
+  addBox(ctx, V(0, -12.5, 0), V(3, -12, 4), true); // şaft dibi (portal A)
+  addBox(ctx, V(3, -12, 0), V(3.5, 1, 4), false); // uzak x-duvarı (düşüş kaymasını yakalar)
+  addBox(ctx, V(-0.5, -12, 0), V(0, 0, 4), false); // yakın x-duvarı (platform altı)
+  // ARKA duvar z=0, normal +z — PORTALLANABİLİR (portal B; +z'ye fırlatır, karşıya bakar)
+  addBox(ctx, V(0, -12, -0.5), V(3, 2, 0), true);
+  addBox(ctx, V(0, -12, 4), V(3, -6, 4.5), false); // ön eşik (alçak; fırlatma üstünden aşar)
+
+  // KARŞI platform (+z), alçak (y=-4) ve geniş — bağışlayıcı iniş
+  addBox(ctx, V(-3, -4.5, 8), V(4, -4, 34), false);
+  addBox(ctx, V(-3.5, -4, 8), V(-3, -2.5, 34), false); // sol korkuluk
+  addBox(ctx, V(4, -4, 8), V(4.5, -2.5, 34), false); // sağ korkuluk
+  addBox(ctx, V(-3, -4, 34), V(4, -2.5, 34.5), false); // arka korkuluk
+
+  ctx.spawn = V(-2.5, 0.1, 2);
+  goal(ctx, V(0.5, -4, 16), "core", 0x6ee84f);
+  ctx.objective = "Şaftın dibine ve arka duvarına portal aç; boşluğa düş, dipten fırlayıp karşıya uç.";
+  ctx.hint = "Sağındaki derin şaftın DİBİNE (zemine) bir portal, şaftın ARKA duvarına (karşı platforma bakan portallanabilir yüzey) ikinci portalı aç. Sonra şafta düş — dibe çarpınca arka duvardaki portaldan ileri fırlar, boşluğu aşıp karşı platforma inersin. Iskalarsan başa döner, tekrar denersin.";
+  ctx.story = "Zemin çökmüş, önünde dipsiz bir şaft. Düşüşünü bir portalla ileri çevir — momentum seni karşıya taşısın.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {

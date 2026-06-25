@@ -50,7 +50,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 |---|----|--------------|-------------|-------|
 | 6 | Köprü | fırlatma rampası (küpü+kendini uçur) | eski fırlatıcılar | ✅ |
 | 7 | İp Hattı | tele tutunup kayarak (zipline) | uçurumu geç | ✅ |
-| 8 | Serbest Düşüş | kayarak/düşerken HIZLA iki portal aç (refleks yarışı) | acil tahliye | sırada |
+| 8 | Serbest Düşüş | portalları kur, şafta düş, dipten yana fırla, karşıya uç (bağışlayıcı) | acil tahliye | ✅ |
 | 9 | Trambolin | zıplama padi + portal ile hedefe sek | esneklik testi | ✅ |
 | 9b | Çift Sıçrama | rampa/trambolin + portal zinciri | uçurumları aş | planlı |
 
