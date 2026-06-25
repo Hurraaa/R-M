@@ -573,7 +573,42 @@ function chamber17(ctx) {
   ctx.story = "Güvenlik füzesi seni hedef aldı. Onu kendi çekirdeğine çevir.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17];
+// ---- Oda 18: Engel Yağmuru — zararlı enerji barajını portalla alıcıya çevirip kapat ----
+function chamber18(ctx) {
+  addBox(ctx, V(-7, -0.5, -2), V(7, 0, 17), false); // zemin
+  addBox(ctx, V(-7, 0, -2.5), V(7, 6, -2), false); // arka duvar (yayıcı burada)
+  addBox(ctx, V(-7.5, 0, -2), V(-7, 6, 17), false); // sol duvar
+  addBox(ctx, V(7, 0, -2), V(7.5, 6, 17), true); // SAĞ duvar portallanabilir (alıcı önünde)
+  addBox(ctx, V(-7, 0, 17), V(7, 6, 17.5), true); // ÖN duvar portallanabilir (topu buraya sok)
+
+  // zararlı baraj: arka duvardan +z'ye hızlı top yağar, merkez hattı boyunca sekip durur
+  const em = new BallEmitter(V(0, 1.2, -1.8), V(0, 0, 1), 13);
+  ctx.group.add(em.group);
+  ctx.emitters.push(em);
+  ctx.ballsHarmful = true;
+
+  // alıcı: sağ duvarın önünde, asılı halka — top buraya yönlendirilince barajı kapatır
+  // hedef alkovunun kapısı (ön-sol köşe) açılır
+  const door = new Door(V(-6, 0, 12.5), V(-3, 4, 13));
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+  // ön-sol hedef alkovu (girişi z13'te kapı; x -6..-3 açık, gerisi duvar)
+  addBox(ctx, V(-7, 0, 13), V(-6, 6, 13.5), false); // kapının solu (sağlam)
+  addBox(ctx, V(-3, 0, 13), V(-2.5, 6, 17), false); // alkov sağ kenarı
+
+  const recept = new Receptacle(V(5.8, 1.2, 7), door, em);
+  ctx.group.add(recept.group);
+  ctx.receptacles.push(recept);
+
+  ctx.spawn = V(5.2, 0.1, -0.5); // sağ-arka köşe, baraj hattının dışında (güvenli başlangıç)
+  goal(ctx, V(-5, 0, 15.5), "beacon", 0x6ee8c9);
+  ctx.objective = "Zararlı enerji barajını portalla alıcıya çevirip kapat, sonra hedefe ulaş.";
+  ctx.hint = "Arka duvar merkez hattına zararlı toplar yağdırır — çarparsan başa dönersin. ÖN duvara (topun geldiği yere) bir portal, SAĞ duvara (asılı alıcının tam karşısına) ikinci portalı aç. Top ön portala girip alıcıdan çıkar; baraj kapanır ve hedef kapısı açılır.";
+  ctx.story = "Koridoru bir enerji barajı tarıyor. Akışı kendi alıcısına çevir, sus pus olsun.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -583,7 +618,7 @@ export function buildChamber(index) {
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
     balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [], flipPads: [],
     destructibles: [], missiles: [], missileLaunchers: [],
-    gravityScale: 1,
+    gravityScale: 1, ballsHarmful: false,
   };
   builders[index](ctx);
   return ctx;

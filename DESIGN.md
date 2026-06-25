@@ -58,7 +58,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
 |---|----|--------------|-------------|-------|
 | 10 | Enerji Topu | zıplayan enerji topunu portalla alıcıya yönlendir | gücü ata | ✅ |
-| 11 | Engel Yağmuru | üstüne gelen engelleri portalla savuştur (refleks) | savunmayı aş | sırada |
+| 11 | Engel Yağmuru | zararlı enerji barajını portalla alıcıya çevirip kapat | savunmayı aş | ✅ |
 | 12 | Dönen Merdivenler | kayan/hareketli platformlar (Harry Potter tarzı) | tesis canlanıyor | ✅ |
 | 12b | İnce Köprü | küçük platformlarda hassas zıplama + portal, altı uçurum (düşersen ölüm) | imtihan | sırada |
 | 12c | Füze | sana kilitlenen füzeyi yana kaçıp portala sok, çekirdeğe çevir | takip | ✅ |

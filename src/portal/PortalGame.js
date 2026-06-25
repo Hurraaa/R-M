@@ -182,6 +182,7 @@ export class PortalGame {
     }
     // enerji topları: yayıcı + uçuş + portal + alıcı
     for (const em of this.level.emitters) {
+      if (em.disabled) continue;
       em.timer -= dt;
       const live = this.level.balls.some((b) => !b.dead);
       if (!live && em.timer <= 0) {
@@ -195,6 +196,11 @@ export class PortalGame {
       if (b.dead) continue;
       b.update(dt, this.level, this.portals);
       this.portals.teleportEntity(b);
+      // zararlı engel topu: oyuncuya değerse spawn'a döndür
+      if (this.level.ballsHarmful && b.pos.distanceTo(this.controller.center) < b.r + 0.5) {
+        this.controller.reset(this.level.spawn);
+        this._onDeny?.();
+      }
     }
     for (const r of this.level.receptacles) r.check(this.level.balls);
 

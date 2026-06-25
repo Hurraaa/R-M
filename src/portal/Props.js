@@ -277,10 +277,11 @@ export class BallEmitter {
 }
 
 export class Receptacle {
-  constructor(pos, door) {
+  constructor(pos, door, emitter = null) {
     this.pos = pos.clone();
     this.radius = 1.0;
     this.door = door;
+    this.emitter = emitter; // doldurulunca bu yayıcıyı durdurur (engel barajını kapat)
     this.active = false;
     this.group = new THREE.Group();
     this.group.position.copy(pos);
@@ -294,6 +295,7 @@ export class Receptacle {
         this.active = true;
         b.dead = true;
         if (this.door) this.door.setOpen(true);
+        if (this.emitter) this.emitter.disabled = true; // barajı kapat
         this.ring.material.color.setHex(0x6ee84f);
         this.ring.material.emissive.setHex(0x2f9a3e);
         this.ring.material.emissiveIntensity = 1.4;
