@@ -9,6 +9,7 @@ import { FPController } from "./FPController.js";
 import { PortalSystem } from "./PortalSystem.js";
 import { buildChamber, CHAMBER_COUNT } from "./Level.js";
 import { Scenery } from "./Scenery.js";
+import { PerfMonitor } from "./PerfMonitor.js";
 
 export class PortalGame {
   constructor(canvas) {
@@ -31,8 +32,12 @@ export class PortalGame {
     this.raycaster = new THREE.Raycaster();
     this.raycaster.far = 80;
 
+    this.perf = new PerfMonitor();
+    this.renderer.info.autoReset = false; // çoklu render-pass: reset'i biz yönetiriz
+
     addEventListener("keydown", (e) => {
       if (e.code === "KeyR") this.loadChamber(this.chamberIndex);
+      if (e.code === "KeyP") this.perf.toggle();
     });
     addEventListener("resize", () => this._onResize());
 
@@ -288,11 +293,19 @@ export class PortalGame {
   _loop() {
     requestAnimationFrame(this._loop);
     const dt = Math.min(0.05, this.clock.getDelta());
+    this.renderer.info.reset(); // autoReset kapalı: kare başında biz sıfırlarız
+
+    const t0 = performance.now();
     this.scenery?.update(dt);
     this._update(dt);
+    const t1 = performance.now();
     // görülebilir portal: karşı tarafı portallara çiz (composer'dan önce)
     if (this.state === "playing") this.portals.renderViews(this.renderer, this.scene, this.camera);
+    const t2 = performance.now();
     this.composer.render();
+    const t3 = performance.now();
+
+    this.perf.sample(t1 - t0, t2 - t1, t3 - t2, this.renderer, this.portals);
     this.input.endFrame();
   }
 
