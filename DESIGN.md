@@ -80,6 +80,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 23 | Şebeke (fizzler) | geçince portal sıfırlayan/küp eriten alan; küpü portalla öbür yana geçir | güvenliği aş | ✅ |
 | 24 | Yansıtıcı | ışını portalla sabit reflektöre sok; 90° bükülüp ön duvardaki alıcıya gider | açıyla yönlendir | ✅ |
 | 25 | Sıçrama Jeli | jeli portalla (zemin→tavan) çıkışın önüne taşı; oluşan yamadan sıçrayıp yüksek kıyıya çık | zıplama noktası döşe | ✅ |
+| 26 | Mantık Kapısı | tek ışını portal+yansıtıcıyla iki içinden-geçilen alıcıdan geçir; AND kapısı açar | mantık kilidi | ✅ |
 
 > Tasarım pusulası: bir mekanik ilk kez tanıtılmıyorsa çeşitlendir
 > (tuzak/şaşırtmaca/kombinasyon). Hiçbir bölüm bir öncekine çok benzemesin.

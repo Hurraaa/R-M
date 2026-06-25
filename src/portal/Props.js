@@ -910,12 +910,14 @@ export class Laser {
   }
   update(dt, level, portals) {
     this.ends = [];
+    this.beamSegs = []; // [a,b] çiftleri (içinden-geçilen alıcı kontrolü için)
     let P = this.origin.clone();
     let D = this.dir.clone();
     let ignore = null, si = 0, bounces = 0;
     for (let step = 0; step < 12; step++) {
       const h = this._march(P, D, level, portals, ignore);
       this._place(si++, P, h.point);
+      this.beamSegs.push([P.clone(), h.point.clone()]);
       if (h.kind === "portal") {
         const exit = h.obj === portals.a ? portals.b : portals.a;
         P = exit.position.clone();
@@ -950,11 +952,21 @@ export class Laser {
   }
 }
 
+// noktanın [a,b] doğru parçasına uzaklığı
+function distToSeg(p, a, b) {
+  const ab = b.clone().sub(a);
+  const len2 = ab.lengthSq();
+  let t = len2 > 1e-9 ? p.clone().sub(a).dot(ab) / len2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  return p.distanceTo(a.clone().addScaledVector(ab, t));
+}
+
 export class LaserReceiver {
-  constructor(pos, door) {
+  constructor(pos, door, opts = {}) {
     this.pos = pos.clone();
     this.radius = 1.0;
     this.door = door;
+    this.passThrough = !!opts.passThrough; // ışın içinden geçince yanar (uç değil)
     this.active = false;
     this.group = new THREE.Group();
     this.group.position.copy(pos);
@@ -971,8 +983,15 @@ export class LaserReceiver {
   check(lasers) {
     let hit = false;
     for (const lz of lasers) {
-      for (const e of lz.ends) {
-        if (e.isWall && e.point.distanceTo(this.pos) < this.radius) { hit = true; break; }
+      if (this.passThrough) {
+        // ışın segmentlerinden biri içinden geçiyor mu
+        for (const [a, b] of lz.beamSegs || []) {
+          if (distToSeg(this.pos, a, b) < this.radius) { hit = true; break; }
+        }
+      } else {
+        for (const e of lz.ends) {
+          if (e.isWall && e.point.distanceTo(this.pos) < this.radius) { hit = true; break; }
+        }
       }
       if (hit) break;
     }
@@ -983,6 +1002,45 @@ export class LaserReceiver {
       this.core.material.emissive.setHex(hit ? 0x2f9a3e : 0x440808);
       this.core.material.emissiveIntensity = hit ? 1.5 : 0.6;
       this.ring.material.emissive.setHex(hit ? 0x2f9a3e : 0x3a1010);
+    }
+  }
+}
+
+// ---- Mantık Kapısı (AND / OR / XOR) ----
+// Girişleri (alıcı vb. .active) mantıkla birleştirip kapıyı sürer.
+export class LogicGate {
+  constructor(inputs, type, door, pos) {
+    this.inputs = inputs;
+    this.type = type; // "AND" | "OR" | "XOR"
+    this.door = door;
+    this.out = false;
+    this.group = new THREE.Group();
+    if (pos) this.group.position.copy(pos);
+    this.panel = new THREE.Mesh(
+      new THREE.BoxGeometry(1.4, 1.4, 0.2),
+      new THREE.MeshStandardMaterial({ color: 0x2a2f3a, emissive: 0x101820, emissiveIntensity: 0.4, metalness: 0.5, roughness: 0.5 })
+    );
+    // sembol: AND=⋂ benzeri çubuk, OR=çatal, XOR=çift kavis — basit çizgi seti
+    this.sym = new THREE.Mesh(
+      new THREE.TorusGeometry(0.42, 0.07, 8, 20, type === "OR" ? Math.PI : Math.PI * 2),
+      new THREE.MeshStandardMaterial({ color: 0x8893a4, emissive: 0x22303f, emissiveIntensity: 0.6 })
+    );
+    this.sym.position.z = 0.12;
+    if (type === "XOR") this.sym.scale.set(1, 1.25, 1);
+    this.group.add(this.panel, this.sym);
+  }
+  update() {
+    const s = this.inputs.map((i) => !!i.active);
+    let out;
+    if (this.type === "OR") out = s.some(Boolean);
+    else if (this.type === "XOR") out = s.filter(Boolean).length === 1;
+    else out = s.length > 0 && s.every(Boolean); // AND
+    if (out !== this.out) {
+      this.out = out;
+      if (this.door) this.door.setOpen(out);
+      this.sym.material.color.setHex(out ? 0x6ee84f : 0x8893a4);
+      this.sym.material.emissive.setHex(out ? 0x2f9a3e : 0x22303f);
+      this.sym.material.emissiveIntensity = out ? 1.4 : 0.6;
     }
   }
 }

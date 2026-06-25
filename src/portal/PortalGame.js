@@ -187,6 +187,7 @@ export class PortalGame {
     // lazerler: ışın yolunu hesapla, alıcıları kontrol et
     for (const lz of this.level.lasers) lz.update(dt, this.level, this.portals);
     for (const rc of this.level.laserReceivers) rc.check(this.level.lasers);
+    for (const g of this.level.logicGates) g.update();
 
     // hareketli platformlar: önce hareket et, üstündeki oyuncuyu taşı
     for (const mp of this.level.movers) mp.update(dt);

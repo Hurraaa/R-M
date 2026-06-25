@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher, LightBridge, Laser, LaserReceiver, Fizzler } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher, LightBridge, Laser, LaserReceiver, Fizzler, LogicGate } from "./Props.js";
 
 // 3x5 dijit fontu (yukarıdan okunacak sütun desenleri)
 const DIGITS = {
@@ -849,7 +849,56 @@ function chamber25(ctx) {
   ctx.story = "Eski bir sıçrama jeli hattı. Akışı portalla yönlendir, kendine bir zıplama noktası döşe.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25];
+// ---- Oda 26: Mantık Kapısı — tek ışını iki alıcıdan geçir (AND), kapı açılsın ----
+function chamber26(ctx) {
+  addBox(ctx, V(-9, -0.5, -8), V(9, 0, 14), false); // zemin
+  addBox(ctx, V(-9, 0, -8.5), V(9, 6, -8), false); // arka (yayıcı)
+  addBox(ctx, V(9, 0, -8), V(9.5, 6, 14), true); // SAĞ duvar portallanabilir
+  addBox(ctx, V(-9, 0, 14), V(9, 6, 14.5), true); // ÖN duvar portallanabilir
+  // SOL duvar — kapı boşluğu (z 9..12), ardında hedef
+  addBox(ctx, V(-9.5, 0, -8), V(-9, 6, 9), false);
+  addBox(ctx, V(-9.5, 0, 12), V(-9, 6, 14), false);
+  addBox(ctx, V(-9.5, 4, 9), V(-9, 6, 12), false); // lento
+
+  // lazer: arka duvardan +z (ön duvara çarpar)
+  const lz = new Laser(V(0, 0.7, -7.7), V(0, 0, 1));
+  ctx.group.add(lz.group);
+  ctx.lasers.push(lz);
+
+  // iki "içinden geçilen" alıcı (kapı yok; AND kapısı sürer)
+  const r1 = new LaserReceiver(V(4, 0.7, 5), null, { passThrough: true });
+  const r2 = new LaserReceiver(V(-1.4, 0.7, 1), null, { passThrough: true });
+  ctx.group.add(r1.group, r2.group);
+  ctx.laserReceivers.push(r1, r2);
+
+  // SABİT yansıtıcı ("/"): -x ışını -z'ye çevirir (R1'den sonra R2'ye iplikler)
+  const refl = new Cube(V(-2, 0.6, 5), 1.2, { reflector: true, mirror: "/" });
+  ctx.group.add(refl.mesh);
+  ctx.colliders.push(refl.collider);
+  ctx.cubes.push(refl);
+
+  // kapı + AND kapısı (R1 & R2)
+  const door = new Door(V(-9.5, 0, 9), V(-9, 4, 12));
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+  const gate = new LogicGate([r1, r2], "AND", door, V(3, 3.2, -7.8));
+  ctx.group.add(gate.group);
+  ctx.logicGates.push(gate);
+
+  addBox(ctx, V(-13, -0.5, 9), V(-9, 0, 12), false); // hedef alkovu
+  addBox(ctx, V(-13, 0, 8.5), V(-9, 6, 9), false);
+  addBox(ctx, V(-13, 0, 12), V(-9, 6, 12.5), false);
+  addBox(ctx, V(-13, 0, 9), V(-12.5, 6, 12), false);
+
+  ctx.spawn = V(5, 0.1, 9);
+  goal(ctx, V(-11, 0, 10.5), "core", 0x6ee84f);
+  ctx.objective = "Tek ışını HER İKİ alıcıdan geçir; AND kapısı ikisi de yanınca kapıyı açar.";
+  ctx.hint = "Kapı yalnızca İKİ alıcı da yanınca açılır (AND). Tek ışın var. Işının ön duvara değdiği yere bir portal, SAĞ duvara (alıcı R1 ve yansıtıcı hizasına, z≈5) ikinci portalı aç. Işın R1'den geçer, yansıtıcıda 90° bükülüp R2'den de geçer. İkisi de yanınca soldaki kapı açılır.";
+  ctx.story = "Bir mantık kilidi: tek bir ışını ikiye bölmeden iki düğümden geçirmen gerek.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -859,7 +908,7 @@ export function buildChamber(index) {
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
     balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [], flipPads: [],
     destructibles: [], missiles: [], missileLaunchers: [], lightBridges: [],
-    lasers: [], laserReceivers: [], fizzlers: [],
+    lasers: [], laserReceivers: [], fizzlers: [], logicGates: [],
     gravityScale: 1, ballsHarmful: false,
   };
   builders[index](ctx);
