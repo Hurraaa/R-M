@@ -898,7 +898,46 @@ function chamber26(ctx) {
   ctx.story = "Bir mantık kilidi: tek bir ışını ikiye bölmeden iki düğümden geçirmen gerek.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26];
+// ---- Oda 27: Çift Yansıtıcı — ışını iki reflektörle zigzag yapıp alıcıya ulaştır ----
+function chamber27(ctx) {
+  addBox(ctx, V(-9, -0.5, -8), V(9, 0, 14), false); // zemin
+  addBox(ctx, V(-9, 0, -8.5), V(9, 6, -8), false); // arka (yayıcı)
+  addBox(ctx, V(9, 0, -8), V(9.5, 6, 14), true); // SAĞ duvar portallanabilir (+ alıcı)
+  addBox(ctx, V(-9, 0, 14), V(9, 6, 14.5), true); // ÖN duvar portallanabilir
+  // SOL duvar — kapı boşluğu (z 9..12)
+  addBox(ctx, V(-9.5, 0, -8), V(-9, 6, 9), false);
+  addBox(ctx, V(-9.5, 0, 12), V(-9, 6, 14), false);
+  addBox(ctx, V(-9.5, 4, 9), V(-9, 6, 12), false);
+
+  const lz = new Laser(V(0, 0.7, -7.7), V(0, 0, 1)); // +z
+  ctx.group.add(lz.group); ctx.lasers.push(lz);
+
+  // iki sabit reflektör: -x --R1"/"--> -z --R2"\"--> +x
+  const r1 = new Cube(V(2, 0.6, 5), 1.2, { reflector: true, mirror: "/" });
+  const r2 = new Cube(V(2.6, 0.6, -3), 1.2, { reflector: true, mirror: "\\" });
+  ctx.group.add(r1.mesh, r2.mesh);
+  ctx.colliders.push(r1.collider, r2.collider);
+  ctx.cubes.push(r1, r2);
+
+  const door = new Door(V(-9.5, 0, 9), V(-9, 4, 12));
+  ctx.group.add(door.mesh); ctx.colliders.push(door.collider); ctx.doors.push(door);
+  // alıcı: ölçülen +x ışın bitişine (sağ duvar) yerleştirilecek (sim ile)
+  const rc = new LaserReceiver(V(8.9, 0.7, -2.4), door);
+  ctx.group.add(rc.group); ctx.laserReceivers.push(rc);
+
+  addBox(ctx, V(-13, -0.5, 9), V(-9, 0, 12), false); // hedef alkovu
+  addBox(ctx, V(-13, 0, 8.5), V(-9, 6, 9), false);
+  addBox(ctx, V(-13, 0, 12), V(-9, 6, 12.5), false);
+  addBox(ctx, V(-13, 0, 9), V(-12.5, 6, 12), false);
+
+  ctx.spawn = V(5, 0.1, 9);
+  goal(ctx, V(-11, 0, 10.5), "core", 0x6ee84f);
+  ctx.objective = "Işını portalla ilk yansıtıcıya sok; iki reflektörde zigzag yapıp sağ duvardaki alıcıya gitsin.";
+  ctx.hint = "Işının ÖN duvara değdiği yere bir portal, SAĞ duvara (ilk yansıtıcı hizasına, z≈5) ikinci portalı aç. Işın -x gider, R1'de -z'ye, R2'de +x'e döner ve sağ duvardaki alıcıya çarpar. Tek portalla iki büküm zincirini kur.";
+  ctx.story = "İki aynalı bir labirent. Işığı iki kez köşeden döndürmen gerek.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {

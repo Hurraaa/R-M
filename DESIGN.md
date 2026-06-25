@@ -81,6 +81,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 24 | Yansıtıcı | ışını portalla sabit reflektöre sok; 90° bükülüp ön duvardaki alıcıya gider | açıyla yönlendir | ✅ |
 | 25 | Sıçrama Jeli | jeli portalla (zemin→tavan) çıkışın önüne taşı; oluşan yamadan sıçrayıp yüksek kıyıya çık | zıplama noktası döşe | ✅ |
 | 26 | Mantık Kapısı | tek ışını portal+yansıtıcıyla iki içinden-geçilen alıcıdan geçir; AND kapısı açar | mantık kilidi | ✅ |
+| 27 | Çift Yansıtıcı | ışını portalla sok, iki reflektörde zigzag (-x→-z→+x), sağ duvardaki alıcıya | aynalı labirent | ✅ |
 
 > Tasarım pusulası: bir mekanik ilk kez tanıtılmıyorsa çeşitlendir
 > (tuzak/şaşırtmaca/kombinasyon). Hiçbir bölüm bir öncekine çok benzemesin.
