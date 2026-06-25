@@ -27,6 +27,7 @@ export class PortalGame {
     this.input = new PortalInput(canvas);
     this.controller = new FPController();
     this.portals = new PortalSystem(this.scene);
+    this.portals.viewScale = this.isMobile ? 0.6 : 1; // mobilde portal görüntüsü daha düşük çözünürlük
     this.raycaster = new THREE.Raycaster();
     this.raycaster.far = 80;
 
@@ -289,6 +290,8 @@ export class PortalGame {
     const dt = Math.min(0.05, this.clock.getDelta());
     this.scenery?.update(dt);
     this._update(dt);
+    // görülebilir portal: karşı tarafı portallara çiz (composer'dan önce)
+    if (this.state === "playing") this.portals.renderViews(this.renderer, this.scene, this.camera);
     this.composer.render();
     this.input.endFrame();
   }

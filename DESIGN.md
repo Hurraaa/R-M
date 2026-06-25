@@ -83,6 +83,25 @@ basınç butonu → kapı → ileri seviye fırlatma).
 > Momentum/uçuş bölümlerini (19 tarzı) çoğalt: düşüş→trambolin→peş peşe
 > platform, zamanlama/ayar.
 
+## 2. PERDE planı (ChatGPT "EŞİK" fikirlerinden, fizibilite süzgeçli)
+
+Mevcut ~21 bölüm = 1. Perde (fiziksel kampanya). 2. Perde = bilgi/algı +
+sabotaj yönü. Fizibilite sırası:
+
+- **Enabler ✅ eklendi:** Görülebilir portal (özyinelemesiz RTT) — gözlem/
+  kamera/perspektif/ayna/görüş-hattı bölümlerinin ön koşulu. `portals.seeThrough`
+  ile kapatılabilir. Mobilde `viewScale=0.6`.
+- **Faz A (görülebilir portal gerekmez):** Lazer/Alıcı/Mantık kapıları (sıradaki),
+  Fizzler, Sıçrama Jeli, İki güvenilmez YZ (ORA/VEK), Adli kronoloji, Sembol dili,
+  Sarkaç, Tek-kullanımlık yüzey (Euler).
+- **Faz B (görülebilir portal ile):** Kamera-besleme, perspektif/anamorfik,
+  ayna/kiralite, görüş-hattı, çok-kaynaklı kapalı oda (ch30), portal-görüş zinciri
+  (ch37), dost ateşi kuleler (ch32).
+- **Faz C (ağır alt-sistem, seçerek):** zaman yankısı (klon), paralel dünyalar,
+  termal/kütle/sıvı, satranç muhafızları, yapısal çöküş, kara başlatma.
+- **Ertele/atla:** özyineleme-ölçek, tersine nedensellik, durum-geçidi, meta
+  41–50, ustalık 51–60. Hedef ölçek: cilalı ~10 bölümlük 2. Perde (toplam ~30).
+
 ### Perde V — Kaçış (finale)
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
 |---|----|--------------|-------------|-------|
