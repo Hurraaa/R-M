@@ -781,7 +781,51 @@ function chamber23(ctx) {
   ctx.story = "Bir arınma şebekesi yolu kesiyor. Taşıdığını eritir — ama portaldan geçen erimez.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23];
+// ---- Oda 24: Yansıtıcı — ışını portalla reflektöre sok, 90° bükülüp alıcıya gitsin ----
+function chamber24(ctx) {
+  addBox(ctx, V(-9, -0.5, -8), V(9, 0, 14), false); // zemin
+  addBox(ctx, V(-9, 0, -8.5), V(9, 6, -8), false); // arka (yayıcı)
+  addBox(ctx, V(9, 0, -8), V(9.5, 6, 14), true); // SAĞ duvar portallanabilir
+  addBox(ctx, V(-9, 0, 14), V(9, 6, 14.5), true); // ÖN duvar portallanabilir (alıcı burada)
+  // SOL duvar — ortada kapı boşluğu (z 9..12), ardında hedef
+  addBox(ctx, V(-9.5, 0, -8), V(-9, 6, 9), false);
+  addBox(ctx, V(-9.5, 0, 12), V(-9, 6, 14), false);
+  addBox(ctx, V(-9.5, 4, 9), V(-9, 6, 12), false); // lento
+
+  // lazer: arka duvardan +z, ön duvara çarpar (boşa)
+  const lz = new Laser(V(0, 0.7, -7.7), V(0, 0, 1));
+  ctx.group.add(lz.group);
+  ctx.lasers.push(lz);
+
+  // SABİT yansıtıcı küp ("\"): -x ışını +z'ye çevirir (zemine oturur, itilemez)
+  const refl = new Cube(V(3, 0.6, 5), 1.2, { reflector: true, mirror: "\\" });
+  ctx.group.add(refl.mesh);
+  ctx.colliders.push(refl.collider);
+  ctx.cubes.push(refl);
+
+  // kapı (sol duvar) — alıcı yanınca açılır
+  const door = new Door(V(-9.5, 0, 9), V(-9, 4, 12));
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+  addBox(ctx, V(-13, -0.5, 9), V(-9, 0, 12), false); // hedef alkovu
+  addBox(ctx, V(-13, 0, 8.5), V(-9, 6, 9), false);
+  addBox(ctx, V(-13, 0, 12), V(-9, 6, 12.5), false);
+  addBox(ctx, V(-13, 0, 9), V(-12.5, 6, 12), false);
+
+  // alıcı: ÖN duvarda, reflektör hizasında (x≈3.6)
+  const rc = new LaserReceiver(V(3.6, 0.7, 13.8), door);
+  ctx.group.add(rc.group);
+  ctx.laserReceivers.push(rc);
+
+  ctx.spawn = V(5, 0.1, 9);
+  goal(ctx, V(-11, 0, 10.5), "core", 0x6ee84f);
+  ctx.objective = "Işını portalla yansıtıcıya yönlendir; küpte 90° bükülüp ön duvardaki alıcıya gitsin.";
+  ctx.hint = "Yayıcı ışını ön duvara atar (boşa). Işının ÖN duvara değdiği yere bir portal, SAĞ duvara (parlak yansıtıcı küpün hizasına, z≈5) ikinci portalı aç. Işın sağ portaldan çıkıp yansıtıcıya çarpar, orada 90° bükülüp ÖN duvardaki alıcıya ulaşır. Alıcı yanınca soldaki kapı açılır.";
+  ctx.story = "Bir prizma-ayna. Işığı yalnız portalla değil, açıyla da yönlendirmen gerekiyor.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
