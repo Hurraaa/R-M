@@ -126,12 +126,15 @@ export class PortalGame {
     }
     const normal = hit.face.normal.clone().transformDirection(mesh.matrixWorld).normalize();
     const col = mesh.userData.collider;
-    // portalı yüzey kenarından içeri sıkıştır (disk taşmasın -> küp/oyuncu temiz çıksın)
+    // portal tam nişangahın geldiği noktada (ortalı) açılır.
+    // yalnızca disk merkezi yüzey dışına taşacaksa kenara hafifçe çekilir
+    // (yüzey portaldan darsa ortaya) — normal eksende kaydırma yok.
     const r = this.portals.a.radius;
+    const m = r * 0.15; // çok küçük güvenlik payı: nişangahtan kayma neredeyse yok
     const p = hit.point.clone();
     for (const ax of ["x", "y", "z"]) {
       if (Math.abs(normal[ax]) > 0.5) continue; // normal ekseni atla
-      const lo = col.min[ax] + r, hi = col.max[ax] - r;
+      const lo = col.min[ax] + m, hi = col.max[ax] - m;
       p[ax] = lo <= hi ? Math.min(hi, Math.max(lo, p[ax])) : (col.min[ax] + col.max[ax]) / 2;
     }
     this.portals.place(which, p, normal, col);
