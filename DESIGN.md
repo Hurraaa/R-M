@@ -77,11 +77,13 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 20 | Işık Köprüsü | portaldan geçince devam eden katı ışık köprüsü; yakala + yönlendir | yol döşe | ✅ |
 | 21 | Sıçrama Hattı | düşüş-fırlatma (portal planlama) + trambolin zinciri (havada ayar) | tahliye hattı | ✅ |
 | 22 | Lazer | ışını portalla büküp karşı duvardaki alıcıya düşür (sürekli ışın → kapı) | hattı yönlendir | ✅ |
-| 23 | Şebeke (fizzler) | geçince portal sıfırlayan/küp eriten alan; küpü portalla öbür yana geçir | güvenliği aş | ✅ |
+| 23 | Şebeke (fizzler) | **SIRALAMA kilidi**: şebekeden geçince portalın sıfırlanır → kapıyı açacak işi (enerji topunu portalla, boşluğun üstünden asılı alıcıya yolla; alıcı kalıcı kilitler) GEÇMEDEN bitir. Kendini portalla geçirirsen boşluğa düşersin (kestirme yok). Küp/buton yok — Bölüm 4'ten tamamen farklı. | güvenliği aş | ✅ |
 | 24 | Yansıtıcı | ışını portalla sabit reflektöre sok; 90° bükülüp ön duvardaki alıcıya gider | açıyla yönlendir | ✅ |
 | 25 | Sıçrama Jeli | jeli portalla (zemin→tavan) çıkışın önüne taşı; oluşan yamadan sıçrayıp yüksek kıyıya çık | zıplama noktası döşe | ✅ |
 | 26 | Mantık Kapısı | tek ışını portal+yansıtıcıyla iki içinden-geçilen alıcıdan geçir; AND kapısı açar | mantık kilidi | ✅ |
 | 27 | Çift Yansıtıcı | ışını portalla sok, iki reflektörde zigzag (-x→-z→+x), sağ duvardaki alıcıya | aynalı labirent | ✅ |
+| 28 | Yukarı Işın | ışını zemin portalıyla DİKEY yukarı çevir, tavandaki alıcıyı yak | yukarı bük | ✅ |
+| 29 | Hız Kilidi | **MOMENTUM DEDÜKSİYONU**: düşüş hızı sabit; çıkış için ÜÇ banttan DOĞRU yükseklikteki bandı seç. Alçak kısa kalır, yüksek aşar — yalnızca ortadaki bant hedefe kondurur. "2 portalı yerleştir, bitti" değil; menzili kafanda kurmak gerek. | hız hesabı | ✅ |
 
 > Tasarım pusulası: bir mekanik ilk kez tanıtılmıyorsa çeşitlendir
 > (tuzak/şaşırtmaca/kombinasyon). Hiçbir bölüm bir öncekine çok benzemesin.

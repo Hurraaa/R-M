@@ -724,53 +724,53 @@ function chamber22(ctx) {
   ctx.story = "Eski bir lazer hattı. Işığı kendi alıcısına yönlendirirsen kilit çözülür.";
 }
 
-// ---- Oda 23: Şebeke (fizzler) — küpü portalla alanın öbür yanına geçir ----
+// ---- Oda 23: Şebeke — ÖNCE topu portalla alıcıya yolla (kapı kalıcı açılır), SONRA şebekeden geç ----
+// Şebeke (fizzler) geçince portalların SIFIRLANIR. Bu yüzden kapıyı açacak işi (top yönlendirme)
+// karşıya GEÇMEDEN bitirmelisin — sıralama kilidi. Alıcı bir kez dolunca kapı kalıcı açık kalır.
 function chamber23(ctx) {
-  // YAKIN oda zemini (ortada portallanabilir PAD)
-  addBox(ctx, V(-7, -0.5, -6), V(7, 0, 1), false);
-  addBox(ctx, V(-7, -0.5, 4), V(7, 0, 6), false);
-  addBox(ctx, V(-7, -0.5, 1), V(-2, 0, 4), false);
-  addBox(ctx, V(2, -0.5, 1), V(7, 0, 4), false);
-  addBox(ctx, V(-2, -0.5, 1), V(2, 0, 4), true); // PAD (küp burada, altına portal)
-  // yan duvarlar
-  addBox(ctx, V(-7.5, 0, -6), V(-7, 6, 6), false);
-  addBox(ctx, V(7, 0, -6), V(7.5, 6, 6), false);
-  addBox(ctx, V(-7, 0, -6.5), V(7, 6, -6), false); // arka duvar
+  // ---- YAKIN ODA (top burada sekiyor; portal A buraya) ----
+  addBox(ctx, V(-7, -0.5, -6), V(7, 0, 6), false); // zemin
+  addBox(ctx, V(-7, 0, -6.5), V(7, 8, -6), false); // arka
+  addBox(ctx, V(-7.5, 0, -6), V(-7, 8, 6), false); // sol
+  addBox(ctx, V(7, 0, -6), V(7.5, 8, 6), true); // SAĞ duvar PORTALLANABİLİR (top buraya çarpar -> portal A)
+  addBox(ctx, V(-7, 8, -6), V(7, 8.5, 22), false); // tavan
 
-  // DOORWAY duvarı z=6: ortada kapı boşluğu (x -2..2), içinde FIZZLER
-  addBox(ctx, V(-7, 0, 6), V(-2, 6, 6.5), false);
-  addBox(ctx, V(2, 0, 6), V(7, 6, 6.5), false);
-  addBox(ctx, V(-2, 4, 6), V(2, 6, 6.5), false); // lento
-  const fz = new Fizzler(V(-2, 0, 5.7), V(2, 4.2, 6.3));
+  // enerji topu yayıcısı: soldan +x ateşler; top sağ duvara çarpıp sekerek YAKIN odada kalır (boşa)
+  const em = new BallEmitter(V(-6.6, 2, 0), V(1, 0, 0), 11);
+  ctx.group.add(em.group);
+  ctx.emitters.push(em);
+
+  // ---- ŞEBEKE duvarı z=6 (kapı boşluğu x[-2,2], içinde fizzler tüm yükseklik) ----
+  addBox(ctx, V(-7, 0, 6), V(-2, 8, 6.5), false);
+  addBox(ctx, V(2, 0, 6), V(7, 8, 6.5), false);
+  const fz = new Fizzler(V(-2, 0, 5.7), V(2, 6, 6.3));
   ctx.group.add(fz.group);
   ctx.fizzlers.push(fz);
 
-  // UZAK oda zemini + sol duvar (portal B) + butonu tutar
-  addBox(ctx, V(-7, -0.5, 6), V(7, 0, 18), false);
-  addBox(ctx, V(-7.5, 0, 6), V(-7, 6, 18), true); // SOL duvar portallanabilir
-  addBox(ctx, V(7, 0, 6), V(7.5, 6, 18), false);
-  addBox(ctx, V(-7, 0, 18), V(7, 6, 18.5), false); // ön duvar
+  // ---- UZAK ODA (alıcı + kapı + hedef; portal B arka duvarda) ----
+  // Zemin z=14'te biter; z[14,22] DİPSİZ BOŞLUK. Top (yerçekimsiz) boşluğu düz geçip alıcıya varır;
+  // ama B'den kendini geçiren OYUNCU boşluğa düşer (kestirme yok — yalnızca top karşıya geçebilir).
+  addBox(ctx, V(-7, -0.5, 6), V(7, 0, 14), false); // zemin (z14'te biter -> boşluk)
+  addBox(ctx, V(-7.5, 0, 6), V(-7, 8, 22), false); // sol
+  addBox(ctx, V(7, 0, 6), V(7.5, 8, 22), false); // sağ
+  addBox(ctx, V(-7, 0, 22), V(7, 8, 22.5), true); // ARKA duvar PORTALLANABİLİR (portal B; top buradan -z çıkar)
 
-  // çıkış kapısı (uzak oda) — buton basılınca açılır
-  const door = new Door(V(-7, 0, 15), V(7, 5, 15.5));
+  // KAPI z=10 (oyuncuyu durdurur; alıcı dolunca KALICI açılır)
+  const door = new Door(V(-7, 0, 10), V(7, 5, 10.5));
   ctx.group.add(door.mesh);
   ctx.colliders.push(door.collider);
   ctx.doors.push(door);
-  const btn = new Button(V(-5, 0, 11), door, { cubeOnly: true }); // oyuncu basamaz → küp şart
-  ctx.group.add(btn.group);
-  ctx.buttons.push(btn);
 
-  // yük küpü — pad üstünde
-  const cube = new Cube(V(0, 0.6, 2.5));
-  ctx.group.add(cube.mesh);
-  ctx.colliders.push(cube.collider);
-  ctx.cubes.push(cube);
+  // ALICI z=20 (boşluğun üstünde asılı; top yalnızca portalla buraya ulaşır, oyuncu düşer)
+  const recept = new Receptacle(V(0, 2, 20), door);
+  ctx.group.add(recept.group);
+  ctx.receptacles.push(recept);
 
   ctx.spawn = V(0, 0.1, -3);
-  goal(ctx, V(0, 0, 16.8), "core", 0x6ee84f);
-  ctx.objective = "Küpü portalla şebekenin öbür yanındaki butona ulaştır — alandan iterek geçiremezsin.";
-  ctx.hint = "Turuncu şebeke alanı: içinden geçirdiğin KÜP erir (başa döner), SEN geçersen portalların sıfırlanır. Küpü itip geçiremezsin. Küpün durduğu PAD'in altına bir portal, uzak odanın SOL duvarına ikinci portalı aç — küp düşüp sol duvardan çıkar ve butona iner. Buton kapıyı açar; sonra sen de şebekeden geçip hedefe ulaş.";
-  ctx.story = "Bir arınma şebekesi yolu kesiyor. Taşıdığını eritir — ama portaldan geçen erimez.";
+  goal(ctx, V(0, 0, 12.5), "core", 0x6ee84f);
+  ctx.objective = "Topu portalla şebekenin ötesindeki alıcıya sok (kapı kalıcı açılır); SONRA şebekeden geçip hedefe ulaş.";
+  ctx.hint = "Sarı şebekeden GEÇERSEN portalların SIFIRLANIR — o yüzden kapıyı açacak işi karşıya geçmeden bitir. Yayıcı topu sağ duvara çarptırıp yakın odada tutuyor. Topun çarptığı SAĞ duvara bir portal, uzak odanın ARKA duvarına (alıcının arkasına) ikinci portalı aç — top portaldan çıkıp alıcıya girer, kapı kalıcı açılır. Ancak ondan SONRA şebekeden geç; portalların gitse de kapı açık kalır.";
+  ctx.story = "Bir arınma şebekesi taşıdığın her şeyi söker — portalını bile. Kilidi açacak işi, karşıya geçmeden hallet.";
 }
 
 // ---- Oda 24: Yansıtıcı — ışını portalla reflektöre sok, 90° bükülüp alıcıya gitsin ----
@@ -961,7 +961,43 @@ function chamber28(ctx) {
   ctx.story = "Alıcı tavanda. Işığı yalnızca yana değil, yukarı da çevirebileceğini hatırla.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28];
+// ---- Oda 29: Hız Kilidi — düşüş hızı sabit, çıkış YÜKSEKLİĞİNİ seç; yalnızca doğru yükseklik hedefe kondurur ----
+function chamber29(ctx) {
+  // başlangıç platformu (oyuncu burada; sağına/+x'e şaft var)
+  addBox(ctx, V(-5, -0.5, 0), V(0, 0, 4), false);
+  addBox(ctx, V(-5, 0, -0.5), V(0, 1.2, 0), false); // arka korkuluk
+  addBox(ctx, V(-5.5, 0, 0), V(-5, 1.2, 4), false); // sol korkuluk
+  addBox(ctx, V(-5, 0, 4), V(0, 3, 4.5), false); // ÖN duvar (şaftı atlamayı önler)
+
+  // ŞAFT: x[0,3], dipte SABİT derinlikte portallanabilir zemin (portal A) -> sabit hız
+  addBox(ctx, V(0, -9.5, 0), V(3, -9, 4), true); // şaft dibi (portal A) — derinlik sabit
+  addBox(ctx, V(3, -9, 0), V(3.5, 7, 4), false); // sağ x-duvarı (yüksek)
+  addBox(ctx, V(-0.5, -9, 0), V(0, 0, 4), false); // yakın x-duvarı (platform altı)
+
+  // ARKA duvar z=0 (normal +z): ÜÇ portallanabilir bant (alçak/orta/yüksek), aralar metal.
+  // Oyuncu portal B'yi hangi banta açarsa o yükseklikten +z'ye fırlar; menzil değişir.
+  addBox(ctx, V(0, -9, -0.5), V(3, -7.4, 0), false); // metal (dip)
+  addBox(ctx, V(0, -7.4, -0.5), V(3, -4.6, 0), true); // ALÇAK bant (merkez y≈-6) — kısa menzil
+  addBox(ctx, V(0, -4.6, -0.5), V(3, -3.4, 0), false); // metal
+  addBox(ctx, V(0, -3.4, -0.5), V(3, -0.6, 0), true); // ORTA bant (merkez y≈-2) — DOĞRU menzil
+  addBox(ctx, V(0, -0.6, -0.5), V(3, 0.6, 0), false); // metal
+  addBox(ctx, V(0, 0.6, -0.5), V(3, 3.4, 0), true); // YÜKSEK bant (merkez y≈+2) — uzun menzil (aşar)
+  addBox(ctx, V(0, 3.4, -0.5), V(3, 7, 0), false); // metal (üst)
+
+  addBox(ctx, V(0, -9, 4), V(3, -8, 4.5), false); // ön eşik (çok alçak; her fırlatma üstünden aşar)
+
+  // HEDEF kıyısı — yalnızca ORTA bantın menzili (her yerinden) buraya kondurur.
+  // ALÇAK bant kısa kalıp boşluğa, YÜKSEK bant kıyıyı aşıp boşluğa düşer.
+  addBox(ctx, V(-2, -10.5, 15.2), V(5, -10, 20.2), false); // hedef kıyısı (üst y=-10)
+
+  ctx.spawn = V(-2.5, 0.1, 2);
+  goal(ctx, V(1.5, -10, 17.6), "core", 0x6ee84f);
+  ctx.objective = "Şaftın dibine bir portal aç; çıkış için ÜÇ banttan DOĞRU yükseklikteki bandı seç — yalnızca biri hedefe kondurur.";
+  ctx.hint = "Düşüş hızın sabit (şaft derinliği değişmiyor). Çıkışın YÜKSEKLİĞİ menzili belirler: yüksek bant daha uzağa, alçak bant daha yakına fırlatır. Şaft dibine portal A, arka duvardaki ÜÇ banttan birine portal B. Alçak kısa kalır, yüksek aşar — ortadaki bant tam hedefe taşır. Yanlış seçersen boşluğa düşersin, tekrar dene.";
+  ctx.story = "Eski bir fırlatma kuyusu. Hız sabit ama açıyı sen seçiyorsun — menzili kafanda kur, doğru bandı bul.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
