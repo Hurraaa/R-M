@@ -50,7 +50,7 @@ document.getElementById("again-btn").addEventListener("click", () => begin(0));
 // ---- Bölüm seç (test modu) ----
 const selectScreen = document.getElementById("select-screen");
 const selectGrid = document.getElementById("select-grid");
-const CH_NAMES = ["Uyanış", "Yön", "Kontrol", "Ağırlık", "Çifte Yük", "Köprü", "İp Hattı", "Trambolin", "Enerji Topu", "Dönen Merdivenler", "İnce Köprü", "Şifre", "Çarklar ve Su", "Ay Yürüyüşü", "Yer Çekimi"];
+const CH_NAMES = ["Uyanış", "Yön", "Kontrol", "Ağırlık", "Çifte Yük", "Köprü", "İp Hattı", "Trambolin", "Enerji Topu", "Dönen Merdivenler", "İnce Köprü", "Şifre", "Çarklar ve Su", "Ay Yürüyüşü", "Yer Çekimi", "Sütun Patlatma", "Füze", "Engel Yağmuru", "Serbest Düşüş", "Işık Köprüsü", "Sıçrama Hattı", "Lazer", "Şebeke", "Yansıtıcı", "Sıçrama Jeli", "Mantık Kapısı", "Çift Yansıtıcı"];
 for (let i = 0; i < CHAMBER_COUNT; i++) {
   const b = document.createElement("button");
   b.className = "select-cell";
