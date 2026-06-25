@@ -663,7 +663,38 @@ function chamber20(ctx) {
   ctx.story = "Geçit çökmüş. Eski bir ışık köprüsü yayıcısı hâlâ çalışıyor — ışığı portalla büküp kendine bir yol döşe.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20];
+// ---- Oda 21: Sıçrama Hattı — düşüş-fırlatmayla başla, trambolinlerle platformları zincirle ----
+function chamber21(ctx) {
+  // --- AÇILIŞ: düşüş-fırlatma (Oda 19 mantığı; +x'e yürü, +z'ye fırla) ---
+  addBox(ctx, V(-5, -0.5, 0), V(0, 0, 4), false); // başlangıç platformu
+  addBox(ctx, V(0, -12.5, 0), V(3, -12, 4), true); // şaft dibi (portal A)
+  addBox(ctx, V(3, -12, 0), V(3.5, 1, 4), false); // uzak x-duvarı (kaymayı yakalar)
+  addBox(ctx, V(-0.5, -12, 0), V(0, 0, 4), false); // yakın x-duvarı
+  addBox(ctx, V(0, -12, -0.5), V(3, 2, 0), true); // ARKA duvar (portal B, +z'ye fırlatır)
+  addBox(ctx, V(0, -12, 4), V(3, -6, 4.5), false); // ön eşik (alçak)
+
+  // --- P1: iniş şeridi; uzak duvar +z momentumunu yutar, zincir +x'e döner ---
+  addBox(ctx, V(-3, -4.5, 8), V(8, -4, 18), false); // uzun iniş zemini
+  addBox(ctx, V(-3, -4, 18), V(8, 3, 18.5), false); // uzak duvar (fırlatma hızını durdurur)
+  const t1 = new BouncePad(V(6, -4, 16), 18); // +x kenarında, iniş hattının dışında
+  ctx.group.add(t1.group); ctx.bouncePads.push(t1);
+
+  // --- P2: +x'e, hafif +z kaymış (havada ayar) ---
+  addBox(ctx, V(11, -4.5, 14), V(20, -4, 24), false);
+  const t2 = new BouncePad(V(15, -4, 19), 18);
+  ctx.group.add(t2.group); ctx.bouncePads.push(t2);
+
+  // --- P3: çıkış (+x devam; geniş iniş alanı) ---
+  addBox(ctx, V(21, -4.5, 15), V(32, -4, 26), false);
+  goal(ctx, V(27, -4, 21), "core", 0x6ee84f);
+
+  ctx.spawn = V(-2.5, 0.1, 2);
+  ctx.objective = "Düşüş-fırlatmayla ilk platforma uç, sonra trambolinlerle platformları zıplayarak çıkışa ulaş.";
+  ctx.hint = "Önce: şaftın DİBİNE ve ARKA duvarına portal aç, boşluğa düş — ileri fırlayıp ilk platforma inersin. Sonra trambolinlere bas; havadayken yönünü AYARLA (platformlar sağa-sola kaymış) ki bir sonraki platforma in. Düşersen başa dönersin.";
+  ctx.story = "Tahliye hattı parçalanmış. Tek çıkış: momentumu bir fırlatmayla başlatıp trambolinlerle sekerek aşmak.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {

@@ -75,6 +75,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | # | Ad | Yeni mekanik | Hikâye beat | Durum |
 |---|----|--------------|-------------|-------|
 | 20 | Işık Köprüsü | portaldan geçince devam eden katı ışık köprüsü; yakala + yönlendir | yol döşe | ✅ |
+| 21 | Sıçrama Hattı | düşüş-fırlatma (portal planlama) + trambolin zinciri (havada ayar) | tahliye hattı | ✅ |
 
 > Tasarım pusulası: bir mekanik ilk kez tanıtılmıyorsa çeşitlendir
 > (tuzak/şaşırtmaca/kombinasyon). Hiçbir bölüm bir öncekine çok benzemesin.
