@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher, LightBridge, Laser, LaserReceiver } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher, LightBridge, Laser, LaserReceiver, Fizzler } from "./Props.js";
 
 // 3x5 dijit fontu (yukarıdan okunacak sütun desenleri)
 const DIGITS = {
@@ -732,7 +732,56 @@ function chamber22(ctx) {
   ctx.story = "Eski bir lazer hattı. Işığı kendi alıcısına yönlendirirsen kilit çözülür.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22];
+// ---- Oda 23: Şebeke (fizzler) — küpü portalla alanın öbür yanına geçir ----
+function chamber23(ctx) {
+  // YAKIN oda zemini (ortada portallanabilir PAD)
+  addBox(ctx, V(-7, -0.5, -6), V(7, 0, 1), false);
+  addBox(ctx, V(-7, -0.5, 4), V(7, 0, 6), false);
+  addBox(ctx, V(-7, -0.5, 1), V(-2, 0, 4), false);
+  addBox(ctx, V(2, -0.5, 1), V(7, 0, 4), false);
+  addBox(ctx, V(-2, -0.5, 1), V(2, 0, 4), true); // PAD (küp burada, altına portal)
+  // yan duvarlar
+  addBox(ctx, V(-7.5, 0, -6), V(-7, 6, 6), false);
+  addBox(ctx, V(7, 0, -6), V(7.5, 6, 6), false);
+  addBox(ctx, V(-7, 0, -6.5), V(7, 6, -6), false); // arka duvar
+
+  // DOORWAY duvarı z=6: ortada kapı boşluğu (x -2..2), içinde FIZZLER
+  addBox(ctx, V(-7, 0, 6), V(-2, 6, 6.5), false);
+  addBox(ctx, V(2, 0, 6), V(7, 6, 6.5), false);
+  addBox(ctx, V(-2, 4, 6), V(2, 6, 6.5), false); // lento
+  const fz = new Fizzler(V(-2, 0, 5.7), V(2, 4.2, 6.3));
+  ctx.group.add(fz.group);
+  ctx.fizzlers.push(fz);
+
+  // UZAK oda zemini + sol duvar (portal B) + butonu tutar
+  addBox(ctx, V(-7, -0.5, 6), V(7, 0, 18), false);
+  addBox(ctx, V(-7.5, 0, 6), V(-7, 6, 18), true); // SOL duvar portallanabilir
+  addBox(ctx, V(7, 0, 6), V(7.5, 6, 18), false);
+  addBox(ctx, V(-7, 0, 18), V(7, 6, 18.5), false); // ön duvar
+
+  // çıkış kapısı (uzak oda) — buton basılınca açılır
+  const door = new Door(V(-7, 0, 15), V(7, 5, 15.5));
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+  const btn = new Button(V(-5, 0, 11), door);
+  ctx.group.add(btn.group);
+  ctx.buttons.push(btn);
+
+  // yük küpü — pad üstünde
+  const cube = new Cube(V(0, 0.6, 2.5));
+  ctx.group.add(cube.mesh);
+  ctx.colliders.push(cube.collider);
+  ctx.cubes.push(cube);
+
+  ctx.spawn = V(0, 0.1, -3);
+  goal(ctx, V(0, 0, 16.8), "core", 0x6ee84f);
+  ctx.objective = "Küpü portalla şebekenin öbür yanındaki butona ulaştır — alandan iterek geçiremezsin.";
+  ctx.hint = "Turuncu şebeke alanı: içinden geçirdiğin KÜP erir (başa döner), SEN geçersen portalların sıfırlanır. Küpü itip geçiremezsin. Küpün durduğu PAD'in altına bir portal, uzak odanın SOL duvarına ikinci portalı aç — küp düşüp sol duvardan çıkar ve butona iner. Buton kapıyı açar; sonra sen de şebekeden geçip hedefe ulaş.";
+  ctx.story = "Bir arınma şebekesi yolu kesiyor. Taşıdığını eritir — ama portaldan geçen erimez.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -742,7 +791,7 @@ export function buildChamber(index) {
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
     balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [], flipPads: [],
     destructibles: [], missiles: [], missileLaunchers: [], lightBridges: [],
-    lasers: [], laserReceivers: [],
+    lasers: [], laserReceivers: [], fizzlers: [],
     gravityScale: 1, ballsHarmful: false,
   };
   builders[index](ctx);

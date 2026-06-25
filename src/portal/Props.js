@@ -937,3 +937,39 @@ export class LaserReceiver {
     }
   }
 }
+
+// ---- Fizzler (Şebeke / Arınma alanı) ----
+// Dikey enerji alanı: oyuncu geçince portalları sıfırlanır; küp değince
+// başlangıç noktasına döner (erir). "Önce çöz, sonra geç" kısıtı getirir.
+export class Fizzler {
+  constructor(min, max) {
+    this.min = min.clone();
+    this.max = max.clone();
+    this.group = new THREE.Group();
+    const sx = max.x - min.x, sy = max.y - min.y, sz = max.z - min.z;
+    const cx = (min.x + max.x) / 2, cy = (min.y + max.y) / 2, cz = (min.z + max.z) / 2;
+    const w = Math.max(sx, sz); // kapı genişliği (hangisi büyükse)
+    this.mat = new THREE.MeshBasicMaterial({ color: 0xffa030, transparent: true, opacity: 0.26, side: THREE.DoubleSide, depthWrite: false });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, sy), this.mat);
+    plane.position.set(cx, cy, cz);
+    if (sx <= sz) plane.rotation.y = Math.PI / 2; // z-yönlü kapı
+    this.group.add(plane);
+    const barMat = new THREE.MeshBasicMaterial({ color: 0xffd9a0 });
+    const n = Math.max(3, Math.round(w / 0.55));
+    for (let i = 0; i < n; i++) {
+      const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, sy, 6), barMat);
+      const f = (n === 1 ? 0 : (i / (n - 1) - 0.5)) * w;
+      if (sx > sz) bar.position.set(cx + f, cy, cz);
+      else bar.position.set(cx, cy, cz + f);
+      this.group.add(bar);
+    }
+    this.t = 0;
+  }
+  contains(p) {
+    return p.x > this.min.x && p.x < this.max.x && p.y > this.min.y && p.y < this.max.y && p.z > this.min.z && p.z < this.max.z;
+  }
+  overlaps(min, max) {
+    return max.x > this.min.x && min.x < this.max.x && max.y > this.min.y && min.y < this.max.y && max.z > this.min.z && min.z < this.max.z;
+  }
+  update(dt) { this.t += dt; this.mat.opacity = 0.20 + 0.12 * Math.abs(Math.sin(this.t * 3)); }
+}

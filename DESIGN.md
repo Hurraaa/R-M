@@ -77,6 +77,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 20 | Işık Köprüsü | portaldan geçince devam eden katı ışık köprüsü; yakala + yönlendir | yol döşe | ✅ |
 | 21 | Sıçrama Hattı | düşüş-fırlatma (portal planlama) + trambolin zinciri (havada ayar) | tahliye hattı | ✅ |
 | 22 | Lazer | ışını portalla büküp karşı duvardaki alıcıya düşür (sürekli ışın → kapı) | hattı yönlendir | ✅ |
+| 23 | Şebeke (fizzler) | geçince portal sıfırlayan/küp eriten alan; küpü portalla öbür yana geçir | güvenliği aş | ✅ |
 
 > Tasarım pusulası: bir mekanik ilk kez tanıtılmıyorsa çeşitlendir
 > (tuzak/şaşırtmaca/kombinasyon). Hiçbir bölüm bir öncekine çok benzemesin.

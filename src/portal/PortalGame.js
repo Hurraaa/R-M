@@ -207,6 +207,16 @@ export class PortalGame {
       const cn = this.portals.teleportEntity(cube);
       if (cn) cube.depenetrateAlong(cn, this.level.colliders, this.portals);
     }
+    // fizzler (şebeke): oyuncu geçince portallar sıfırlanır, küp erir
+    for (const fz of this.level.fizzlers) {
+      fz.update(dt);
+      if (fz.contains(this.controller.center)) this.portals.reset();
+      for (const cube of this.level.cubes) {
+        if (fz.overlaps(cube.collider.min, cube.collider.max)) {
+          cube.pos.copy(cube.spawn); cube.velocity.set(0, 0, 0); cube.lastCenter.copy(cube.pos); cube._sync();
+        }
+      }
+    }
     for (const pad of this.level.launchPads) {
       pad.tryLaunch(this.controller);
       for (const cube of this.level.cubes) pad.tryLaunch(cube);
