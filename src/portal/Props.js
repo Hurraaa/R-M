@@ -805,3 +805,135 @@ function rayAABB(P, D, min, max) {
   if (tmax < tmin || tmax < 0) return null;
   return tmin > 1e-4 ? tmin : null;
 }
+
+// ---- Lazer + Alıcı ----
+// Yayıcıdan düz ışın; duvara/alıcıya çarpana kadar gider, aktif portal
+// çiftinin içinden geçerse diğer portaldan onun normali yönünde devam eder
+// (tek yönlendirme, ışık köprüsüyle aynı mantık). Işın zararsızdır (oyuncu
+// çarpışmaz); yalnızca görsel + alıcı tetikleme. Eksene yapışık.
+export class Laser {
+  constructor(pos, dir, color = 0xff5236) {
+    this.origin = pos.clone();
+    this.dir = this._snap(dir);
+    this.maxLen = 80;
+    this.color = color;
+    this.ends = [];
+    this.group = new THREE.Group();
+    const housing = new THREE.Mesh(
+      new THREE.BoxGeometry(0.9, 0.9, 0.9),
+      new THREE.MeshStandardMaterial({ color: 0x3a2024, metalness: 0.6, roughness: 0.4, emissive: 0x5a1010, emissiveIntensity: 0.5 })
+    );
+    housing.position.copy(pos);
+    this.group.add(housing);
+    const lens = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.3, 0.3, 0.2, 16),
+      new THREE.MeshBasicMaterial({ color: 0xff9a7a })
+    );
+    lens.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), this.dir);
+    lens.position.copy(pos).addScaledVector(this.dir, 0.55);
+    this.group.add(lens);
+    this.seg = [this._mkBeam(), this._mkBeam()];
+    for (const s of this.seg) this.group.add(s);
+  }
+  _snap(d) {
+    const ax = Math.abs(d.x), ay = Math.abs(d.y), az = Math.abs(d.z);
+    if (ax >= ay && ax >= az) return new THREE.Vector3(Math.sign(d.x) || 1, 0, 0);
+    if (az >= ay) return new THREE.Vector3(0, 0, Math.sign(d.z) || 1);
+    return new THREE.Vector3(0, Math.sign(d.y) || 1, 0);
+  }
+  _mkBeam() {
+    const m = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.06, 0.06, 1, 8),
+      new THREE.MeshBasicMaterial({ color: this.color, transparent: true, opacity: 0.92 })
+    );
+    m.visible = false;
+    return m;
+  }
+  _march(P, D, level, portals, ignore) {
+    let tWall = this.maxLen;
+    for (const c of level.colliders) {
+      if (c.disabled || c.bridge || c.dynamic) continue;
+      const t = rayAABB(P, D, c.min, c.max);
+      if (t != null && t > 0.02 && t < tWall) tWall = t;
+    }
+    let best = null;
+    if (portals.a.active && portals.b.active) {
+      for (const p of [portals.a, portals.b]) {
+        if (p === ignore) continue;
+        const denom = D.dot(p.normal);
+        if (denom > -0.1) continue;
+        const t = p.position.clone().sub(P).dot(p.normal) / denom;
+        if (t > 0.02 && t < tWall) {
+          const rel = P.clone().addScaledVector(D, t).sub(p.position);
+          const along = rel.dot(p.normal);
+          const planar = rel.addScaledVector(p.normal, -along).length();
+          if (planar < p.radius * 0.92) { best = { t, portal: p }; tWall = t; }
+        }
+      }
+    }
+    const point = P.clone().addScaledVector(D, tWall);
+    return best ? { point, portal: best.portal } : { point, portal: null };
+  }
+  update(dt, level, portals) {
+    this.ends = [];
+    const h1 = this._march(this.origin, this.dir, level, portals, null);
+    this._place(0, this.origin, h1.point);
+    this.ends.push({ point: h1.point.clone(), isWall: !h1.portal });
+    if (h1.portal) {
+      const exit = h1.portal === portals.a ? portals.b : portals.a;
+      const d2 = this._snap(exit.normal);
+      const start2 = exit.position.clone();
+      const h2 = this._march(start2, d2, level, portals, exit);
+      this._place(1, start2, h2.point);
+      this.ends.push({ point: h2.point.clone(), isWall: !h2.portal });
+    } else {
+      this.seg[1].visible = false;
+    }
+  }
+  _place(i, a, b) {
+    const s = this.seg[i];
+    const len = a.distanceTo(b);
+    if (len < 0.05) { s.visible = false; return; }
+    s.visible = true;
+    s.position.copy(a).add(b).multiplyScalar(0.5);
+    s.scale.set(1, len, 1);
+    s.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
+  }
+}
+
+export class LaserReceiver {
+  constructor(pos, door) {
+    this.pos = pos.clone();
+    this.radius = 1.0;
+    this.door = door;
+    this.active = false;
+    this.group = new THREE.Group();
+    this.group.position.copy(pos);
+    this.ring = new THREE.Mesh(
+      new THREE.TorusGeometry(0.55, 0.14, 10, 22),
+      new THREE.MeshStandardMaterial({ color: 0x6a3a3a, emissive: 0x3a1010, emissiveIntensity: 0.5, metalness: 0.4, roughness: 0.5 })
+    );
+    this.core = new THREE.Mesh(
+      new THREE.SphereGeometry(0.28, 14, 14),
+      new THREE.MeshStandardMaterial({ color: 0x551515, emissive: 0x440808, emissiveIntensity: 0.6 })
+    );
+    this.group.add(this.ring, this.core);
+  }
+  check(lasers) {
+    let hit = false;
+    for (const lz of lasers) {
+      for (const e of lz.ends) {
+        if (e.isWall && e.point.distanceTo(this.pos) < this.radius) { hit = true; break; }
+      }
+      if (hit) break;
+    }
+    if (hit !== this.active) {
+      this.active = hit;
+      if (this.door) this.door.setOpen(hit); // sürekli: ışın çekilince kapanır
+      this.core.material.color.setHex(hit ? 0x6ee84f : 0x551515);
+      this.core.material.emissive.setHex(hit ? 0x2f9a3e : 0x440808);
+      this.core.material.emissiveIntensity = hit ? 1.5 : 0.6;
+      this.ring.material.emissive.setHex(hit ? 0x2f9a3e : 0x3a1010);
+    }
+  }
+}

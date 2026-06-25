@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher, LightBridge } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher, LightBridge, Laser, LaserReceiver } from "./Props.js";
 
 // 3x5 dijit fontu (yukarıdan okunacak sütun desenleri)
 const DIGITS = {
@@ -694,7 +694,45 @@ function chamber21(ctx) {
   ctx.story = "Tahliye hattı parçalanmış. Tek çıkış: momentumu bir fırlatmayla başlatıp trambolinlerle sekerek aşmak.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21];
+// ---- Oda 22: Lazer — ışını portalla büküp karşı duvardaki alıcıya düşür ----
+function chamber22(ctx) {
+  addBox(ctx, V(-9, -0.5, -8), V(9, 0, 14), false); // zemin
+  addBox(ctx, V(-9, 0, -8.5), V(9, 6, -8), false); // arka (yayıcı)
+  addBox(ctx, V(9, 0, -8), V(9.5, 6, 14), true); // SAĞ duvar portallanabilir
+  addBox(ctx, V(-9, 0, 14), V(9, 6, 14.5), true); // ÖN duvar portallanabilir (ışın buraya çarpar)
+  // SOL duvar — alıcı burada; ortada kapı boşluğu (z 9..12)
+  addBox(ctx, V(-9.5, 0, -8), V(-9, 6, 9), false); // alıcı bu parçada (z=5)
+  addBox(ctx, V(-9.5, 0, 12), V(-9, 6, 14), false);
+  addBox(ctx, V(-9.5, 4, 9), V(-9, 6, 12), false); // kapı üstü lento
+
+  // lazer yayıcısı: arka duvar, +z'ye düz ateşler (ön duvara çarpar — boşa)
+  const lz = new Laser(V(0, 2, -7.7), V(0, 0, 1));
+  ctx.group.add(lz.group);
+  ctx.lasers.push(lz);
+
+  // kapı (sol duvar boşluğu) — alıcı ışın alınca açılır; ardında hedef
+  const door = new Door(V(-9.5, 0, 9), V(-9, 4, 12));
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+  addBox(ctx, V(-13, -0.5, 9), V(-9, 0, 12), false); // hedef alkovu
+  addBox(ctx, V(-13, 0, 8.5), V(-9, 6, 9), false);
+  addBox(ctx, V(-13, 0, 12), V(-9, 6, 12.5), false);
+  addBox(ctx, V(-13, 0, 9), V(-12.5, 6, 12), false);
+
+  // alıcı: sol duvarda (z=5, y=2) — ışın buraya gelmeli
+  const rc = new LaserReceiver(V(-8.9, 2, 5), door);
+  ctx.group.add(rc.group);
+  ctx.laserReceivers.push(rc);
+
+  ctx.spawn = V(0, 0.1, 8);
+  goal(ctx, V(-11, 0, 10.5), "core", 0x6ee84f);
+  ctx.objective = "Lazer ışınını portallarla büküp sol duvardaki alıcıya düşür, kapı açılsın.";
+  ctx.hint = "Yayıcı ışını ön duvara atar — boşa. Işının ÖN duvara çarptığı yere bir portal, SAĞ duvara (soldaki alıcının tam hizasına) ikinci portalı aç. Işın ön portala girip sağ portaldan çıkar, odayı geçip alıcıya çarpar. Alıcı yanınca soldaki kapı açılır — hedefe geç.";
+  ctx.story = "Eski bir lazer hattı. Işığı kendi alıcısına yönlendirirsen kilit çözülür.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -704,6 +742,7 @@ export function buildChamber(index) {
     cubes: [], buttons: [], doors: [], launchPads: [], ziplines: [], bouncePads: [],
     balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [], flipPads: [],
     destructibles: [], missiles: [], missileLaunchers: [], lightBridges: [],
+    lasers: [], laserReceivers: [],
     gravityScale: 1, ballsHarmful: false,
   };
   builders[index](ctx);
