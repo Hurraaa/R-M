@@ -825,7 +825,31 @@ function chamber24(ctx) {
   ctx.story = "Bir prizma-ayna. Işığı yalnız portalla değil, açıyla da yönlendirmen gerekiyor.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24];
+// ---- Oda 25: Sıçrama Jeli — jeli portalla çıkışın altına taşı, sıçrayıp yüksek kıyıya çık ----
+function chamber25(ctx) {
+  addBox(ctx, V(-9, -0.5, -6), V(9, 0, 16), true); // ZEMİN portallanabilir (jel + portal A)
+  addBox(ctx, V(-9, 8, -6), V(9, 8.5, 16), true); // TAVAN portallanabilir (portal B)
+  addBox(ctx, V(-9.5, 0, -6), V(-9, 8.5, 16), false); // sol
+  addBox(ctx, V(9, 0, -6), V(9.5, 8.5, 16), false); // sağ
+  addBox(ctx, V(-9, 0, -6.5), V(9, 8.5, -6), false); // arka
+  addBox(ctx, V(-9, 0, 16), V(9, 8.5, 16.5), false); // ön
+
+  // jel yayıcısı: TAVANDA, düz aşağı damlatır -> varsayılan yama D=(4,0,3) (işe yaramaz)
+  const em = new BallEmitter(V(4, 8, 3), V(0, -1, 0), 2, { gel: true });
+  ctx.group.add(em.group);
+  ctx.emitters.push(em);
+
+  // YÜKSEK çıkış kıyısı (sol-ön), sıçrama yamasıyla erişilir
+  addBox(ctx, V(-7, 4, 13), V(-0.5, 4.5, 16), false); // kıyı (üst y=4.5)
+  goal(ctx, V(-3.5, 4.5, 14.5), "core", 0x6ee84f);
+
+  ctx.spawn = V(0, 0.1, 2);
+  ctx.objective = "Jeli portalla yüksek çıkışın önüne taşı; oluşan sıçrama yamasından zıplayıp kıyıya çık.";
+  ctx.hint = "Tavandaki yayıcı jeli sağ tarafa (D≈4,3) damlatır — orada bir sıçrama yaması olur ama işe yaramaz. Jelin düştüğü zemine bir portal, çıkış kıyısının ÖNÜNDEKİ tavana (T≈-3,11 üstü) ikinci portalı aç. Jel oradan düşüp kıyının önünde yama bırakır. Sonra koşarak yamaya bas — ileri-yukarı sekip kıyıya çıkarsın.";
+  ctx.story = "Eski bir sıçrama jeli hattı. Akışı portalla yönlendir, kendine bir zıplama noktası döşe.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {

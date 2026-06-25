@@ -79,6 +79,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 22 | Lazer | ışını portalla büküp karşı duvardaki alıcıya düşür (sürekli ışın → kapı) | hattı yönlendir | ✅ |
 | 23 | Şebeke (fizzler) | geçince portal sıfırlayan/küp eriten alan; küpü portalla öbür yana geçir | güvenliği aş | ✅ |
 | 24 | Yansıtıcı | ışını portalla sabit reflektöre sok; 90° bükülüp ön duvardaki alıcıya gider | açıyla yönlendir | ✅ |
+| 25 | Sıçrama Jeli | jeli portalla (zemin→tavan) çıkışın önüne taşı; oluşan yamadan sıçrayıp yüksek kıyıya çık | zıplama noktası döşe | ✅ |
 
 > Tasarım pusulası: bir mekanik ilk kez tanıtılmıyorsa çeşitlendir
 > (tuzak/şaşırtmaca/kombinasyon). Hiçbir bölüm bir öncekine çok benzemesin.

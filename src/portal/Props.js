@@ -221,7 +221,7 @@ export class BouncePad {
 
 // Enerji topu: yerçekimsiz, sabit hızda uçar, duvarlardan seker, portaldan geçer.
 export class Ball {
-  constructor(pos, vel) {
+  constructor(pos, vel, opts = {}) {
     this.r = 0.4;
     this.pos = pos.clone();
     this.velocity = vel.clone();
@@ -229,12 +229,15 @@ export class Ball {
     this.teleportCooldown = 0;
     this.life = 8;
     this.dead = false;
+    this.gel = !!opts.gel; // sıçrama jeli blobu: yerçekimli, zemine değince yama bırakır
+    this.splat = null; // jel: düştüğü zemin noktası (PortalGame yama oluşturur)
+    const col = this.gel ? 0x4aa6ff : 0xaef6ff, em = this.gel ? 0x2a6cff : 0x46e6ff;
     this.mesh = new THREE.Mesh(
       new THREE.SphereGeometry(this.r, 14, 14),
-      new THREE.MeshStandardMaterial({ color: 0xaef6ff, emissive: 0x46e6ff, emissiveIntensity: 2.2, roughness: 0.2 })
+      new THREE.MeshStandardMaterial({ color: col, emissive: em, emissiveIntensity: this.gel ? 1.4 : 2.2, roughness: 0.3 })
     );
     this.mesh.position.copy(pos);
-    this.light = new THREE.PointLight(0x46e6ff, 2.5, 8, 2);
+    this.light = new THREE.PointLight(em, this.gel ? 1.6 : 2.5, 8, 2);
     this.mesh.add(this.light);
   }
   get center() { return this.pos.clone(); }
@@ -255,6 +258,7 @@ export class Ball {
     this.teleportCooldown = Math.max(0, this.teleportCooldown - dt);
     this.life -= dt;
     if (this.life <= 0) { this.dead = true; return; }
+    if (this.gel) this.velocity.y -= 26 * dt; // jel yerçekimliдir (arklanır)
     this.pos.addScaledVector(this.velocity, dt);
     for (const c of level.colliders) {
       if (c.disabled || c.dynamic) continue;
@@ -269,6 +273,8 @@ export class Ball {
         let n;
         if (d2 > 1e-8) { const d = Math.sqrt(d2); n = new THREE.Vector3(dx / d, dy / d, dz / d); this.pos.set(cx, cy, cz).addScaledVector(n, this.r); }
         else { n = new THREE.Vector3(0, 1, 0); }
+        // jel: yatay zemine (normal yukarı) değince yama bırakıp ölür
+        if (this.gel && n.y > 0.5) { this.splat = new THREE.Vector3(this.pos.x, c.max.y, this.pos.z); this.dead = true; return; }
         const vn = this.velocity.dot(n);
         if (vn < 0) this.velocity.addScaledVector(n, -2 * vn); // yansıt
       }
@@ -278,17 +284,18 @@ export class Ball {
 }
 
 export class BallEmitter {
-  constructor(pos, dir, speed = 12) {
+  constructor(pos, dir, speed = 12, opts = {}) {
     this.pos = pos.clone();
     this.dir = dir.clone().normalize();
     this.speed = speed;
+    this.gel = !!opts.gel;
     this.timer = 0.5;
     const g = new THREE.Group();
     g.position.copy(pos);
-    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.6, 12), new THREE.MeshStandardMaterial({ color: 0x3a3f4a, metalness: 0.6, roughness: 0.4 })));
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.6, 12), new THREE.MeshStandardMaterial({ color: this.gel ? 0x2a3f5a : 0x3a3f4a, metalness: 0.6, roughness: 0.4 })));
     this.group = g;
   }
-  spawn() { return new Ball(this.pos.clone().addScaledVector(this.dir, 0.8), this.dir.clone().multiplyScalar(this.speed)); }
+  spawn() { return new Ball(this.pos.clone().addScaledVector(this.dir, 0.8), this.dir.clone().multiplyScalar(this.speed), { gel: this.gel }); }
 }
 
 export class Receptacle {

@@ -10,6 +10,7 @@ import { PortalSystem } from "./PortalSystem.js";
 import { buildChamber, CHAMBER_COUNT } from "./Level.js";
 import { Scenery } from "./Scenery.js";
 import { PerfMonitor } from "./PerfMonitor.js";
+import { BouncePad } from "./Props.js";
 
 export class PortalGame {
   constructor(canvas) {
@@ -118,6 +119,7 @@ export class PortalGame {
     this.portals.lastCenter.copy(this.controller.center);
     this.winTimer = 0;
     this._nextPortal = "a";
+    this._gelPatch = null; // jel sıçrama yaması (bölüme özel)
     this._t = 0;
     this._onHud?.(i + 1, CHAMBER_COUNT, this.level.hint, this.level.objective);
   }
@@ -242,6 +244,18 @@ export class PortalGame {
       if (b.dead) continue;
       b.update(dt, this.level, this.portals);
       this.portals.teleportEntity(b);
+      // jel blobu zemine düştü -> tek paylaşılan sıçrama yamasını oraya taşı/oluştur
+      if (b.gel && b.splat) {
+        if (!this._gelPatch) {
+          this._gelPatch = new BouncePad(b.splat.clone(), 18);
+          this.scene.add(this._gelPatch.group);
+          this.level.bouncePads.push(this._gelPatch);
+        } else {
+          this._gelPatch.pos.copy(b.splat);
+          this._gelPatch.group.position.copy(b.splat);
+        }
+        b.splat = null;
+      }
       // zararlı engel topu: oyuncuya değerse spawn'a döndür
       if (this.level.ballsHarmful && b.pos.distanceTo(this.controller.center) < b.r + 0.5) {
         this.controller.reset(this.level.spawn);
