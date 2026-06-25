@@ -937,7 +937,39 @@ function chamber27(ctx) {
   ctx.story = "İki aynalı bir labirent. Işığı iki kez köşeden döndürmen gerek.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27];
+// ---- Oda 28: Yukarı Işın — ışını zemin portalıyla yukarı çevir, tavandaki alıcıyı yak ----
+function chamber28(ctx) {
+  addBox(ctx, V(-9, -0.5, -6), V(9, 0, 12), true); // ZEMİN portallanabilir (dikey çevirme için)
+  addBox(ctx, V(-9, 6, -6), V(9, 6.5, 12), false); // tavan (alıcı burada)
+  addBox(ctx, V(-9, 0, -6.5), V(9, 6.5, -6), false); // arka (yayıcı)
+  addBox(ctx, V(9, 0, -6), V(9.5, 6.5, 12), true); // SAĞ duvar portallanabilir
+  addBox(ctx, V(-9.5, 0, -6), V(-9, 6.5, 9), false); // sol (kapı boşluğu z9..12)
+  addBox(ctx, V(-9.5, 0, 12), V(-9, 6.5, 12), false);
+  addBox(ctx, V(-9, 0, 12), V(9, 6.5, 12.5), false); // ön
+
+  // lazer: arka-sol köşeden +x, sağ duvara çarpar (yatay, alıcıya ulaşmaz)
+  const lz = new Laser(V(-8.7, 0.7, 4), V(1, 0, 0));
+  ctx.group.add(lz.group); ctx.lasers.push(lz);
+
+  // kapı + tavandaki alıcı (yalnızca yukarı giden ışın ulaşır)
+  const door = new Door(V(-9.5, 0, 9), V(-9, 4, 12));
+  ctx.group.add(door.mesh); ctx.colliders.push(door.collider); ctx.doors.push(door);
+  const rc = new LaserReceiver(V(3, 5.9, 4), door); // tavana monteli
+  ctx.group.add(rc.group); ctx.laserReceivers.push(rc);
+
+  addBox(ctx, V(-13, -0.5, 9), V(-9, 0, 12), false); // hedef alkovu
+  addBox(ctx, V(-13, 0, 8.5), V(-9, 6, 9), false);
+  addBox(ctx, V(-13, 0, 12), V(-9, 6, 12.5), false);
+  addBox(ctx, V(-13, 0, 9), V(-12.5, 6, 12), false);
+
+  ctx.spawn = V(5, 0.1, 8);
+  goal(ctx, V(-11, 0, 10.5), "core", 0x6ee84f);
+  ctx.objective = "Tavana yakın alıcıyı lazerle yak, kapı açılsın.";
+  ctx.hint = "Işın yatay ilerliyor ama alıcı yukarıda — onu yükseltmen gerek. Bir portalı ZEMİNE açarsan, ışın o portaldan DİKEY yukarı çıkar. Işının çarptığı sağ duvara bir portal, alıcının tam ALTINDAKİ zemine ikinci portalı aç. Işın yukarı fırlayıp tavandaki alıcıya çarpar.";
+  ctx.story = "Alıcı tavanda. Işığı yalnızca yana değil, yukarı da çevirebileceğini hatırla.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
