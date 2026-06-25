@@ -6,7 +6,7 @@ import * as THREE from "three";
 const EDGE = () => new THREE.LineBasicMaterial({ color: 0x20140a });
 
 export class Cube {
-  constructor(pos, size = 1.2) {
+  constructor(pos, size = 1.2, opts = {}) {
     this.size = size;
     this.half = size / 2;
     this.pos = pos.clone(); // merkez
@@ -16,17 +16,32 @@ export class Cube {
     this.teleportCooldown = 0;
     this.launchCooldown = 0;
     this.onGround = false;
+    this.reflector = !!opts.reflector; // lazer yansıtıcı küp mü?
+    this.mirror = opts.mirror || "/"; // "/" => x,z eksenlerini değiştir; "\" => negatif
 
-    const mat = new THREE.MeshStandardMaterial({ color: 0xd1812f, emissive: 0x281204, emissiveIntensity: 0.5, roughness: 0.6, metalness: 0.2 });
+    const mat = this.reflector
+      ? new THREE.MeshStandardMaterial({ color: 0x9fb4c0, emissive: 0x16323a, emissiveIntensity: 0.4, roughness: 0.15, metalness: 0.9 })
+      : new THREE.MeshStandardMaterial({ color: 0xd1812f, emissive: 0x281204, emissiveIntensity: 0.5, roughness: 0.6, metalness: 0.2 });
     this.mesh = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), mat);
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
     const edges = new THREE.LineSegments(new THREE.EdgesGeometry(this.mesh.geometry), EDGE());
     this.mesh.add(edges);
-    // kübist vurgu: yüzlerde küçük teal kare
-    const decal = new THREE.Mesh(new THREE.PlaneGeometry(size * 0.4, size * 0.4), new THREE.MeshStandardMaterial({ color: 0x3fd0c0, emissive: 0x1c6a64, emissiveIntensity: 0.7 }));
-    decal.position.z = this.half + 0.01;
-    this.mesh.add(decal);
+    if (this.reflector) {
+      // ayna yönünü gösteren parlak köşegen şerit (üstte)
+      const diag = new THREE.Mesh(
+        new THREE.BoxGeometry(size * 1.32, 0.06, 0.16),
+        new THREE.MeshStandardMaterial({ color: 0xaef6ff, emissive: 0x46e6ff, emissiveIntensity: 1.6 })
+      );
+      diag.position.y = this.half + 0.02;
+      diag.rotation.y = this.mirror === "\\" ? -Math.PI / 4 : Math.PI / 4;
+      this.mesh.add(diag);
+    } else {
+      // kübist vurgu: yüzlerde küçük teal kare
+      const decal = new THREE.Mesh(new THREE.PlaneGeometry(size * 0.4, size * 0.4), new THREE.MeshStandardMaterial({ color: 0x3fd0c0, emissive: 0x1c6a64, emissiveIntensity: 0.7 }));
+      decal.position.z = this.half + 0.01;
+      this.mesh.add(decal);
+    }
     this.mesh.position.copy(pos);
 
     this.collider = { min: new THREE.Vector3(), max: new THREE.Vector3(), portalable: false, dynamic: true, cube: this };
@@ -624,10 +639,11 @@ export class MissileLauncher {
 }
 
 export class Button {
-  constructor(pos, door) {
+  constructor(pos, door, opts = {}) {
     this.pos = pos.clone();
     this.radius = 1.5;
     this.door = door;
+    this.cubeOnly = !!opts.cubeOnly; // yalnızca küp ağırlığı (oyuncu basamaz)
     this.pressed = false;
     this.group = new THREE.Group();
     this.group.position.copy(pos);
@@ -641,7 +657,7 @@ export class Button {
     for (const cu of cubes) {
       if (Math.hypot(cu.pos.x - this.pos.x, cu.pos.z - this.pos.z) < this.radius && cu.pos.y < this.pos.y + 1.5) { on = true; break; }
     }
-    if (!on && player) {
+    if (!on && player && !this.cubeOnly) {
       const p = player.position;
       if (Math.hypot(p.x - this.pos.x, p.z - this.pos.z) < this.radius && Math.abs(p.y - this.pos.y) < 1.2) on = true;
     }
@@ -849,49 +865,75 @@ export class Laser {
     m.visible = false;
     return m;
   }
+  // en yakın engeli bul: duvar / portal girişi / yansıtıcı küp
   _march(P, D, level, portals, ignore) {
-    let tWall = this.maxLen;
+    let tBest = this.maxLen, kind = "wall", obj = null;
     for (const c of level.colliders) {
-      if (c.disabled || c.bridge || c.dynamic) continue;
+      if (c.disabled || c.bridge) continue;
+      if (c.dynamic) {
+        // yalnızca yansıtıcı küp ışını etkiler; normal küpten geçer
+        if (c.cube && c.cube.reflector && c.cube !== ignore) {
+          const t = rayAABB(P, D, c.min, c.max);
+          if (t != null && t > 0.02 && t < tBest) { tBest = t; kind = "reflect"; obj = c.cube; }
+        }
+        continue;
+      }
       const t = rayAABB(P, D, c.min, c.max);
-      if (t != null && t > 0.02 && t < tWall) tWall = t;
+      if (t != null && t > 0.02 && t < tBest) { tBest = t; kind = "wall"; obj = null; }
     }
-    let best = null;
     if (portals.a.active && portals.b.active) {
       for (const p of [portals.a, portals.b]) {
         if (p === ignore) continue;
         const denom = D.dot(p.normal);
         if (denom > -0.1) continue;
         const t = p.position.clone().sub(P).dot(p.normal) / denom;
-        if (t > 0.02 && t < tWall) {
+        if (t > 0.02 && t < tBest) {
           const rel = P.clone().addScaledVector(D, t).sub(p.position);
           const along = rel.dot(p.normal);
           const planar = rel.addScaledVector(p.normal, -along).length();
-          if (planar < p.radius * 0.92) { best = { t, portal: p }; tWall = t; }
+          if (planar < p.radius * 0.92) { tBest = t; kind = "portal"; obj = p; }
         }
       }
     }
-    const point = P.clone().addScaledVector(D, tWall);
-    return best ? { point, portal: best.portal } : { point, portal: null };
+    return { point: P.clone().addScaledVector(D, tBest), kind, obj };
+  }
+  _reflect(D, mirror) {
+    // "/" => x,z eksenlerini değiştir; "\" => negatif değiştir (90° dönüş)
+    return mirror === "\\" ? new THREE.Vector3(-D.z, D.y, -D.x) : new THREE.Vector3(D.z, D.y, D.x);
   }
   update(dt, level, portals) {
     this.ends = [];
-    const h1 = this._march(this.origin, this.dir, level, portals, null);
-    this._place(0, this.origin, h1.point);
-    this.ends.push({ point: h1.point.clone(), isWall: !h1.portal });
-    if (h1.portal) {
-      const exit = h1.portal === portals.a ? portals.b : portals.a;
-      const d2 = this._snap(exit.normal);
-      const start2 = exit.position.clone();
-      const h2 = this._march(start2, d2, level, portals, exit);
-      this._place(1, start2, h2.point);
-      this.ends.push({ point: h2.point.clone(), isWall: !h2.portal });
-    } else {
-      this.seg[1].visible = false;
+    let P = this.origin.clone();
+    let D = this.dir.clone();
+    let ignore = null, si = 0, bounces = 0;
+    for (let step = 0; step < 12; step++) {
+      const h = this._march(P, D, level, portals, ignore);
+      this._place(si++, P, h.point);
+      if (h.kind === "portal") {
+        const exit = h.obj === portals.a ? portals.b : portals.a;
+        P = exit.position.clone();
+        D = this._snap(exit.normal);
+        ignore = exit;
+        continue;
+      }
+      if (h.kind === "reflect" && bounces < 5) {
+        D = this._reflect(D, h.obj.mirror);
+        P = h.point.clone();
+        ignore = h.obj; // bir sonraki segmentte aynı küpe tekrar çarpma
+        bounces++;
+        continue;
+      }
+      this.ends.push({ point: h.point.clone(), isWall: true }); // duvar/maxLen -> dur
+      break;
     }
+    for (let i = si; i < this.seg.length; i++) this.seg[i].visible = false;
+  }
+  _seg(i) {
+    while (this.seg.length <= i) { const m = this._mkBeam(); this.group.add(m); this.seg.push(m); }
+    return this.seg[i];
   }
   _place(i, a, b) {
-    const s = this.seg[i];
+    const s = this._seg(i);
     const len = a.distanceTo(b);
     if (len < 0.05) { s.visible = false; return; }
     s.visible = true;

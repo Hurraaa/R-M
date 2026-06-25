@@ -616,13 +616,13 @@ function chamber19(ctx) {
   // başlangıç platformu (oyuncu burada durur, sağına/+x'e doğru şaft var)
   addBox(ctx, V(-5, -0.5, 0), V(0, 0, 4), false);
   // korkuluklar (yanlış yöne düşmeyi önle, manzara açık)
-  addBox(ctx, V(-5, 0, -0.5), V(0, 1.2, 0), false); // arka
-  addBox(ctx, V(-5.5, 0, 0), V(-5, 1.2, 4), false); // sol
-  addBox(ctx, V(-5, 0, 4), V(0, 1.2, 4.5), false); // ön (şaftın yanı değil)
+  addBox(ctx, V(-5, 0, -0.5), V(0, 1.2, 0), false); // arka korkuluk
+  addBox(ctx, V(-5.5, 0, 0), V(-5, 1.2, 4), false); // sol korkuluk
+  addBox(ctx, V(-5, 0, 4), V(0, 3, 4.5), false); // ÖN DUVAR (yüksek): +z'ye atlayıp şaftı atlamayı önler
 
   // ŞAFT: x[0,3] dipte y=-12'de PORTALLANABİLİR zemin (portal A buraya)
   addBox(ctx, V(0, -12.5, 0), V(3, -12, 4), true); // şaft dibi (portal A)
-  addBox(ctx, V(3, -12, 0), V(3.5, 1, 4), false); // uzak x-duvarı (düşüş kaymasını yakalar)
+  addBox(ctx, V(3, -12, 0), V(3.5, 6, 4), false); // uzak x-duvarı YÜKSEK (üstüne çıkıp atlanamaz)
   addBox(ctx, V(-0.5, -12, 0), V(0, 0, 4), false); // yakın x-duvarı (platform altı)
   // ARKA duvar z=0, normal +z — PORTALLANABİLİR (portal B; +z'ye fırlatır, karşıya bakar)
   addBox(ctx, V(0, -12, -0.5), V(3, 2, 0), true);
@@ -764,7 +764,7 @@ function chamber23(ctx) {
   ctx.group.add(door.mesh);
   ctx.colliders.push(door.collider);
   ctx.doors.push(door);
-  const btn = new Button(V(-5, 0, 11), door);
+  const btn = new Button(V(-5, 0, 11), door, { cubeOnly: true }); // oyuncu basamaz → küp şart
   ctx.group.add(btn.group);
   ctx.buttons.push(btn);
 
