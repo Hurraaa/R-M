@@ -10,7 +10,7 @@ import { PortalSystem } from "./PortalSystem.js";
 import { buildChamber, CHAMBER_COUNT } from "./Level.js";
 import { Scenery } from "./Scenery.js";
 import { PerfMonitor } from "./PerfMonitor.js";
-import { BouncePad } from "./Props.js";
+import { BouncePad, Echo } from "./Props.js";
 
 export class PortalGame {
   constructor(canvas) {
@@ -21,6 +21,13 @@ export class PortalGame {
     this.level = null;
     this.winTimer = 0;
     this._nextPortal = "a"; // mobil tek-buton sırası
+    // Yankı (zaman yankısı): kayıt durumu + klonlar
+    this.recording = false;
+    this.recFrames = [];
+    this.recStart = null;
+    this.recStartYaw = 0;
+    this.echoes = [];
+    this.maxRecFrames = 1500; // ~ güvenlik üst sınırı
 
     this._initRenderer();
     this._initScene();
@@ -39,6 +46,7 @@ export class PortalGame {
     addEventListener("keydown", (e) => {
       if (e.code === "KeyR") this.loadChamber(this.chamberIndex);
       if (e.code === "KeyP") this.perf.toggle();
+      if (e.code === "KeyE" || e.code === "KeyQ") this.toggleEcho();
     });
     addEventListener("resize", () => this._onResize());
 
@@ -121,7 +129,45 @@ export class PortalGame {
     this._nextPortal = "a";
     this._gelPatch = null; // jel sıçrama yaması (bölüme özel)
     this._t = 0;
+    this._clearEchoes();
+    this.recording = false;
+    this.recFrames = [];
     this._onHud?.(i + 1, CHAMBER_COUNT, this.level.hint, this.level.objective);
+    this._onEcho?.(false, this.level.echoMax ?? 0);
+  }
+
+  _clearEchoes() {
+    for (const e of this.echoes) this.scene.remove(e.group);
+    this.echoes = [];
+  }
+
+  // Yankı kaydını başlat/bitir. Bitince oyuncu kayıt başlangıcına ışınlanır ve
+  // klon kaydı oynatır (son karede donup butonu basılı tutar).
+  toggleEcho() {
+    if (this.state !== "playing") return;
+    const echoMax = this.level?.echoMax ?? 0;
+    if (echoMax <= 0) return; // bu bölümde yankı yok
+    if (!this.recording) {
+      if (this.echoes.length >= echoMax) this._clearEchoes(); // sınırı aşınca baştan
+      this.recording = true;
+      this.recFrames = [];
+      this.recStart = this.controller.position.clone();
+      this.recStartYaw = this.controller.yaw;
+      this._onEcho?.(true, echoMax);
+    } else {
+      this.recording = false;
+      if (this.recFrames.length > 2) {
+        const echo = new Echo(this.recFrames);
+        this.scene.add(echo.group);
+        this.echoes.push(echo);
+      }
+      // oyuncuyu kayıt başlangıcına geri al (klon senin rotanı oynar, sen yeni iş yaparsın)
+      this.controller.position.copy(this.recStart);
+      this.controller.velocity.set(0, 0, 0);
+      this.controller.yaw = this.recStartYaw;
+      this.portals.lastCenter.copy(this.controller.center);
+      this._onEcho?.(false, echoMax);
+    }
   }
 
   // bölüm grubundaki geometri/materyal/texture'ları GPU'dan serbest bırak.
@@ -203,6 +249,13 @@ export class PortalGame {
     this.portals.update(dt);
     const exitNormal = this.portals.tryTeleport(this.controller);
     if (exitNormal) this.controller.depenetrateAlong(exitNormal, this.level.colliders, this.portals);
+
+    // Yankı: kayıttaysa oyuncu ayak konumunu biriktir; klonları oynat
+    if (this.recording) {
+      this.recFrames.push(this.controller.position.clone());
+      if (this.recFrames.length >= this.maxRecFrames) this.toggleEcho(); // otomatik bitir
+    }
+    for (const echo of this.echoes) echo.update();
 
     // interaktif nesneler: yük küpleri, butonlar, kapılar
     for (const cube of this.level.cubes) {
@@ -291,7 +344,7 @@ export class PortalGame {
       return true;
     });
 
-    for (const button of this.level.buttons) button.update(this.level.cubes, this.controller);
+    for (const button of this.level.buttons) button.update(this.level.cubes, this.controller, this.echoes);
     for (const kp of this.level.keypads) kp.update(this.controller);
     for (const lift of this.level.waterLifts) {
       const c = lift.collider;

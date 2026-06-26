@@ -365,6 +365,27 @@ button {
 }
 .hud-btn:active { transform: rotate(-180deg) scale(0.92); }
 
+/* Yankı (zaman yankısı) düğmesi: metinli pill; kayıtta kırmızı yanıp söner */
+#echo-btn {
+  width: auto;
+  padding: 0 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  gap: 4px;
+}
+#echo-btn:hover { transform: none; }
+#echo-btn:active { transform: scale(0.94); }
+#echo-btn.recording {
+  color: #fff;
+  border-color: rgba(255, 90, 74, 0.9);
+  background: radial-gradient(circle at 38% 32%, rgba(120, 30, 24, 0.85), rgba(60, 10, 8, 0.85));
+  box-shadow: 0 0 14px rgba(255, 90, 74, 0.7);
+  animation: echo-rec-blink 0.9s ease-in-out infinite;
+}
+@keyframes echo-rec-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
 .hint-banner {
   position: absolute;
   bottom: 26px;

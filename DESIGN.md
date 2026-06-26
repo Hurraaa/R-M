@@ -84,6 +84,12 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 27 | Çift Yansıtıcı | ışını portalla sok, iki reflektörde zigzag (-x→-z→+x), sağ duvardaki alıcıya | aynalı labirent | ✅ |
 | 28 | Yukarı Işın | ışını zemin portalıyla DİKEY yukarı çevir, tavandaki alıcıyı yak | yukarı bük | ✅ |
 | 29 | Hız Kilidi | **MOMENTUM DEDÜKSİYONU**: düşüş hızı sabit; çıkış için ÜÇ banttan DOĞRU yükseklikteki bandı seç. Alçak kısa kalır, yüksek aşar — yalnızca ortadaki bant hedefe kondurur. "2 portalı yerleştir, bitti" değil; menzili kafanda kurmak gerek. | hız hesabı | ✅ |
+| 30 | Yankı | **YENİ MEKANİK — zaman yankısı/klon**: kendini kaydet (E / ⏱ düğmesi), kayıt bitince başlangıca ışınlanırsın ve klonun rotanı oynayıp son karede DONAR. Anlık buton (bırakılınca anında kapanır) → klon butonu basılı tutarken sen kapıdan geçersin. Portal yok; saf "iki yerde birden ol" planlaması. | iki yerde ol | ✅ |
+
+> **Yankı mekaniği (Echo):** `Echo` sınıfı (Props.js) oyuncunun kaydedilmiş ayak
+> konumlarını oynatır, son karede donar; butonlar onu oyuncu gibi algılar.
+> `ctx.echoMax` ile bölüm başına yankı sayısı. Sonraki bölümlerde portal +
+> yankı, çok-yankı sıralama, klonla zamanlama gibi derin bulmacalar açılabilir.
 
 > Tasarım pusulası: bir mekanik ilk kez tanıtılmıyorsa çeşitlendir
 > (tuzak/şaşırtmaca/kombinasyon). Hiçbir bölüm bir öncekine çok benzemesin.

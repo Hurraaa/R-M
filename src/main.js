@@ -50,7 +50,7 @@ document.getElementById("again-btn").addEventListener("click", () => begin(0));
 // ---- Bölüm seç (test modu) ----
 const selectScreen = document.getElementById("select-screen");
 const selectGrid = document.getElementById("select-grid");
-const CH_NAMES = ["Uyanış", "Yön", "Kontrol", "Ağırlık", "Çifte Yük", "Köprü", "İp Hattı", "Trambolin", "Enerji Topu", "Dönen Merdivenler", "İnce Köprü", "Şifre", "Çarklar ve Su", "Ay Yürüyüşü", "Yer Çekimi", "Sütun Patlatma", "Füze", "Engel Yağmuru", "Serbest Düşüş", "Işık Köprüsü", "Sıçrama Hattı", "Lazer", "Şebeke", "Yansıtıcı", "Sıçrama Jeli", "Mantık Kapısı", "Çift Yansıtıcı", "Yukarı Işın", "Hız Kilidi"];
+const CH_NAMES = ["Uyanış", "Yön", "Kontrol", "Ağırlık", "Çifte Yük", "Köprü", "İp Hattı", "Trambolin", "Enerji Topu", "Dönen Merdivenler", "İnce Köprü", "Şifre", "Çarklar ve Su", "Ay Yürüyüşü", "Yer Çekimi", "Sütun Patlatma", "Füze", "Engel Yağmuru", "Serbest Düşüş", "Işık Köprüsü", "Sıçrama Hattı", "Lazer", "Şebeke", "Yansıtıcı", "Sıçrama Jeli", "Mantık Kapısı", "Çift Yansıtıcı", "Yukarı Işın", "Hız Kilidi", "Yankı"];
 for (let i = 0; i < CHAMBER_COUNT; i++) {
   const b = document.createElement("button");
   b.className = "select-cell";
@@ -69,6 +69,16 @@ document.getElementById("select-close").addEventListener("click", () => {
 document.getElementById("reset-btn").addEventListener("click", () => game.loadChamber(game.chamberIndex));
 document.getElementById("hint-btn").addEventListener("click", () => hint.classList.toggle("hidden"));
 document.getElementById("perf-btn").addEventListener("click", () => game.perf.toggle());
+
+// ---- Yankı (zaman yankısı) düğmesi + gösterge ----
+const echoBtn = document.getElementById("echo-btn");
+echoBtn.addEventListener("click", () => game.toggleEcho());
+game._onEcho = (recording, echoMax) => {
+  if (echoMax > 0) echoBtn.classList.remove("hidden");
+  else echoBtn.classList.add("hidden");
+  echoBtn.textContent = recording ? "⏺ KAYIT" : "⏱ YANKI";
+  echoBtn.classList.toggle("recording", recording);
+};
 
 // pointer-lock koparsa (ESC) başlangıca dönmeden devam; tekrar kilitlemek için tıkla
 canvas.addEventListener("click", () => {

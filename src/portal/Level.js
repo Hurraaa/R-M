@@ -997,7 +997,40 @@ function chamber29(ctx) {
   ctx.story = "Eski bir fırlatma kuyusu. Hız sabit ama açıyı sen seçiyorsun — menzili kafanda kur, doğru bandı bul.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29];
+// ---- Oda 30: Yankı — kendini kaydet; klonun butonu basılı tutarken sen kapıdan geç ----
+// YENİ MEKANİK: Yankı (zaman yankısı). E tuşu / "⏱ Yankı" düğmesi kaydı başlatır/bitirir.
+// Bitince kayıt başlangıcına ışınlanırsın ve klon rotanı oynar (son karede donar).
+function chamber30(ctx) {
+  // geniş oda (portallanabilir yüzey YOK — bu bölüm tamamen yankı mekaniğiyle çözülür)
+  addBox(ctx, V(-16, -0.5, -4), V(12, 0, 4), false); // zemin
+  addBox(ctx, V(-16.5, 0, -4), V(-16, 6, 4), false); // sol
+  addBox(ctx, V(12, 0, -4), V(12.5, 6, 4), false); // sağ
+  addBox(ctx, V(-16, 0, -4.5), V(12, 6, -4), false); // arka
+  addBox(ctx, V(-16, 0, 4), V(12, 6, 4.5), false); // ön
+  addBox(ctx, V(-16, 6, -4), V(12, 6.5, 4), false); // tavan
+
+  // KAPI x=5 (sürekli ağırlık ister: bırakılınca ANINDA kapanır -> tek başına koşup yetişemezsin,
+  // kayıt sırasında butona basman da işe yaramaz; yalnızca klon basılı tutarken açık kalır)
+  const door = new Door(V(5, 0, -4), V(5.5, 5, 4));
+  door.closeSpeed = 8; // hızlı kapanış: zamanlama penceresi yok, basılı TUTULMALI
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+
+  // BUTON x=-13 (anlık: yalnızca üstünde biri/klon dururken basılı). Kapıdan 18 birim uzak.
+  const btn = new Button(V(-13, 0, 0), door);
+  ctx.group.add(btn.group);
+  ctx.buttons.push(btn);
+
+  ctx.echoMax = 1; // bu bölümde 1 yankı kaydedilebilir
+  ctx.spawn = V(0, 0.1, 0);
+  goal(ctx, V(9, 0, 0), "core", 0x6ee84f);
+  ctx.objective = "Kendini kaydet: klonun butonu basılı tutarken sen kapıdan geçip hedefe ulaş.";
+  ctx.hint = "Buton anlık — basılı tutulmazsa kapı hemen kapanır, tek başına basıp koşarak yetişemezsin. ÇÖZÜM: 'Yankı' kaydını başlat (E tuşu ya da ⏱ düğmesi), butona yürü ve üstünde dur, sonra kaydı bitir. Kayıt başlangıcına ışınlanırsın ve KLONUN aynı yolu yürüyüp butonun üstünde donar — kapı açık kalır. Şimdi sen kapıdan geçip hedefe git.";
+  ctx.story = "Eski bir zaman-yankısı konsolu. Kendi geçmişini kaydedip yanında bir 'sen' daha çalıştırabilirsin — iki yerde birden ol.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -1008,7 +1041,7 @@ export function buildChamber(index) {
     balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [], flipPads: [],
     destructibles: [], missiles: [], missileLaunchers: [], lightBridges: [],
     lasers: [], laserReceivers: [], fizzlers: [], logicGates: [],
-    gravityScale: 1, ballsHarmful: false,
+    gravityScale: 1, ballsHarmful: false, echoMax: 0,
   };
   builders[index](ctx);
   return ctx;

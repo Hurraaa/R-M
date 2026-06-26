@@ -659,10 +659,15 @@ export class Button {
     this.cap.position.y = 0.2;
     this.group.add(this.base, this.cap);
   }
-  update(cubes, player) {
+  update(cubes, player, echoes) {
     let on = false;
     for (const cu of cubes) {
       if (Math.hypot(cu.pos.x - this.pos.x, cu.pos.z - this.pos.z) < this.radius && cu.pos.y < this.pos.y + 1.5) { on = true; break; }
+    }
+    if (!on && echoes) {
+      for (const e of echoes) {
+        if (Math.hypot(e.position.x - this.pos.x, e.position.z - this.pos.z) < this.radius && Math.abs(e.position.y - this.pos.y) < 1.2) { on = true; break; }
+      }
     }
     if (!on && player && !this.cubeOnly) {
       const p = player.position;
@@ -1079,4 +1084,32 @@ export class Fizzler {
     return max.x > this.min.x && min.x < this.max.x && max.y > this.min.y && min.y < this.max.y && max.z > this.min.z && min.z < this.max.z;
   }
   update(dt) { this.t += dt; this.mat.opacity = 0.20 + 0.12 * Math.abs(Math.sin(this.t * 3)); }
+}
+
+// ---- Yankı (zaman yankısı / klon) ----
+// Oyuncunun kaydedilmiş AYAK konumlarını sırayla oynatan yarı-saydam bir klon.
+// Kayıt biter bitmez son karede DONAR (butonu basılı tutar). Butonlar onu
+// oyuncu gibi algılar (Button.update'e echoes geçilir).
+export class Echo {
+  constructor(frames) {
+    this.frames = frames.length ? frames : [new THREE.Vector3()];
+    this.i = 0;
+    this.done = false;
+    this.position = this.frames[0].clone(); // ayak konumu (Button bunu okur)
+    this.group = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color: 0x46e6ff, emissive: 0x1f7e96, emissiveIntensity: 0.9, transparent: true, opacity: 0.42, roughness: 0.3 });
+    this.body = new THREE.Mesh(new THREE.CapsuleGeometry(0.33, 1.05, 4, 10), mat);
+    this.body.position.y = 0.9;
+    this.group.add(this.body);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.05, 8, 20), new THREE.MeshStandardMaterial({ color: 0x9ff0ff, emissive: 0x46e6ff, emissiveIntensity: 1.4 }));
+    ring.rotation.x = Math.PI / 2; ring.position.y = 0.05;
+    this.group.add(ring);
+    this.group.position.copy(this.position);
+  }
+  update() {
+    if (this.i < this.frames.length - 1) this.i++;
+    else this.done = true; // son karede donar -> butonu sürekli basılı tutar
+    this.position.copy(this.frames[this.i]);
+    this.group.position.copy(this.position);
+  }
 }
