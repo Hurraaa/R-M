@@ -87,7 +87,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 30 | Yankı | **YENİ MEKANİK — zaman yankısı/klon**: kendini kaydet (E / ⏱ düğmesi), kayıt bitince başlangıca ışınlanırsın ve klonun rotanı oynayıp son karede DONAR. Anlık buton (bırakılınca anında kapanır) → klon butonu basılı tutarken sen kapıdan geçersin. Portal yok; saf "iki yerde birden ol" planlaması. | iki yerde ol | ✅ |
 | 31 | Çift Yankı | İKİ klon: kapı yalnızca iki uzak buton AYNI ANDA basılıyken açılır (AND). Tek başına ikisini tutamazsın, bas-koş anında kapanır → iki ayrı yankı kaydetmen şart. Yankı mekaniğinin çok-klon eskalasyonu. | iki kilit | ✅ |
 | 32 | Portal Yankısı | **PORTAL + YANKI**: buton yalnızca portalla geçilen bir adada. Onu tutup aynı anda hedefe gidemezsin → portal rotanı KAYDET, klon portalından geçip butonu tutsun, sen yerden kapıdan geç. İki mekaniğin iç içe kombinasyonu. | klon portaldan | ✅ |
-| 33 | Üçlü Yankı | ÜÇ klon: kapı üç uzak buton AYNI ANDA basılıyken açılır (AND-3, echoMax=3). Yankı serisinin zirvesi — üç ayrı kayıt yönetimi. | üç kilit | ✅ |
+| 33 | Yankı Zinciri | **KLONLAR FARKLI ROL + KAYIT SIRASI kilidi**: b1(klon1) D1'i açar; b2 yalnızca D1'in ardında, oraya klon2'yi kaydetmek için D1 o an açık olmalı → önce klon1, sonra açık kapıdan klon2. Yanlış sırada ulaşılamaz. (Buton bastırma ameleliği değil; sıra/bağımlılık dedüksiyonu.) | yankı zinciri | ✅ |
 
 > **Yankı mekaniği (Echo):** `Echo` sınıfı (Props.js) oyuncunun kaydedilmiş ayak
 > konumlarını oynatır, son karede donar; butonlar onu oyuncu gibi algılar.

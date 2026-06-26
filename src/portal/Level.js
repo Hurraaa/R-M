@@ -1105,37 +1105,50 @@ function chamber32(ctx) {
   ctx.story = "Klonun senin portalından geçebiliyor. Onu uzaktaki kilide yolla, sen önden git.";
 }
 
-// ---- Oda 33: Üçlü Yankı — ÜÇ klon, üç butonu aynı anda tutmalı (AND-3) ----
+// ---- Oda 33: Yankı Zinciri — klonlar farklı rol; KAYIT SIRASI kilidin kendisi ----
+// b1 (klon1) D1'i açar. b2 yalnızca D1'in ARDINDA; oraya bir klon kaydetmek için
+// D1'in O ESNADA açık olması gerek -> önce klon1'i kaydet, sonra klon2'yi açık
+// kapıdan geçirip b2'ye kaydet. Yanlış sırada (önce klon2) kapı kapalı, ulaşamaz.
 function chamber33(ctx) {
-  addBox(ctx, V(-16, -0.5, -10), V(16, 0, 12), false); // zemin
-  addBox(ctx, V(-16.5, 0, -10), V(-16, 6, 12), false); // sol
-  addBox(ctx, V(16, 0, -10), V(16.5, 6, 12), false); // sağ
-  addBox(ctx, V(-16, 0, -10.5), V(16, 6, -10), false); // arka
-  addBox(ctx, V(-16, 0, 12), V(16, 6, 12.5), false); // ön
-  addBox(ctx, V(-16, 6, -10), V(16, 6.5, 12), false); // tavan
+  // R0 (spawn)
+  addBox(ctx, V(-6, -0.5, -4), V(6, 0, 4), false);
+  // R1
+  addBox(ctx, V(-6, -0.5, 4), V(6, 0, 12), false);
+  // Hedef odası (derin: kapalı D2'ye yapışan oyuncu hedefin 2.6 küresine giremesin)
+  addBox(ctx, V(-6, -0.5, 12), V(6, 0, 18), false);
+  // dış duvarlar (boydan boya)
+  addBox(ctx, V(-6.5, 0, -4), V(-6, 6, 18), false); // sol
+  addBox(ctx, V(6, 0, -4), V(6.5, 6, 18), false); // sağ
+  addBox(ctx, V(-6, 0, -4.5), V(6, 6, -4), false); // arka
+  addBox(ctx, V(-6, 0, 18), V(6, 6, 18.5), false); // ön
+  addBox(ctx, V(-6, 6, -4), V(6, 6.5, 18), false); // tavan
 
-  // KAPI duvarı z=8, ortada boşluk x[-3,3]
-  addBox(ctx, V(-16, 0, 8), V(-3, 6, 8.5), false);
-  addBox(ctx, V(3, 0, 8), V(16, 6, 8.5), false);
-  addBox(ctx, V(-3, 5, 8), V(3, 6, 8.5), false); // lento
-  const door = new Door(V(-3, 0, 8), V(3, 5, 8.5));
-  door.closeSpeed = 8;
-  ctx.group.add(door.mesh); ctx.colliders.push(door.collider); ctx.doors.push(door);
+  // D1 (z=4) — b1 ile açılır
+  addBox(ctx, V(-6, 0, 4), V(-2, 6, 4.5), false);
+  addBox(ctx, V(2, 0, 4), V(6, 6, 4.5), false);
+  addBox(ctx, V(-2, 5, 4), V(2, 6, 4.5), false); // lento
+  const d1 = new Door(V(-2, 0, 4), V(2, 5, 4.5));
+  d1.closeSpeed = 8;
+  ctx.group.add(d1.mesh); ctx.colliders.push(d1.collider); ctx.doors.push(d1);
+  // D2 (z=12) — b2 ile açılır
+  addBox(ctx, V(-6, 0, 12), V(-2, 6, 12.5), false);
+  addBox(ctx, V(2, 0, 12), V(6, 6, 12.5), false);
+  addBox(ctx, V(-2, 5, 12), V(2, 6, 12.5), false);
+  const d2 = new Door(V(-2, 0, 12), V(2, 5, 12.5));
+  d2.closeSpeed = 8;
+  ctx.group.add(d2.mesh); ctx.colliders.push(d2.collider); ctx.doors.push(d2);
 
-  // ÜÇ buton (uzak; aynı anda tutmak için üç klon). null kapı -> sadece pressed.
-  const b1 = new Button(V(-13, 0, 3), null);
-  const b2 = new Button(V(13, 0, 3), null);
-  const b3 = new Button(V(0, 0, -8), null);
-  ctx.group.add(b1.group, b2.group, b3.group);
-  ctx.buttons.push(b1, b2, b3);
-  door.requires = [b1, b2, b3]; // AND-3 kilidi
+  const b1 = new Button(V(-4, 0, 0), d1);   // R0'da: D1'i açar
+  const b2 = new Button(V(4, 0, 8), d2);    // R1'de (D1'in ardında): D2'yi açar
+  ctx.group.add(b1.group, b2.group);
+  ctx.buttons.push(b1, b2);
 
-  ctx.echoMax = 3; // üç yankı
-  ctx.spawn = V(0, 0.1, 1);
-  goal(ctx, V(0, 0, 10.5), "core", 0x6ee84f);
-  ctx.objective = "Üç butonu aynı anda bastır: üç ayrı klon kaydet, sonra kapıdan geç.";
-  ctx.hint = "Kapı yalnızca ÜÇ buton birlikte basılıyken açılır. Üç ayrı yankı kaydet: her seferinde kayıt başlat, bir butona yürü-dur-bitir; klon o butonu tutar. Üç klon (sol, sağ, arka) üç butonu tutunca kapı açılır — sen ortadan geç. Dördüncü kayıt en eski klonu siler, dikkat.";
-  ctx.story = "Üç kilit, üç el. Geçmişinin üç yankısını birden çalıştır.";
+  ctx.echoMax = 2;
+  ctx.spawn = V(0, 0.1, 0);
+  goal(ctx, V(0, 0, 15.5), "core", 0x6ee84f);
+  ctx.objective = "İki klonu zincirle: biri ilk kapıyı açsın ki ötekini ikinci butona kaydedebilesin.";
+  ctx.hint = "İki kapı var: D1 (b1 ile) ve onun ARDINDAKİ D2 (b2 ile). b2'yi tutacak klonu kaydetmek için, o kayıt sırasında D1 AÇIK olmalı. Yani SIRA önemli: 1) Önce klon1'i kaydet — sol butona (b1) yürü, dur, bitir; D1 açılır. 2) Şimdi klon2'yi kaydet — AÇIK D1'den geçip sağdaki b2'ye yürü, dur, bitir; D2 açılır. 3) İki klon iki butonu tutarken sen iki kapıdan da geçip hedefe git. Önce klon2'yi denersen D1 kapalı olur, b2'ye ulaşamazsın.";
+  ctx.story = "Yankılar bir zincir kurar: biri yol açar, öteki o yoldan geçer. Doğru sırada uyandır.";
 }
 
 const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33];
