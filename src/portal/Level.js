@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher, LightBridge, Laser, LaserReceiver, Fizzler, LogicGate } from "./Props.js";
+import { Cube, Button, Door, LaunchPad, Zipline, BouncePad, Ball, BallEmitter, Receptacle, MovingPlatform, Keypad, WaterLift, FlipPad, Destructible, Missile, MissileLauncher, LightBridge, Laser, LaserReceiver, Fizzler, LogicGate, Slingshot, Projectile, Hoop } from "./Props.js";
 
 // 3x5 dijit fontu (yukarıdan okunacak sütun desenleri)
 const DIGITS = {
@@ -1363,10 +1363,45 @@ function chamberTrampoline(ctx) {
   ctx.story = "Yıkık bir kule, uçsuz gökyüzü. On yay seni tepedeki vericiye taşıyor — ritmi yakala, korkma.";
 }
 
+// ---- Oda 37: Sapan / Gol Atışı — topu çek-bırak ile uzaktaki çemberden geçir ----
+// Portal yok. Sabit sapandan yerçekimli topu fırlatırsın; uzak/yüksek çemberden
+// geçince kapı açılır ve hedefe yürürsün. Açık gökyüzü, uzun mesafeli skill atışı.
+function chamberSling(ctx) {
+  // başlangıç platformu (sapan + oyuncu), açık korkuluklar
+  addBox(ctx, V(-7, -0.5, -10), V(7, 0, 2), false);
+  addBox(ctx, V(-7.5, 0, -10), V(-7, 1.3, 2), false); // sol korkuluk
+  addBox(ctx, V(7, 0, -10), V(7.5, 1.3, 2), false);   // sağ korkuluk
+  // hedef koridoru (arka): kapı ardında röle
+  addBox(ctx, V(-7, -0.5, -19), V(7, 0, -10), false);
+  addBox(ctx, V(-7.5, 0, -19), V(-7, 4, -10), false);
+  addBox(ctx, V(7, 0, -19), V(7.5, 4, -10), false);
+  addBox(ctx, V(-7, 0, -19.5), V(7, 4, -19), false);
+
+  // kapı: koridor girişini TAM kapatır (çember tetiklenince açılır, kalıcı)
+  const door = new Door(V(-7, 0, -10.5), V(7, 4, -10));
+  ctx.group.add(door.mesh); ctx.colliders.push(door.collider); ctx.doors.push(door);
+
+  // sapan + top (muzzle yüksekliğinde)
+  const sling = new Slingshot(V(0, 0, -1), V(0, 0, 1));
+  ctx.group.add(sling.group); ctx.slingshots.push(sling);
+  const proj = new Projectile(sling.muzzle.clone());
+  ctx.group.add(proj.mesh); ctx.projectiles.push(proj);
+
+  // hedef ÇEMBER: uzakta ve yüksekte, oyuncuya bakar (top +z'ye geçer)
+  const hoop = new Hoop(V(0, 4, 18), V(0, 0, -1), 2.1, door);
+  ctx.group.add(hoop.group); ctx.hoops.push(hoop);
+
+  ctx.spawn = V(0, 0.1, -3);
+  goal(ctx, V(0, 0, -15), "core", 0x6ee84f);
+  ctx.objective = "Topu çek-bırak ile fırlat; uzaktaki çemberden geçir — kapı açılsın, hedefe yürü.";
+  ctx.hint = "Sapana yaklaş. Fareyle (mobilde parmakla) topu GERİ ÇEK: çekiş yönü atış açısını, çekiş uzunluğu gücü belirler. Yörünge önizlemesine bak, bırak. Top uzaktaki pembe çemberden geçince kapı açılır; sonra arkadaki koridordan röleye yürü. Iskalarsan top yenilenir.";
+  ctx.story = "Eski bir enerji sapanı. Topu uzaktaki halkaya tam oturt — kapı ancak öyle güç alır.";
+}
+
 // Not: Ayna bölümleri (35/37/38) geçici olarak çıkarıldı — mekanik çalışıyor ama
 // yerleşimleri çözümü kazara tetikliyordu (park duvarı spawn'a bitişik, buton aynanın
 // doğal yolunda). Altyapı (Mirror) duruyor; ileride dikkatli yeniden tasarlanacak.
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber36, chamberTrampoline];
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber36, chamberTrampoline, chamberSling];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
@@ -1377,6 +1412,7 @@ export function buildChamber(index) {
     balls: [], emitters: [], receptacles: [], movers: [], keypads: [], waterLifts: [], flipPads: [],
     destructibles: [], missiles: [], missileLaunchers: [], lightBridges: [],
     lasers: [], laserReceivers: [], fizzlers: [], logicGates: [],
+    slingshots: [], projectiles: [], hoops: [],
     gravityScale: 1, ballsHarmful: false, echoMax: 0,
   };
   builders[index](ctx);

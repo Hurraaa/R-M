@@ -55,6 +55,12 @@ export class PortalGame {
       if (e.code === "KeyE" || e.code === "KeyQ") this.toggleEcho();
       if (e.code === "KeyF") this.toggleGrab();
     });
+    // sapan çek-bırak: masaüstünde sol fare basılı = geri çek, bırak = at
+    this._slingHeld = false;
+    this.slingDrag = null;
+    this._slingPreview = null;
+    canvas.addEventListener("mousedown", (e) => { if (e.button === 0) this._slingHeld = true; });
+    addEventListener("mouseup", (e) => { if (e.button === 0) this._slingHeld = false; });
     addEventListener("resize", () => this._onResize());
 
     this.clock = new THREE.Clock();
@@ -144,6 +150,7 @@ export class PortalGame {
     this.recording = false;
     this.recFrames = [];
     this.heldCube = null;
+    this.slingDrag = null; this._slingHeld = false; this._activeSling = null; this._hideSlingPreview();
     this._setupMirror();
     this._onHud?.(i + 1, CHAMBER_COUNT, this.level.hint, this.level.objective);
     this._onEcho?.(false, this.level.echoMax ?? 0);
@@ -195,6 +202,84 @@ export class PortalGame {
         if (best.collider) best.collider.disabled = true; // oyuncuyu engellemesin / duvara saplanmasın
       }
     }
+  }
+
+  // ---- Sapan (çek-bırak) ----
+  // Oyuncu sapana yakınken sol fareyi/parmağı basılı tutup GERİ ÇEKER: bakış
+  // bastırılır, çekiş vektörü birikir; bırakınca top o güç/açıyla fırlar.
+  _handleSlingInput() {
+    const p = this.controller.position;
+    let sl = null, best = 4.0;
+    for (const s of this.level.slingshots) {
+      const d = Math.hypot(s.pos.x - p.x, s.pos.z - p.z);
+      if (d < best) { best = d; sl = s; }
+    }
+    this._activeSling = sl;
+    const proj = this.level.projectiles[0];
+    const canPull = sl && proj && !proj.live;
+    const held = canPull && (this.input.isTouch ? this.input.look.active : this._slingHeld);
+    if (held) {
+      if (!this.slingDrag) this.slingDrag = { dx: 0, dy: 0 };
+      this.slingDrag.dx += this.input.aimDX;
+      this.slingDrag.dy += this.input.aimDY;
+      this.input.aimDX = 0; this.input.aimDY = 0; // bakışı bastır (çekiyoruz)
+      this._updateSlingPreview(sl);
+    } else if (this.slingDrag) {
+      this._fireSling(sl || this._activeSling);
+      this.slingDrag = null;
+      this._hideSlingPreview();
+    }
+  }
+
+  // çekiş vektöründen fırlatma hızını üret (çek-bırak: aşağı çek -> yukarı/uzağa)
+  _slingVel(sl, drag) {
+    const pull = Math.hypot(drag.dx, drag.dy);
+    const power = Math.min(27, Math.max(7, pull * 0.05));   // çekiş uzunluğu -> güç
+    const yawOff = -drag.dx * 0.004;                        // sağa çek -> sola at (sapan)
+    const pitch = Math.min(1.4, Math.max(0.12, drag.dy * 0.00198)); // aşağı çek -> yukarı yay (açı)
+    const f = sl.baseDir.clone(); f.y = 0;
+    if (f.lengthSq() < 1e-4) f.set(0, 0, 1);
+    f.normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), yawOff);
+    const vel = f.multiplyScalar(power * Math.cos(pitch));
+    vel.y = power * Math.sin(pitch);
+    return vel;
+  }
+
+  _fireSling(sl) {
+    if (!sl) return;
+    const proj = this.level.projectiles[0];
+    if (!proj || proj.live) return;
+    if (!this.slingDrag || Math.hypot(this.slingDrag.dx, this.slingDrag.dy) < 12) return; // çok küçük çekiş
+    proj.pos.copy(sl.muzzle);
+    proj.launch(this._slingVel(sl, this.slingDrag));
+  }
+
+  _updateSlingPreview(sl) {
+    if (!sl || !this.slingDrag) return;
+    const vel = this._slingVel(sl, this.slingDrag);
+    const pos = sl.muzzle.clone();
+    const v = vel.clone();
+    const pts = [];
+    const h = 1 / 120; // mermi fiziğiyle aynı alt-adım -> önizleme doğru
+    for (let i = 0; i < 200; i++) {
+      if (i % 3 === 0) pts.push(pos.x, pos.y, pos.z); // her 3 adımda bir nokta
+      v.y -= 26 * h;
+      pos.addScaledVector(v, h);
+      if (pos.y < sl.muzzle.y - 26) break;
+    }
+    if (!this._slingPreview) {
+      const geo = new THREE.BufferGeometry();
+      const mat = new THREE.PointsMaterial({ color: 0x9ff0ff, size: 0.18, transparent: true, opacity: 0.9 });
+      this._slingPreview = new THREE.Points(geo, mat);
+      this.scene.add(this._slingPreview);
+    }
+    this._slingPreview.geometry.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    this._slingPreview.geometry.computeBoundingSphere();
+    this._slingPreview.visible = true;
+  }
+
+  _hideSlingPreview() {
+    if (this._slingPreview) this._slingPreview.visible = false;
   }
 
   // tutulan küpü her kare kameranın önünde konumla (kinematik)
@@ -316,12 +401,18 @@ export class PortalGame {
   _update(dt) {
     if (this.state !== "playing") return;
 
-    if (this.input.consumePortalA()) this.firePortal("a"); // masaüstü sol tık
-    if (this.input.consumePortalB()) this.firePortal("b"); // masaüstü sağ tık
-    if (this.input.consumePortalNext()) {
-      // mobil tek buton: sırayla giriş/çıkış portalı
-      if (this.firePortal(this._nextPortal)) {
-        this._nextPortal = this._nextPortal === "a" ? "b" : "a";
+    if (this.level.slingshots.length) {
+      // sapan bölümü: portal yok — tıklamalar çek-bırak nişanı için kullanılır
+      this._handleSlingInput();
+      this.input.consumePortalA(); this.input.consumePortalB(); this.input.consumePortalNext();
+    } else {
+      if (this.input.consumePortalA()) this.firePortal("a"); // masaüstü sol tık
+      if (this.input.consumePortalB()) this.firePortal("b"); // masaüstü sağ tık
+      if (this.input.consumePortalNext()) {
+        // mobil tek buton: sırayla giriş/çıkış portalı
+        if (this.firePortal(this._nextPortal)) {
+          this._nextPortal = this._nextPortal === "a" ? "b" : "a";
+        }
       }
     }
 
@@ -456,6 +547,13 @@ export class PortalGame {
       if (b.dead) { this.scene.remove(b.mesh); return false; }
       return true;
     });
+
+    // sapan mermileri + hedef çemberi (nişan/atış girdisi _handleSlingInput'ta)
+    for (const p of this.level.projectiles) {
+      p.update(dt, this.level);
+      for (const h of this.level.hoops) h.check(p);
+      if (p.dead) { p.restTimer -= dt; if (p.restTimer <= 0) p.reset(); }
+    }
 
     const pressers = this.mirror ? [...this.echoes, { position: this.mirror.position }] : this.echoes;
     for (const button of this.level.buttons) button.update(this.level.cubes, this.controller, pressers);

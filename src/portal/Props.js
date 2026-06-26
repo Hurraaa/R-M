@@ -1177,3 +1177,120 @@ export class Echo {
     walkFigure(this.state, this.fig, cur, prev);
   }
 }
+
+// ---- Sapan / Gol Atışı mekaniği ----
+// Sabit bir sapandan yerçekimli bir top fırlatılır (çek-bırak ile aç/güç).
+// Top bir hedef ÇEMBERDEN geçince çember tetiklenir (kapı açılır).
+
+const PROJ_GRAVITY = 26;
+
+// Yerçekimli mermi (top). Fırlatılır, duvarlara/zemine çarpınca ölür, çemberden
+// geçişi prev->pos segmenti ile yakalanır.
+export class Projectile {
+  constructor(pos, r = 0.32) {
+    this.r = r;
+    this.pos = pos.clone();
+    this.spawn = pos.clone();
+    this.velocity = new THREE.Vector3();
+    this.prev = pos.clone();
+    this.live = false; // fırlatıldı mı?
+    this.dead = false;
+    this.restTimer = 0;
+    const mat = new THREE.MeshStandardMaterial({ color: 0x9ff0ff, emissive: 0x37c8e0, emissiveIntensity: 1.3, roughness: 0.25, metalness: 0.4 });
+    this.mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 2), mat);
+    this.mesh.castShadow = true;
+    this.mesh.position.copy(pos);
+    this.light = new THREE.PointLight(0x46e6ff, 1.0, 6, 2);
+    this.mesh.add(this.light);
+  }
+  reset() {
+    this.pos.copy(this.spawn); this.velocity.set(0, 0, 0); this.prev.copy(this.pos);
+    this.live = false; this.dead = false; this.restTimer = 0; this.mesh.position.copy(this.pos);
+  }
+  launch(vel) { this.velocity.copy(vel); this.live = true; this.dead = false; this.prev.copy(this.pos); }
+  update(dt, level) {
+    if (!this.live || this.dead) return;
+    this.prev.copy(this.pos); // kare başı (çember kesişimi prev->pos ile kontrol edilir)
+    // sabit alt-adım: kare hızından bağımsız yörünge (atış adil/tutarlı)
+    const steps = Math.max(1, Math.min(8, Math.ceil(dt / (1 / 120))));
+    const h = dt / steps;
+    for (let s = 0; s < steps; s++) {
+      this.velocity.y -= PROJ_GRAVITY * h;
+      this.pos.addScaledVector(this.velocity, h);
+      let hit = false;
+      for (const c of level.colliders) {
+        if (c.disabled || c.bridge) continue;
+        if (this.pos.x + this.r > c.min.x && this.pos.x - this.r < c.max.x &&
+            this.pos.y + this.r > c.min.y && this.pos.y - this.r < c.max.y &&
+            this.pos.z + this.r > c.min.z && this.pos.z - this.r < c.max.z) {
+          this.dead = true; this.restTimer = 0.6; hit = true; break;
+        }
+      }
+      if (hit) break;
+    }
+    if (this.pos.y < -30) { this.dead = true; this.restTimer = 0.4; }
+    this.mesh.position.copy(this.pos);
+  }
+}
+
+// Hedef çember: bir düzlemi vardır; mermi prev->pos segmentiyle çemberin içinden
+// geçerse tetiklenir (kapıyı kalıcı açar).
+export class Hoop {
+  constructor(center, normal, radius, door) {
+    this.center = center.clone();
+    this.normal = normal.clone().normalize();
+    this.radius = radius;
+    this.door = door || null;
+    this.triggered = false;
+    this.group = new THREE.Group();
+    this.group.position.copy(center);
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(radius, 0.12, 14, 40),
+      new THREE.MeshStandardMaterial({ color: 0xff5ad0, emissive: 0x7d1a64, emissiveIntensity: 1.0, roughness: 0.3, metalness: 0.4 })
+    );
+    // torus düzlemi normale dik olsun
+    ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), this.normal);
+    this.ring = ring;
+    this.group.add(ring);
+    this.light = new THREE.PointLight(0xff5ad0, 1.2, 10, 2);
+    this.group.add(this.light);
+  }
+  check(proj) {
+    if (this.triggered || !proj.live || proj.dead) return;
+    const n = this.normal;
+    const d0 = proj.prev.clone().sub(this.center).dot(n);
+    const d1 = proj.pos.clone().sub(this.center).dot(n);
+    if ((d0 > 0) === (d1 > 0)) return; // düzlemi kesmedi
+    const t = d0 / (d0 - d1);
+    const hit = proj.prev.clone().lerp(proj.pos, t);
+    const rel = hit.clone().sub(this.center);
+    const planar = rel.addScaledVector(n, -rel.dot(n)).length();
+    if (planar < this.radius) {
+      this.triggered = true;
+      if (this.door) this.door.setOpen(true);
+      this.ring.material.color.setHex(0x6ee84f);
+      this.ring.material.emissive.setHex(0x1e7a2a);
+      this.light.color.setHex(0x6ee84f);
+    }
+  }
+}
+
+// Sapan: sabit fırlatma noktası + Y çerçeve görseli. Topu tutar; çek-bırak ile fırlatır.
+export class Slingshot {
+  constructor(pos, baseDir) {
+    this.pos = pos.clone();
+    this.baseDir = (baseDir || new THREE.Vector3(0, 0, 1)).clone().normalize();
+    this.group = new THREE.Group();
+    this.group.position.copy(pos);
+    const post = new THREE.MeshStandardMaterial({ color: 0x6a4a32, roughness: 0.7, metalness: 0.1 });
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 1.2, 10), post);
+    stem.position.y = 0.6;
+    const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.7, 8), post);
+    armL.position.set(-0.28, 1.25, 0); armL.rotation.z = 0.5;
+    const armR = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.7, 8), post);
+    armR.position.set(0.28, 1.25, 0); armR.rotation.z = -0.5;
+    this.group.add(stem, armL, armR);
+    // top yuvası yüksekliği
+    this.muzzle = new THREE.Vector3(pos.x, pos.y + 1.3, pos.z);
+  }
+}
