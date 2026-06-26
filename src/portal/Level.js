@@ -1351,14 +1351,15 @@ function chamberTrampoline(ctx) {
     ctx.group.add(tr.group); ctx.bouncePads.push(tr);
   }
 
-  // tepe (hedef) platformu — trambolinsiz, daha geniş iniş alanı
+  // tepe (hedef) — son trambolinden KÜÇÜK bir iniş pad'ine TAM denk gelmelisin;
+  // gerisi boşluk. Son sıçrayışı doğru ayarlayamazsan düşersin.
   const zf = N * DZ, yf = N * DY;
-  addBox(ctx, V(-HW - 1.5, yf - 0.5, zf - HD - 1), V(HW + 1.5, yf, zf + HD + 3), false);
+  addBox(ctx, V(-2.6, yf - 0.5, zf - 1.5), V(2.6, yf, zf + 4), false); // küçük hedef pad'i
 
   ctx.spawn = V(0, 0.1, -5);
   goal(ctx, V(0, yf, zf + 1.5), "beacon", 0x46e6ff);
-  ctx.objective = "On trambolinle gökyüzünde yukarı sek — her sekişte İLERİ tutup bir üstteki platforma in.";
-  ctx.hint = "Koşarak ilk trambolinе bas, havadayken İLERİ (W / joystick) basılı tut ki bir sonraki yüksek platforma ulaşasın. Ritmi koru — her platformun trambolini seni bir üste fırlatır. Iskalarsan R ile yenile.";
+  ctx.objective = "On trambolinle gökyüzünde yukarı sek — son sekişi tepedeki KÜÇÜK pad'e tam denk getir.";
+  ctx.hint = "Koşarak ilk trambolinе bas, havadayken İLERİ (W / joystick) basılı tut ki bir sonraki yüksek platforma ulaşasın. Ritmi koru. SON sıçrayışta dikkat: tepede yalnızca küçük bir pad var — İLERİ'yi tam ayarlayıp ona in, yoksa düşersin. Iskalarsan R ile yenile.";
   ctx.story = "Yıkık bir kule, uçsuz gökyüzü. On yay seni tepedeki vericiye taşıyor — ritmi yakala, korkma.";
 }
 
