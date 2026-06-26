@@ -88,6 +88,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 31 | Çift Yankı | İKİ klon: kapı yalnızca iki uzak buton AYNI ANDA basılıyken açılır (AND). Tek başına ikisini tutamazsın, bas-koş anında kapanır → iki ayrı yankı kaydetmen şart. Yankı mekaniğinin çok-klon eskalasyonu. | iki kilit | ✅ |
 | 32 | Portal Yankısı | **PORTAL + YANKI**: buton yalnızca portalla geçilen bir adada. Onu tutup aynı anda hedefe gidemezsin → portal rotanı KAYDET, klon portalından geçip butonu tutsun, sen yerden kapıdan geç. İki mekaniğin iç içe kombinasyonu. | klon portaldan | ✅ |
 | 33 | Yankı Zinciri | **KLONLAR FARKLI ROL + KAYIT SIRASI kilidi**: b1(klon1) D1'i açar; b2 yalnızca D1'in ardında, oraya klon2'yi kaydetmek için D1 o an açık olmalı → önce klon1, sonra açık kapıdan klon2. Yanlış sırada ulaşılamaz. (Buton bastırma ameleliği değil; sıra/bağımlılık dedüksiyonu.) | yankı zinciri | ✅ |
+| 34 | Yankı ve Işın | **KLON + LAZER, farklı roller**: lazerin alıcıya giden yolundaki geçit kapısı yalnızca buton basılıyken açık. Klon geçidi tutar; sen ışını portalla alıcıya çevirirsin. Aynı anda hem tutup hem yönlendirip hedefe gidemezsin. | klon geçidi tutar | ✅ |
 
 > **Yankı mekaniği (Echo):** `Echo` sınıfı (Props.js) oyuncunun kaydedilmiş ayak
 > konumlarını oynatır, son karede donar; butonlar onu oyuncu gibi algılar.

@@ -1151,7 +1151,53 @@ function chamber33(ctx) {
   ctx.story = "Yankılar bir zincir kurar: biri yol açar, öteki o yoldan geçer. Doğru sırada uyandır.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33];
+// ---- Oda 34: Yankı ve Işın — klon ışının GEÇİDİNİ açar, sen ışını portalla yönlendirirsin ----
+// Lazerin alıcıya giden yolunda bir kapı (D) var; D yalnızca buton basılıyken açık (klon tutar).
+// Sen ışını portalla alıcıya çevirirsin. İki ayrı rol: klon geçidi açar, sen ışını yönlendirir.
+function chamber34(ctx) {
+  addBox(ctx, V(-9, -0.5, -8), V(9, 0, 14), false); // zemin
+  addBox(ctx, V(-9, 0, -8.5), V(9, 6, -8), false); // arka (yayıcı)
+  addBox(ctx, V(9, 0, -8), V(9.5, 6, 14), true); // SAĞ duvar portallanabilir (portal B)
+  addBox(ctx, V(-9, 0, 14), V(9, 6, 14.5), true); // ÖN duvar portallanabilir (ışın buraya çarpar; portal A)
+  addBox(ctx, V(-9, 6, -8), V(9, 6.5, 14), false); // tavan
+  // SOL duvar — ortada hedef kapısı boşluğu (z 9..12)
+  addBox(ctx, V(-9.5, 0, -8), V(-9, 6, 9), false);
+  addBox(ctx, V(-9.5, 0, 12), V(-9, 6, 14), false);
+  addBox(ctx, V(-9.5, 4, 9), V(-9, 6, 12), false); // lento
+
+  // lazer: arka-orta, +z (ön duvara çarpar — boşa)
+  const lz = new Laser(V(0, 2, -7.7), V(0, 0, 1));
+  ctx.group.add(lz.group); ctx.lasers.push(lz);
+
+  // hedef kapısı (sol) — alıcı ışın alınca açılır
+  const goalDoor = new Door(V(-9.5, 0, 9), V(-9, 4, 12));
+  goalDoor.closeSpeed = 8;
+  ctx.group.add(goalDoor.mesh); ctx.colliders.push(goalDoor.collider); ctx.doors.push(goalDoor);
+  addBox(ctx, V(-13, -0.5, 9), V(-9, 0, 12), false); // hedef alkovu
+  addBox(ctx, V(-13, 0, 8.5), V(-9, 6, 9), false);
+  addBox(ctx, V(-13, 0, 12), V(-9, 6, 12.5), false);
+  addBox(ctx, V(-13, 0, 9), V(-12.5, 6, 12), false);
+
+  // ALICI (sol duvar, z=5) — ışın buraya gelmeli
+  const rc = new LaserReceiver(V(-8.9, 2, 5), goalDoor);
+  ctx.group.add(rc.group); ctx.laserReceivers.push(rc);
+
+  // GEÇİT kapısı D — ışının alıcıya giden yolunu keser (x≈-7, z5). Buton basılıyken açık.
+  const gate = new Door(V(-7.5, 0, 3.5), V(-7, 6, 6.5));
+  gate.closeSpeed = 8;
+  ctx.group.add(gate.mesh); ctx.colliders.push(gate.collider); ctx.doors.push(gate);
+  const b = new Button(V(5, 0, 9), gate); // klon bunu tutar -> D açılır
+  ctx.group.add(b.group); ctx.buttons.push(b);
+
+  ctx.echoMax = 1;
+  ctx.spawn = V(0, 0.1, 8);
+  goal(ctx, V(-12, 0, 10.5), "core", 0x6ee84f); // alkovda derin: kapalı kapıya yapışan oyuncu 2.6 küresine giremesin
+  ctx.objective = "Klon ışının geçit kapısını tutsun; sen ışını portalla alıcıya çevir, hedefe git.";
+  ctx.hint = "Lazerin alıcıya giden yolunda bir geçit kapısı (D) var — yalnızca buton basılıyken açık. O butonu tutup aynı anda ışını yönlendirip hedefe gidemezsin. ÇÖZÜM: 1) Yankı kaydını başlat, sağdaki butona (b) yürü, dur, bitir; klon D'yi açık tutar. 2) Işının çarptığı ÖN duvara bir portal, SAĞ duvara (alıcının z hizası, z≈5) ikinci portalı aç — ışın açık D'den geçip alıcıya varır, hedef kapısı açılır. 3) Soldaki kapıdan hedefe git.";
+  ctx.story = "Işık hattı bir güvenlik geçidinden geçiyor. Yankın geçidi tutsun, sen ışığı yönlendir.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
