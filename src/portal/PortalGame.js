@@ -409,8 +409,8 @@ export class PortalGame {
     // çıkışa ulaşma
     if (this.level.exit) {
       let ok = this.controller.center.distanceTo(this.level.exit.pos) < this.level.exit.radius + 0.6;
-      // ayna bölümünde: oyuncu VE ayna kendi çıkışlarında olmalı
-      if (ok && this.level.mirror && this.mirror) {
+      // ayna bölümünde ÇIKIŞI tanımlıysa: oyuncu VE ayna kendi çıkışlarında olmalı
+      if (ok && this.level.mirror && this.level.mirror.exit && this.mirror) {
         const dm = this.mirror.center.distanceTo(this.level.mirror.exit);
         ok = dm < (this.level.mirror.exitRadius ?? 2.0) + 0.6;
       }

@@ -651,6 +651,7 @@ export class Button {
     this.radius = 1.5;
     this.door = door;
     this.cubeOnly = !!opts.cubeOnly; // yalnızca küp ağırlığı (oyuncu basamaz)
+    this.latch = !!opts.latch; // bir kez basılınca basılı kalır
     this.pressed = false;
     this.group = new THREE.Group();
     this.group.position.copy(pos);
@@ -673,6 +674,7 @@ export class Button {
       const p = player.position;
       if (Math.hypot(p.x - this.pos.x, p.z - this.pos.z) < this.radius && Math.abs(p.y - this.pos.y) < 1.2) on = true;
     }
+    if (this.latch && this.pressed) on = true; // bir kez basılınca kilitli kalır
     if (on !== this.pressed) {
       this.pressed = on;
       if (this.door) this.door.setOpen(on);

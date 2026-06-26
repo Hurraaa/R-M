@@ -1267,7 +1267,40 @@ function chamber36(ctx) {
   ctx.story = "Klonun senin fırlatmanı bile tekrarlayabiliyor. Onu uzaktaki kilide fırlat, sen önden git.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber35, chamber36];
+// ---- Oda 37: Ayna Kilidi — orta duvar seni ve aynanı ayırır; aynan senin geçemeyeceğin kilidi basar ----
+// Ortadaki duvar oyuncuyu sağda, aynayı solda tutar. Kapıyı açan KALICI buton solda
+// (yalnızca ayna ulaşır). Aynayı butonun üstüne getirecek şekilde konumlan; kilitlenir,
+// kapı açılır; sen sağdan hedefe yürürsün. Ayna = senin gidemediğin yere ulaşır.
+function chamber37(ctx) {
+  addBox(ctx, V(-11, -0.5, -6), V(11, 0, 8), false); // zemin
+  addBox(ctx, V(-11.5, 0, -6), V(-11, 5, 8), false); // sol
+  addBox(ctx, V(11, 0, -6), V(11.5, 5, 8), false); // sağ
+  addBox(ctx, V(-11, 0, -6.5), V(11, 5, -6), false); // arka
+  addBox(ctx, V(-11, 0, 8), V(11, 5, 8.5), false); // ön
+  addBox(ctx, V(-11, 5, -6), V(11, 5.5, 8), false); // tavan
+  // ORTA duvar (x=0): oyuncu sağda, ayna solda; geçemezler
+  addBox(ctx, V(-0.4, 0, -6), V(0.4, 5, 8), false);
+
+  // KALICI buton (sol; yalnızca ayna ulaşır) -> kapıyı açar
+  const D = new Door(V(6, 0, -1.5), V(6.5, 4, 1.5));
+  ctx.group.add(D.mesh); ctx.colliders.push(D.collider); ctx.doors.push(D);
+  const bm = new Button(V(-4, 0, 2), D, { latch: true });
+  ctx.group.add(bm.group); ctx.buttons.push(bm);
+
+  // SAĞ tarafta hedef odası: x=6 duvarı, ortada D boşluğu (z -1.5..1.5)
+  addBox(ctx, V(6, 0, -6), V(6.5, 5, -1.5), false);
+  addBox(ctx, V(6, 0, 1.5), V(6.5, 5, 8), false);
+  addBox(ctx, V(6, 4, -1.5), V(6.5, 5, 1.5), false); // lento
+
+  ctx.mirror = { spawn: V(-3, 0.1, -4) }; // çıkış yok: ayna sadece butonu basar
+  ctx.spawn = V(3, 0.1, -4);
+  goal(ctx, V(8.5, 0, 0), "core", 0x6ee84f);
+  ctx.objective = "Aynayı soldaki kalıcı butona getir (kapı açılır); sen sağdaki kapıdan hedefe git.";
+  ctx.hint = "Ortadaki duvar seni sağda, aynanı solda tutar — soldaki butona sen ulaşamazsın, ama aynan ulaşır. Aynan hareketini X'te yansıtır: sen sağda (4, z=2) noktasına gidince aynan solda (-4, z=2)'deki butona basar. Buton KALICI: bir kez basılınca kilitli kalır, kapı açık kalır. Sonra sen sağdaki kapıdan geçip hedefe git.";
+  ctx.story = "Yansıman senin giremediğin yarıda. Onu kilide yolla, sen önden geç.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber35, chamber36, chamber37];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {

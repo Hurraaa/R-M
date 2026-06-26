@@ -91,6 +91,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 34 | Yankı ve Işın | **KLON + LAZER, farklı roller**: lazerin alıcıya giden yolundaki geçit kapısı yalnızca buton basılıyken açık. Klon geçidi tutar; sen ışını portalla alıcıya çevirirsin. Aynı anda hem tutup hem yönlendirip hedefe gidemezsin. | klon geçidi tutar | ✅ |
 | 35 | Ayna | **YENİ MEKANİK — ayna**: hareketini X'te yansıtan, kendi çarpışması olan ikinci karakter (sen +x → o -x; z aynı). Duvarlar simetriyi bozar. İkisini de kendi çıkışına götür. Beceri değil, uzaysal planlama. (Giriş; ileride duvar-desync ile zorlaşır.) | yansıma | ✅ |
 | 36 | Yankı Sıçraması | **KLON + MOMENTUM**: kapıyı açan buton yalnızca portal-fırlatmayla varılan uzak platformda. Fırlatmanı KAYDET → klon aynı fırlatmayı oynayıp butonda donar; sen yerden kapıdan hedefe git. Klon artık fırlatma da yapar. | klon fırlatır | ✅ |
+| 37 | Ayna Kilidi | **AYNA — ulaşılabilirlik**: orta duvar seni sağda, aynanı solda tutar. Kapıyı açan KALICI buton solda (yalnızca ayna ulaşır). Aynayı butona getirecek şekilde konumlan → kilitlenir → sen sağdan hedefe git. Ayna = senin gidemediğin yere ulaşır. | ayna kilidi | ✅ |
 
 > **Yankı mekaniği (Echo):** `Echo` sınıfı (Props.js) oyuncunun kaydedilmiş ayak
 > konumlarını oynatır, son karede donar; butonlar onu oyuncu gibi algılar.
