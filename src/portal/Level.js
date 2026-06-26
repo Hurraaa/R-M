@@ -372,13 +372,13 @@ function chamber11(ctx) {
   addBox(ctx, V(-1, -0.5, 8), V(1, 0, 10), false); // z9
   // dinlenme platformu + portallanabilir sol duvar
   addBox(ctx, V(-5, -0.5, 11), V(5, 0, 15), false);
-  addBox(ctx, V(-5.5, 0, 11), V(-5, 5, 27), true); // sol duvar (boşluk boyunca portallanabilir)
-  // boşluk z[15,25]
-  addBox(ctx, V(-5, -0.5, 25), V(5, 0, 29), false); // çıkış platformu
-  addBox(ctx, V(-5, 0, 29), V(5, 4, 29.5), false);
+  addBox(ctx, V(-5.5, 0, 11), V(-5, 5, 27), true); // sol duvar portallanabilir; çıkış platformunun ÖNÜNE kadar
+  // boşluk z[15,27] (12 birim — atlanamaz; yalnızca portalla geçilir)
+  addBox(ctx, V(-5, -0.5, 27), V(5, 0, 31), false); // çıkış platformu (uzakta)
+  addBox(ctx, V(-5, 0, 31), V(5, 4, 31.5), false);
 
   ctx.spawn = V(0, 0.1, -2);
-  goal(ctx, V(0, 0, 27), "core", 0x6ee84f);
+  goal(ctx, V(0, 0, 29), "core", 0x6ee84f);
   ctx.objective = "Küçük taşlarda zıplayarak ilerle, sonra portalla son boşluğu geç. Düşersen başa dönersin!";
   ctx.hint = "Taşlara dikkatli zıpla. Dinlenme platformunda sol duvara iki portal aç (biri yanına, biri boşluğun ötesine) ve geç.";
   ctx.story = "Hassasiyet imtihanı. Tesisin eski güvenlik geçidi — bir yanlış adım, en başa.";
@@ -430,8 +430,8 @@ function chamber12(ctx) {
 
   ctx.spawn = V(0, 0.1, -2);
   goal(ctx, V(0, 0, 24.5), "core", 0x6ee84f);
-  ctx.objective = "Yukarıdan bakınca beliren 3 haneli sayıyı oku, tuş takımına sırayla bas.";
-  ctx.hint = "Trambolinle balkona çık, aşağıdaki sütunlara yukarıdan bak — anlamlı bir sayı görürsün. İn ve plakalara o sırayla bas, kapı açılır.";
+  ctx.objective = "Yukarıdan oku, sonra 3 haneli sayıyı sırayla YERDEKİ PLAKALARA BASARAK gir (üstüne çık).";
+  ctx.hint = "Trambolinle balkona çık, aşağıdaki sütunlara yukarıdan bak — anlamlı bir sayı görürsün (3-1-4). İn; tuş takımı yerdeki 0–9 plakalarıdır — klavye yok, sadece doğru plakaların ÜSTÜNE sırayla yürü. Bastığın plaka YEŞİL yanar, ayrılınca griye döner. Doğru sırada basınca kapı açılır.";
   ctx.story = "Tesisin evrensel kilidi: dilden bağımsız, saf sayı. Sırrı yalnızca yukarıdan görebilirsin.";
 }
 

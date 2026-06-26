@@ -408,13 +408,14 @@ export class Keypad {
       if (on && !p.on) {
         this.seq.push(p.value);
         if (this.seq.length > this.code.length) this.seq.shift();
-        p.base.material.emissive = new THREE.Color(0x2f9a3e);
-        p.base.material.emissiveIntensity = 1.0;
         if (this.seq.length === this.code.length && this.code.every((v, i) => v === this.seq[i])) {
           this.solved = true;
           if (this.door) this.door.setOpen(true);
         }
       }
+      // görsel geri bildirim: ÜSTÜNDEYKEN yeşil, ayrılınca tekrar gri
+      p.base.material.emissive.setHex(on ? 0x2f9a3e : 0x101216);
+      p.base.material.emissiveIntensity = on ? 1.1 : 0.0;
       p.on = on;
     }
   }
