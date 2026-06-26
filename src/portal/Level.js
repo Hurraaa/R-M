@@ -294,12 +294,12 @@ function chamber8(ctx) {
   addBox(ctx, V(-W, -0.5, -6), V(W, 0, 6), false); // zemin (z6 sonrası boşluk)
   addBox(ctx, V(-W, 0, -6.5), V(W, 6, -6), false); // arka duvar
   // küçük, sola kaçık hedef raf (steer etmezsen x0'da kalıp boşluğa düşersin)
-  addBox(ctx, V(-6, 2.1, 8), V(-1.2, 2.5, 12), false);
-  const tramp = new BouncePad(V(0, 0, 2), 14);
+  addBox(ctx, V(-6, 2.1, 8), V(-1.2, 2.5, 12.5), false);
+  const tramp = new BouncePad(V(-1, 0, 2.5), 18); // güçlü yay: havada yönlenmeye süre tanır
   ctx.group.add(tramp.group);
   ctx.bouncePads.push(tramp);
-  ctx.spawn = V(0, 0.1, -4);
-  goal(ctx, V(-3.5, 2.5, 10), "core", 0x6ee84f);
+  ctx.spawn = V(3.5, 0.1, -3); // çapraz yaklaşım: rafın yönüne önceden hizalı
+  goal(ctx, V(-3.5, 2.5, 10.5), "core", 0x6ee84f);
   ctx.objective = "Trambolinle sek, HAVADA yönlenerek yandaki küçük rafa in.";
   ctx.hint = "Trambolinde sek; havadayken sola-ileri yönlen ve küçük rafa konmaya çalış. Iskalarsan düşersin — R ile yenile.";
   ctx.story = "Yay seni fırlatıyor ama hedef küçük ve yanda; havada ustalık ister.";
@@ -1327,10 +1327,44 @@ function chamber38(ctx) {
   ctx.story = "İki yansıma, iki ayrı kapı. Simetriyi kır: birini duvara daya, öteki kaysın.";
 }
 
+// ---- Oda 37: Trambolin Kulesi — 10 trambolinle açık gökyüzünde yukarı sek ----
+// Portal yok; saf ritim + hava kontrolü. Geniş platformlar, tavansız açık gökyüzü.
+function chamberTrampoline(ctx) {
+  const N = 10;           // trambolin sayısı
+  const DZ = 7.2;         // platformlar arası ileri mesafe (sekme menzili ≈ bu)
+  const DY = 2.0;         // her platform bir öncekinden yüksek
+  const B = 15.5;         // sekme hızı (yukarı)
+  const HW = 4.2;         // platform yarı-genişlik (x) — bağışlayıcı iniş
+  const HD = 3.2;         // platform yarı-derinlik (z)
+
+  // başlangıç platformu: geniş, koşu mesafesi için arkaya uzatılmış
+  addBox(ctx, V(-HW, -0.5, -7), V(HW, 0, HD), false);
+  const t0 = new BouncePad(V(0, 0, 0), B);
+  ctx.group.add(t0.group); ctx.bouncePads.push(t0);
+
+  // 1..N-1: yükselen ara platformlar + trambolinleri
+  for (let i = 1; i < N; i++) {
+    const z = i * DZ, y = i * DY;
+    addBox(ctx, V(-HW, y - 0.5, z - HD), V(HW, y, z + HD), false);
+    const tr = new BouncePad(V(0, y, z), B);
+    ctx.group.add(tr.group); ctx.bouncePads.push(tr);
+  }
+
+  // tepe (hedef) platformu — trambolinsiz, daha geniş iniş alanı
+  const zf = N * DZ, yf = N * DY;
+  addBox(ctx, V(-HW - 1.5, yf - 0.5, zf - HD - 1), V(HW + 1.5, yf, zf + HD + 3), false);
+
+  ctx.spawn = V(0, 0.1, -5);
+  goal(ctx, V(0, yf, zf + 1.5), "beacon", 0x46e6ff);
+  ctx.objective = "On trambolinle gökyüzünde yukarı sek — her sekişte İLERİ tutup bir üstteki platforma in.";
+  ctx.hint = "Koşarak ilk trambolinе bas, havadayken İLERİ (W / joystick) basılı tut ki bir sonraki yüksek platforma ulaşasın. Ritmi koru — her platformun trambolini seni bir üste fırlatır. Iskalarsan R ile yenile.";
+  ctx.story = "Yıkık bir kule, uçsuz gökyüzü. On yay seni tepedeki vericiye taşıyor — ritmi yakala, korkma.";
+}
+
 // Not: Ayna bölümleri (35/37/38) geçici olarak çıkarıldı — mekanik çalışıyor ama
 // yerleşimleri çözümü kazara tetikliyordu (park duvarı spawn'a bitişik, buton aynanın
 // doğal yolunda). Altyapı (Mirror) duruyor; ileride dikkatli yeniden tasarlanacak.
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber36];
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber36, chamberTrampoline];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {

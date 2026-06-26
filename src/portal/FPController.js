@@ -202,11 +202,21 @@ export class FPController {
     if (wish.lengthSq() > 1) wish.normalize();
 
     // yatay hızlanma / sürtünme
-    const accel = this.onGround ? MOVE_ACCEL : AIR_ACCEL;
     const hv = new THREE.Vector3(this.velocity.x, 0, this.velocity.z);
     if (wish.lengthSq() > 0.001) {
-      hv.addScaledVector(wish, accel * dt);
-      if (hv.length() > MAX_SPEED && this.onGround) hv.setLength(MAX_SPEED);
+      if (this.onGround) {
+        hv.addScaledVector(wish, MOVE_ACCEL * dt);
+        if (hv.length() > MAX_SPEED) hv.setLength(MAX_SPEED);
+      } else {
+        // HAVADA: girişle kazanılan hızı MAX_SPEED ile sınırla (Quake tarzı hava
+        // kontrolü). Mevcut hız (fırlatma/portal momentumu) KORUNUR — yalnızca
+        // wish yönünde MAX_SPEED'in ÜSTÜNE girişle çıkılamaz. Böylece havada
+        // ileri tutarak sınırsız hızlanma (trambolin aşırı-uçuş) önlenir ama
+        // fırlatma rampası / şaft momentumu bozulmaz.
+        const cur = hv.dot(wish); // wish birim vektör
+        const add = MAX_SPEED - cur;
+        if (add > 0) hv.addScaledVector(wish, Math.min(AIR_ACCEL * dt, add));
+      }
     } else if (this.onGround) {
       const drop = FRICTION * dt;
       const sp = hv.length();
