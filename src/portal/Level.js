@@ -1228,44 +1228,41 @@ function chamber35(ctx) {
   ctx.story = "Bir yansıma odası. Karşı evrendeki 'sen' her adımını aynalar — ikinizi de eve götür.";
 }
 
-// ---- Oda 36: Yankı Sıçraması — klon senin portal-fırlatmanı oynayıp yüksek butonu tutar ----
-// Buton, yalnızca portal-fırlatmayla ulaşılan uzak platformda. Onu tutup aynı anda hedefe
-// gidemezsin: fırlatmayı KAYDET, klon onu tekrar oynayıp butonda donsun; sen yerden hedefe git.
+// ---- Oda 36: Yankı Sıçraması — klon trambolinle uzak butona zıplayıp orada tutar ----
+// Açık, aydınlık alan (Bölüm 19 şaftı DEĞİL). Buton, boşluğun ötesindeki platformda;
+// trambolinle havada yönlenip varılır. Onu tutup aynı anda kapıdan geçemezsin:
+// SIÇRAYIŞINI kaydet, klon onu tekrar oynayıp butonda donsun; sen soldaki kapıdan geç.
 function chamber36(ctx) {
-  // başlangıç platformu + fırlatma şaftı (Bölüm 19 doğrulanmış fizik)
-  addBox(ctx, V(-5, -0.5, 0), V(0, 0, 4), false);
-  addBox(ctx, V(-5, 0, -0.5), V(0, 1.2, 0), false); // arka korkuluk
-  addBox(ctx, V(-5, 0, 4), V(0, 3, 4.5), false); // ön duvar (şaftı atlama)
-  addBox(ctx, V(0, -12.5, 0), V(3, -12, 4), true); // şaft dibi (portal A)
-  addBox(ctx, V(3, -12, 0), V(3.5, 6, 4), false); // uzak x-duvarı yüksek
-  addBox(ctx, V(-0.5, -12, 0), V(0, 0, 4), false); // yakın x-duvarı
-  addBox(ctx, V(0, -12, -0.5), V(3, 2, 0), true); // arka duvar (portal B; +z fırlatır)
-  addBox(ctx, V(0, -12, 4), V(3, -6, 4.5), false); // ön eşik
+  // başlangıç platformu (açık, alçak korkuluk)
+  addBox(ctx, V(-5, -0.5, -5), V(5, 0, 4), false);
+  addBox(ctx, V(-5, 0, -5.5), V(5, 1.2, -5), false); // arka korkuluk
+  const tr = new BouncePad(V(0, 0, 1), 20); // güçlü yay: boşluğu aşıp uzak platforma
+  ctx.group.add(tr.group); ctx.bouncePads.push(tr);
 
-  // UZAK platform P (klon buraya fırlar) — buton b burada
-  addBox(ctx, V(-3, -4.5, 8), V(4, -4, 30), false);
-  addBox(ctx, V(-3.5, -4, 8), V(-3, -2.5, 30), false);
-  addBox(ctx, V(4, -4, 8), V(4.5, -2.5, 30), false);
-  addBox(ctx, V(-3, -4, 30), V(4, -2.5, 30.5), false);
-  const b = new Button(V(0.5, -4, 16), null); // P üstünde; klon tutar -> D açar
+  // boşluk z[4,7] — açık (dipsiz), düşersen başa
+  // UZAK platform P (klon buraya zıplar) — buton b burada, hafif alçak (kolay varış)
+  addBox(ctx, V(-5, -2.5, 7), V(5, -2, 22), false);
+  addBox(ctx, V(-5.5, -2, 7), V(-5, -0.5, 22), false); // sol korkuluk
+  addBox(ctx, V(5, -2, 7), V(5.5, -0.5, 22), false);   // sağ korkuluk
+  addBox(ctx, V(-5, -2, 22), V(5, -0.5, 22.5), false); // arka korkuluk
+  const b = new Button(V(0, -2, 13), null); // P üstünde; klon tutar -> D açar
   ctx.group.add(b.group); ctx.buttons.push(b);
 
-  // HEDEF kapısı D + koridor (start seviyesi, sol)
-  addBox(ctx, V(-13, -0.5, 0), V(-5, 0, 4), false); // koridor zemini
-  addBox(ctx, V(-13, 0, -0.5), V(-5, 4, 0), false);
+  // HEDEF kapısı D + koridor (start seviyesi, sol) — kapı koridoru TAM kapatır
+  addBox(ctx, V(-13, -0.5, -5), V(-5, 0, 4), false); // koridor zemini
+  addBox(ctx, V(-13, 0, -5.5), V(-5, 4, -5), false);
   addBox(ctx, V(-13, 0, 4), V(-5, 4, 4.5), false);
-  addBox(ctx, V(-13.5, 0, 0), V(-13, 4, 4), false);
-  const D = new Door(V(-5, 0, 0), V(-4.5, 3, 4));
-  D.closeSpeed = 8;
-  D.requires = [b]; // b basılı olduğu sürece açık
+  addBox(ctx, V(-13.5, 0, -5), V(-13, 4, 4), false);
+  const D = new Door(V(-5, 0, -5), V(-4.5, 3, 4)); // koridor genişliğini (z[-5,4]) tam kapatır
+  D.requires = [b]; // b basılı olduğu sürece açık (klon tutar)
   ctx.group.add(D.mesh); ctx.colliders.push(D.collider); ctx.doors.push(D);
 
   ctx.echoMax = 1;
-  ctx.spawn = V(-2.5, 0.1, 2);
-  goal(ctx, V(-10, 0, 2), "core", 0x6ee84f);
-  ctx.objective = "Fırlatmanı kaydet: klon uzak butonu tutarken sen soldaki kapıdan hedefe git.";
-  ctx.hint = "Uzak platformdaki buton kapıyı açar ama oraya yalnızca portal-fırlatmayla varılır — onu tutup aynı anda hedefe gidemezsin. ÇÖZÜM: Şaft dibine bir portal, arka duvara ikinci portalı aç (Bölüm 19 gibi). Yankı kaydını başlat, şafta düş, karşı platforma fırla, butona yürü-dur, kaydı bitir. Klon aynı fırlatmayı oynayıp butonda donar, kapı açılır. Sonra sen soldaki kapıdan hedefe yürü.";
-  ctx.story = "Klonun senin fırlatmanı bile tekrarlayabiliyor. Onu uzaktaki kilide fırlat, sen önden git.";
+  ctx.spawn = V(0, 0.1, -3);
+  goal(ctx, V(-10, 0, 0), "core", 0x6ee84f);
+  ctx.objective = "Sıçrayışını kaydet: klon uzak butonu tutarken sen soldaki kapıdan hedefe git.";
+  ctx.hint = "Boşluğun ötesindeki buton kapıyı açar ama oraya trambolinle zıplanır — butonu tutup aynı anda kapıya gidemezsin. ÇÖZÜM: Yankı kaydını başlat (⏱), trambolinе koş, havada İLERİ tutup uzak platforma in, butona yürü-dur, kaydı bitir. Klon aynı sıçrayışı oynayıp butonda donar, kapı açılır. Sonra sen soldaki açık kapıdan hedefe yürü.";
+  ctx.story = "Klonun senin sıçrayışını bile tekrarlıyor. Onu uzaktaki kilide zıplat, sen önden git.";
 }
 
 // ---- Oda 37: Ayna Kilidi — orta duvar seni ve aynanı ayırır; aynan senin geçemeyeceğin kilidi basar ----
