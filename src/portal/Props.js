@@ -701,8 +701,8 @@ export class Door {
     this.open = 0;
     this.target = 0;
     this.requires = null; // çoklu kilit: [buton, buton] hepsi basılıysa açılır
-    this.openSpeed = 4; // saniyede (hızlı açılır)
-    this.closeSpeed = 0.5; // saniyede (yavaş kapanır -> adil zamanlama penceresi)
+    this.openSpeed = 6; // saniyede (hızlı açılır)
+    this.closeSpeed = 9; // saniyede — buton bırakılınca neredeyse anında kapanır
   }
   setOpen(o) { this.target = o ? 1 : 0; }
   update(dt) {

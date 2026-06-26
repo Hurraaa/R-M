@@ -124,6 +124,10 @@ export class PortalGame {
       this.scene.remove(this.levelGroup);
       this._disposeGroup(this.levelGroup); // GPU sızıntısını önle (özellikle R ile yenilemede)
     }
+    // sahneye DOĞRUDAN eklenen dinamik nesneler (enerji topu, füze, jel yaması)
+    // level.group içinde değil — bölüm değişiminde elle temizlenmeli, yoksa
+    // bir sonraki bölümde asılı kalırlar.
+    this._clearDynamicProps();
     this.chamberIndex = i;
     this.level = buildChamber(i);
     this.levelGroup = this.level.group;
@@ -214,6 +218,24 @@ export class PortalGame {
       this._disposeGroup(e.group); // ~20 mesh/klon -> GPU sızıntısını önle
     }
     this.echoes = [];
+  }
+
+  // Bölüm değişiminde sahneye doğrudan eklenmiş dinamik nesneleri temizle.
+  // (Bu nesneler eski this.level üzerinden bulunur; this.level yeniden atanmadan
+  // ÖNCE çağrılmalı.)
+  _clearDynamicProps() {
+    const lv = this.level;
+    if (lv) {
+      for (const b of lv.balls || []) { if (b.mesh) { this.scene.remove(b.mesh); this._disposeGroup(b.mesh); } }
+      for (const m of lv.missiles || []) { if (m.mesh) { this.scene.remove(m.mesh); this._disposeGroup(m.mesh); } }
+      lv.balls && (lv.balls.length = 0);
+      lv.missiles && (lv.missiles.length = 0);
+    }
+    if (this._gelPatch && this._gelPatch.group) {
+      this.scene.remove(this._gelPatch.group);
+      this._disposeGroup(this._gelPatch.group);
+    }
+    this._gelPatch = null;
   }
 
   // Yankı kaydını başlat/bitir. Bitince oyuncu kayıt başlangıcına ışınlanır ve

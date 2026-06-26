@@ -200,14 +200,14 @@ function chamber5(ctx) {
   addBox(ctx, V(-W, -0.5, -2), V(-3, 0, 2), false);
   addBox(ctx, V(3, -0.5, -2), V(W, 0, 2), false);
   addBox(ctx, V(-3, -0.5, -2), V(3, 0, 2), true); // PAD (küp burada durur)
-  addBox(ctx, V(-W, -0.5, 2), V(W, 0, 8), false); // orta (B butonu)
+  addBox(ctx, V(-W, -0.5, 2), V(W, 0, 8), false); // orta
   // boşluk z[8,14] (atlanamaz)
-  addBox(ctx, V(-W, -0.5, 14), V(W, 0, 24), false); // çıkış platformu
+  addBox(ctx, V(-W, -0.5, 14), V(W, 0, 30), false); // çıkış platformu (geniş iniş alanı)
 
-  addBox(ctx, V(-W - 0.5, 0, -6), V(-W, 4, 24), true); // sol duvar portallanabilir (teslimat + geçiş)
-  addBox(ctx, V(W, 0, -6), V(W + 0.5, 4, 24), false);
+  addBox(ctx, V(-W - 0.5, 0, -6), V(-W, 4, 30), true); // sol duvar portallanabilir (teslimat + geçiş)
+  addBox(ctx, V(W, 0, -6), V(W + 0.5, 4, 30), false);
   addBox(ctx, V(-W, 0, -6.5), V(W, 4, -6), false);
-  addBox(ctx, V(-W, 0, 24), V(W, 4, 24.5), false);
+  addBox(ctx, V(-W, 0, 30), V(W, 4, 30.5), false);
 
   // yük küpü
   const cube = new Cube(V(0, 0.6, 0));
@@ -215,25 +215,23 @@ function chamber5(ctx) {
   ctx.colliders.push(cube.collider);
   ctx.cubes.push(cube);
 
-  // kapı: boşluğun ötesinde, çıkış platformu girişinde — A VE B basılıysa açılır
-  const door = new Door(V(-W, 0, 15), V(W, 4, 15.5));
-  door.openSpeed = 4;
-  door.closeSpeed = 0.8; // ~0.6 sn geçiş penceresi — hızlı kapanır, portal şart
+  // kapı: çıkış zemininin ortasında (z20) — buton basılı TUTULMAZSA anında kapanır.
+  // Küp butonu kalıcı tuttuğu için kapı açık kalır; sen boşluğu portalla aşıp kapıdan geçersin.
+  const door = new Door(V(-W, 0, 20), V(W, 4, 20.5));
   ctx.group.add(door.mesh);
   ctx.colliders.push(door.collider);
   ctx.doors.push(door);
 
-  const bA = new Button(V(-4.5, 0, -2), null); // küp buraya iner
-  const bB = new Button(V(-3, 0, 5), null); // oyuncu basar
-  ctx.group.add(bA.group, bB.group);
-  ctx.buttons.push(bA, bB);
-  door.requires = [bA, bB];
+  // tek buton: küp üzerine inince kapı açık KALIR (kalıcı ağırlık)
+  const bA = new Button(V(-4.5, 0, -2), door);
+  ctx.group.add(bA.group);
+  ctx.buttons.push(bA);
 
   ctx.spawn = V(4, 0.1, -4);
-  goal(ctx, V(0, 0, 20), "core", 0x6ee84f);
-  ctx.objective = "İki butonu birden bas: birini küple, birini kendinle — kapı kapanmadan karşıya geç.";
-  ctx.hint = "1) Küpü sol duvar üzerinden A butonuna indir (Bölüm 4 gibi). 2) Portalları sol duvara taşı: biri B'nin yanına, diğeri boşluğun ötesine. 3) B'ye bas, hemen yan portala dal — kapı kapanmadan karşı platforma fırla ve kapıdan geç.";
-  ctx.story = "İki hat eşlendi. Tesis seni izliyor gibi… daha derine inmen gerek.";
+  goal(ctx, V(0, 0, 26), "core", 0x6ee84f);
+  ctx.objective = "Küpü butona indir (kapı açık kalsın), sonra boşluğu portalla aşıp kapının ÖNÜNE in ve geç.";
+  ctx.hint = "1) Küpü pad'in altına portal açıp sol duvardaki (butonun üstündeki) çıkıştan A butonuna düşür — kapı açılır ve küp orada durduğu için AÇIK KALIR. 2) Portalları yeniden konumla: biri başlangıçta, diğeri boşluğun ötesindeki çıkış zeminine (z≈16). 3) Dal, boşluğun ötesine in, sonra açık kapıdan (z20) geçip röleyi al.";
+  ctx.story = "Ağırlık kapıyı tuttu, sen boşluğu aştın. Tesisin derinine bir hat daha.";
 }
 
 // ---- Oda 6: Köprü — fırlatma rampasıyla küpü (ve kendini) karşıya uçur ----
@@ -627,6 +625,7 @@ function chamber19(ctx) {
   // ARKA duvar z=0, normal +z — PORTALLANABİLİR (portal B; +z'ye fırlatır, karşıya bakar)
   addBox(ctx, V(0, -12, -0.5), V(3, 2, 0), true);
   addBox(ctx, V(0, -12, 4), V(3, -6, 4.5), false); // ön eşik (alçak; fırlatma üstünden aşar)
+  addBox(ctx, V(0, 0, 4), V(3, 3, 4.5), false); // şaft önü ÜST duvar (y0-3) — diyagonal atlama bypass'ını engeller; fırlatma y≈-2'den (altından) geçer
 
   // KARŞI platform (+z), alçak (y=-4) ve geniş — bağışlayıcı iniş
   addBox(ctx, V(-3, -4.5, 8), V(4, -4, 34), false);

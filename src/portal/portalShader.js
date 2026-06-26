@@ -67,20 +67,20 @@ const fragmentShader = /* glsl */ `
 
     vec3 col;
     if (uHasView > 0.5) {
-      // karşı tarafın canlı görüntüsü (ekran-uzayı örnekleme) — hafif bulanıklık
-      // (bakışla aşırı titremeyi/keskin artefaktları yumuşatır)
+      // karşı tarafın canlı görüntüsü (ekran-uzayı örnekleme) — BERRAK pencere.
+      // Hafif bir bulanıklık keskin artefaktları yumuşatır; girdap yalnızca
+      // kenara doğru hafifçe karışır (merkez net kalır, "leş" görünmez).
       vec2 suv = gl_FragCoord.xy / uResolution;
-      vec2 px = 1.4 / uResolution;
-      vec3 live = texture2D(uView, suv).rgb * 0.36;
-      live += texture2D(uView, suv + vec2(px.x, 0.0)).rgb * 0.16;
-      live += texture2D(uView, suv - vec2(px.x, 0.0)).rgb * 0.16;
-      live += texture2D(uView, suv + vec2(0.0, px.y)).rgb * 0.16;
-      live += texture2D(uView, suv - vec2(0.0, px.y)).rgb * 0.16;
-      live = mix(live, live * (uColor + 0.35), 0.12);
-      // STABİL girdapla harmanla: portal "öteki tarafı" gösterir ama bakışla
-      // bu kadar savrulmaz, yukarı bakınca bölünme/artefakt maskelenir.
+      vec2 px = 0.7 / uResolution;
+      vec3 live = texture2D(uView, suv).rgb * 0.52;
+      live += texture2D(uView, suv + vec2(px.x, 0.0)).rgb * 0.12;
+      live += texture2D(uView, suv - vec2(px.x, 0.0)).rgb * 0.12;
+      live += texture2D(uView, suv + vec2(0.0, px.y)).rgb * 0.12;
+      live += texture2D(uView, suv - vec2(0.0, px.y)).rgb * 0.12;
+      live = mix(live, live * (uColor + 0.4), 0.10);
+      // merkez net canlı görüntü; girdap yalnızca dış kenarda (~%30) belirir
       vec3 sw = swirl(vUv, r);
-      col = mix(sw, live, 0.5);
+      col = mix(live, sw, smoothstep(0.62, 1.0, r) * 0.32);
     } else {
       col = swirl(vUv, r);
     }
