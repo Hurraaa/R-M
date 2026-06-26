@@ -33,6 +33,7 @@ export class PortalGame {
     this.mirrorFig = null;     // görsel avatar
     this.mirrorState = null;   // {yaw, walkPhase, swing}
     this.mirrorPrev = new THREE.Vector3();
+    this.heldCube = null;      // taşınan küp (F / ✊ düğmesi)
 
     this._initRenderer();
     this._initScene();
@@ -52,6 +53,7 @@ export class PortalGame {
       if (e.code === "KeyR") this.loadChamber(this.chamberIndex);
       if (e.code === "KeyP") this.perf.toggle();
       if (e.code === "KeyE" || e.code === "KeyQ") this.toggleEcho();
+      if (e.code === "KeyF") this.toggleGrab();
     });
     addEventListener("resize", () => this._onResize());
 
@@ -137,6 +139,7 @@ export class PortalGame {
     this._clearEchoes();
     this.recording = false;
     this.recFrames = [];
+    this.heldCube = null;
     this._setupMirror();
     this._onHud?.(i + 1, CHAMBER_COUNT, this.level.hint, this.level.objective);
     this._onEcho?.(false, this.level.echoMax ?? 0);
@@ -156,6 +159,53 @@ export class PortalGame {
     this.scene.add(this.mirrorFig.group);
     this.mirrorState = { yaw: 0, walkPhase: 0, swing: 0 };
     this.mirrorPrev.copy(m.spawn);
+  }
+
+  // Küp tut / bırak (F tuşu / ✊ düğmesi). Tutulan küp kameranın önünde taşınır.
+  toggleGrab() {
+    if (this.state !== "playing") return;
+    if (this.heldCube) {
+      // bırak: hafif ileri fırlat (butona/rampaya bırakabilmek için)
+      const c = this.heldCube;
+      if (c.collider) c.collider.disabled = false;
+      c.velocity.copy(this.controller.velocity);
+      c.velocity.addScaledVector(this.controller.getForward(), 2.5);
+      c.onGround = false;
+      c.lastCenter.copy(c.pos);
+      this.heldCube = null;
+    } else {
+      // önümdeki en yakın küpü yakala (erişim ~3 birim)
+      const eye = this.controller.eyePosition;
+      const f = this.controller.getForward();
+      let best = null, bestD = 3.2;
+      for (const cube of this.level.cubes) {
+        if (!cube.grabbable) continue; // sadece taşınabilir olarak işaretli küpler
+        const to = cube.pos.clone().sub(eye);
+        const d = to.length();
+        if (d > 3.2) continue;
+        if (to.multiplyScalar(1 / Math.max(d, 1e-4)).dot(f) < 0.35) continue; // kabaca önümde
+        if (d < bestD) { bestD = d; best = cube; }
+      }
+      if (best) {
+        this.heldCube = best;
+        if (best.collider) best.collider.disabled = true; // oyuncuyu engellemesin / duvara saplanmasın
+      }
+    }
+  }
+
+  // tutulan küpü her kare kameranın önünde konumla (kinematik)
+  _updateHeldCube() {
+    const c = this.heldCube;
+    if (!c) return;
+    const eye = this.controller.eyePosition;
+    const f = this.controller.getForward();
+    const target = eye.clone().addScaledVector(f, 1.9);
+    if (target.y < c.half + 0.05) target.y = c.half + 0.05; // yere gömülmesin
+    c.pos.copy(target);
+    c.velocity.set(0, 0, 0);
+    c.lastCenter.copy(c.pos);
+    c._sync();
+    c.mesh.position.copy(c.pos);
   }
 
   _clearEchoes() {
@@ -294,8 +344,12 @@ export class PortalGame {
       this.mirrorPrev.copy(this.mirror.position);
     }
 
+    // tutulan küp: kameranın önünde taşınır (fizik yok)
+    this._updateHeldCube();
+
     // interaktif nesneler: yük küpleri, butonlar, kapılar
     for (const cube of this.level.cubes) {
+      if (cube === this.heldCube) continue; // tutulan küp kinematik
       cube.update(dt, this.level, this.portals);
       const cn = this.portals.teleportEntity(cube);
       if (cn) cube.depenetrateAlong(cn, this.level.colliders, this.portals);

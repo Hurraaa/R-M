@@ -17,6 +17,7 @@ export class Cube {
     this.launchCooldown = 0;
     this.onGround = false;
     this.reflector = !!opts.reflector; // lazer yansıtıcı küp mü?
+    this.grabbable = !!opts.grabbable; // oyuncu elle taşıyabilir mi? (sadece tasarımda izin verilen küpler)
     this.mirror = opts.mirror || "/"; // "/" => x,z eksenlerini değiştir; "\" => negatif
 
     const mat = this.reflector

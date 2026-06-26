@@ -247,11 +247,11 @@ function chamber6(ctx) {
   addBox(ctx, V(-W, 0, -6.5), V(W, 5, -6), false);
   addBox(ctx, V(-W, 0, 32), V(W, 5, 32.5), false);
 
-  // fırlatma rampası + üstünde küp (başta fırlar)
+  // fırlatma rampası (başta boş) + küp başlangıç platformunda durur
   const pad = new LaunchPad(V(0, 0, 2), V(0, 12, 17));
   ctx.group.add(pad.group);
   ctx.launchPads.push(pad);
-  const cube = new Cube(V(0, 0.7, 2));
+  const cube = new Cube(V(-3, 0.7, -3), 1.2, { grabbable: true }); // rampanın değil, kenarda; oyuncu taşır
   ctx.group.add(cube.mesh);
   ctx.colliders.push(cube.collider);
   ctx.cubes.push(cube);
@@ -267,8 +267,8 @@ function chamber6(ctx) {
 
   ctx.spawn = V(4, 0.1, -3);
   goal(ctx, V(0, 0, 28), "core", 0x6ee84f);
-  ctx.objective = "Küpü fırlatma rampasıyla karşı butona uçur, sonra sen de rampayla geç.";
-  ctx.hint = "Rampadaki küp fırlatılıp karşı butona iner ve kapıyı açar. Sonra rampaya basıp sen de karşıya fırla, açık kapıdan geç.";
+  ctx.objective = "Küpü kaldır (✊ / F), fırlatma rampasına bırak — karşı butona uçsun. Sonra sen de rampayla geç.";
+  ctx.hint = "Küpe yaklaş, ✊ (mobil) ya da F (klavye) ile kaldır. Rampanın üzerine bırak: küp karşı butona fırlar ve kapıyı açar. Sonra rampaya bas, sen de karşıya uç ve açık kapıdan geç.";
   ctx.story = "Eski fırlatıcılar hâlâ çalışıyor. Tesisin derinine bir köprü daha.";
 }
 

@@ -518,6 +518,17 @@ button {
   background: radial-gradient(circle at 38% 32%, #d7e6ff, #7f93b8 72%);
   color: #102038;
 }
+.touch-btn.grab {
+  width: 70px;
+  height: 70px;
+  font-size: 30px;
+  color: #2a1604;
+  background: radial-gradient(circle at 38% 32%, #ffdca0, #c98a3a 72%);
+}
+.touch-btn.grab.holding {
+  background: radial-gradient(circle at 38% 32%, #bfe6a0, #4f9a3a 72%);
+  box-shadow: 0 0 16px rgba(110, 232, 79, 0.7);
+}
 
 @keyframes spin {
   to { transform: rotate(360deg); }

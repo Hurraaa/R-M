@@ -80,6 +80,14 @@ game._onEcho = (recording, echoMax) => {
   echoBtn.classList.toggle("recording", recording);
 };
 
+// ---- Küp tut/bırak (✊ düğmesi + F tuşu) ----
+const grabBtn = document.getElementById("btn-grab");
+grabBtn.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  game.toggleGrab();
+  grabBtn.classList.toggle("holding", !!game.heldCube);
+});
+
 // pointer-lock koparsa (ESC) başlangıca dönmeden devam; tekrar kilitlemek için tıkla
 canvas.addEventListener("click", () => {
   if (game.state === "playing" && !game.input.isTouch && !game.input.locked) game.input.lock();
