@@ -1300,7 +1300,37 @@ function chamber37(ctx) {
   ctx.story = "Yansıman senin giremediğin yarıda. Onu kilide yolla, sen önden geç.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber35, chamber36, chamber37];
+// ---- Oda 38: Ayna Kayması — aynayı duvara dayayıp DESYNC; ikinizi asimetrik çıkışlara getir ----
+// Düz gidersen aynan senin simetriğinde kalır (çıkışını ıskalar). Çözüm: kendini sağdaki
+// duvara DAYA (+x bas, sen durursun) — sen dururken aynan -x'e kaymaya devam eder. Aynan
+// uzaktaki çıkışına gelince yalnız +z'ye bas; ikiniz de yukarı, ikiniz de çıkışta.
+function chamber38(ctx) {
+  addBox(ctx, V(-10, -0.5, -9), V(3, 0, 11), false); // zemin
+  addBox(ctx, V(-10.5, 0, -9), V(-10, 5, 11), false); // sol
+  addBox(ctx, V(3, 0, -9), V(3.5, 5, 11), false); // sağ dış
+  addBox(ctx, V(-10, 0, -9.5), V(3, 5, -9), false); // arka
+  addBox(ctx, V(-10, 0, 11), V(3, 5, 11.5), false); // ön
+  addBox(ctx, V(-10, 5, -9), V(3, 5.5, 11), false); // tavan
+  // PARK duvarı (senin +x tarafın): seni x<1.4'te tutar; buna dayanıp aynanı kaydırırsın
+  addBox(ctx, V(1.4, 0, -9), V(1.8, 4, 11), false);
+
+  ctx.mirror = { spawn: V(-1, 0.1, -8), exit: V(-7, 0, 10), exitRadius: 2.0 };
+  ctx.spawn = V(1, 0.1, -8);
+  goal(ctx, V(1, 0, 10), "core", 0x6ee84f); // SENİN çıkışın (park duvarının dibinde)
+  // aynanın çıkış işareti (turuncu halka), uzakta solda
+  const mring = new THREE.Mesh(
+    new THREE.TorusGeometry(1.4, 0.12, 12, 28),
+    new THREE.MeshStandardMaterial({ color: 0xffae54, emissive: 0xcc5a12, emissiveIntensity: 1.2 })
+  );
+  mring.rotation.x = Math.PI / 2; mring.position.set(-7, 0.15, 10);
+  ctx.group.add(mring);
+
+  ctx.objective = "Aynayı duvara dayayarak kaydır: ikiniz de kendi çıkışınızda olun (düz gitmek olmaz).";
+  ctx.hint = "Aynan hareketini X'te yansıtır. Düz +z gidersen aynan tam simetriğinde (-1) kalır ama çıkışı uzakta (-7) — ıskalar. ÇÖZÜM: SAĞDAKİ park duvarına doğru +x'e bas; sen duvarda durursun ama aynan -x'e KAYMAYA devam eder. Aynan turuncu çıkışına (-7) gelince +x'i bırak, yalnızca +z'ye bas — ikiniz de yukarı çıkar, ikiniz de kendi çıkışında olur. Kaydırma miktarını aynaya bakarak ayarla.";
+  ctx.story = "İki yansıma, iki ayrı kapı. Simetriyi kır: birini duvara daya, öteki kaysın.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber35, chamber36, chamber37, chamber38];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {

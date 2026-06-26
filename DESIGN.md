@@ -92,6 +92,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 35 | Ayna | **YENİ MEKANİK — ayna**: hareketini X'te yansıtan, kendi çarpışması olan ikinci karakter (sen +x → o -x; z aynı). Duvarlar simetriyi bozar. İkisini de kendi çıkışına götür. Beceri değil, uzaysal planlama. (Giriş; ileride duvar-desync ile zorlaşır.) | yansıma | ✅ |
 | 36 | Yankı Sıçraması | **KLON + MOMENTUM**: kapıyı açan buton yalnızca portal-fırlatmayla varılan uzak platformda. Fırlatmanı KAYDET → klon aynı fırlatmayı oynayıp butonda donar; sen yerden kapıdan hedefe git. Klon artık fırlatma da yapar. | klon fırlatır | ✅ |
 | 37 | Ayna Kilidi | **AYNA — ulaşılabilirlik**: orta duvar seni sağda, aynanı solda tutar. Kapıyı açan KALICI buton solda (yalnızca ayna ulaşır). Aynayı butona getirecek şekilde konumlan → kilitlenir → sen sağdan hedefe git. Ayna = senin gidemediğin yere ulaşır. | ayna kilidi | ✅ |
+| 38 | Ayna Kayması | **AYNA — DESYNC (asıl derinlik)**: düz gidersen aynan simetriğinde kalıp uzak çıkışını ıskalar. Çözüm: kendini duvara DAYA (+x), sen durursun ama aynan -x'e kaymaya devam eder; çıkışına gelince yalnız +z. Simetriyi bilerek kır. (Bağışlayıcı 2.6 yarıçap; beceri değil dedüksiyon.) | simetriyi kır | ✅ |
 
 > **Yankı mekaniği (Echo):** `Echo` sınıfı (Props.js) oyuncunun kaydedilmiş ayak
 > konumlarını oynatır, son karede donar; butonlar onu oyuncu gibi algılar.
