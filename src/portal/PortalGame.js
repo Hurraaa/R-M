@@ -76,7 +76,7 @@ export class PortalGame {
     // ferah: hafif, ufuk renginde sis — uzak dekoru yumuşatır, yakını berrak bırakır
     this.scene.fog = new THREE.Fog(0x8a7e84, 60, 260);
 
-    this.camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 600);
+    this.camera = new THREE.PerspectiveCamera(82, innerWidth / innerHeight, 0.05, 600);
 
     // yumuşak, dengeli aydınlatma
     this.scene.add(new THREE.HemisphereLight(0xbcd2ee, 0x6a5f55, 0.9));

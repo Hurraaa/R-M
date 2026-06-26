@@ -730,10 +730,10 @@ function chamber22(ctx) {
 function chamber23(ctx) {
   // ---- YAKIN ODA (top burada sekiyor; portal A buraya) ----
   addBox(ctx, V(-7, -0.5, -6), V(7, 0, 6), false); // zemin
-  addBox(ctx, V(-7, 0, -6.5), V(7, 8, -6), false); // arka
-  addBox(ctx, V(-7.5, 0, -6), V(-7, 8, 6), false); // sol
+  addBox(ctx, V(-7, 0, -6.5), V(7, 1.3, -6), false); // arka korkuluk (açık)
+  addBox(ctx, V(-7.5, 0, -6), V(-7, 3, 6), false); // sol (topu sektirecek orta yükseklik)
   addBox(ctx, V(7, 0, -6), V(7.5, 8, 6), true); // SAĞ duvar PORTALLANABİLİR (top buraya çarpar -> portal A)
-  addBox(ctx, V(-7, 8, -6), V(7, 8.5, 22), false); // tavan
+  // tavan kaldırıldı (gökyüzü açık)
 
   // enerji topu yayıcısı: soldan +x ateşler; top sağ duvara çarpıp sekerek YAKIN odada kalır (boşa)
   const em = new BallEmitter(V(-6.6, 2, 0), V(1, 0, 0), 11);
@@ -751,8 +751,8 @@ function chamber23(ctx) {
   // Zemin z=14'te biter; z[14,22] DİPSİZ BOŞLUK. Top (yerçekimsiz) boşluğu düz geçip alıcıya varır;
   // ama B'den kendini geçiren OYUNCU boşluğa düşer (kestirme yok — yalnızca top karşıya geçebilir).
   addBox(ctx, V(-7, -0.5, 6), V(7, 0, 14), false); // zemin (z14'te biter -> boşluk)
-  addBox(ctx, V(-7.5, 0, 6), V(-7, 8, 22), false); // sol
-  addBox(ctx, V(7, 0, 6), V(7.5, 8, 22), false); // sağ
+  addBox(ctx, V(-7.5, 0, 6), V(-7, 1.3, 22), false); // sol korkuluk
+  addBox(ctx, V(7, 0, 6), V(7.5, 1.3, 22), false); // sağ korkuluk
   addBox(ctx, V(-7, 0, 22), V(7, 8, 22.5), true); // ARKA duvar PORTALLANABİLİR (portal B; top buradan -z çıkar)
 
   // KAPI z=10 (oyuncuyu durdurur; alıcı dolunca KALICI açılır)
@@ -1003,11 +1003,11 @@ function chamber29(ctx) {
 function chamber30(ctx) {
   // geniş oda (portallanabilir yüzey YOK — bu bölüm tamamen yankı mekaniğiyle çözülür)
   addBox(ctx, V(-16, -0.5, -4), V(12, 0, 4), false); // zemin
-  addBox(ctx, V(-16.5, 0, -4), V(-16, 6, 4), false); // sol
-  addBox(ctx, V(12, 0, -4), V(12.5, 6, 4), false); // sağ
-  addBox(ctx, V(-16, 0, -4.5), V(12, 6, -4), false); // arka
-  addBox(ctx, V(-16, 0, 4), V(12, 6, 4.5), false); // ön
-  addBox(ctx, V(-16, 6, -4), V(12, 6.5, 4), false); // tavan
+  // açık platform: alçak korkuluklar (görüş serbest), tavan yok
+  addBox(ctx, V(-16.5, 0, -4), V(-16, 1.3, 4), false); // sol korkuluk
+  addBox(ctx, V(12, 0, -4), V(12.5, 1.3, 4), false); // sağ korkuluk
+  addBox(ctx, V(-16, 0, -4.5), V(12, 1.3, -4), false); // arka korkuluk
+  addBox(ctx, V(-16, 0, 4), V(12, 1.3, 4.5), false); // ön korkuluk
 
   // KAPI x=5 (sürekli ağırlık ister: bırakılınca ANINDA kapanır -> tek başına koşup yetişemezsin,
   // kayıt sırasında butona basman da işe yaramaz; yalnızca klon basılı tutarken açık kalır)
@@ -1035,11 +1035,11 @@ function chamber30(ctx) {
 // ikisini tutamazsın, bas-koş da işe yaramaz (anında kapanır). İki yankı kaydı şart.
 function chamber31(ctx) {
   addBox(ctx, V(-16, -0.5, -5), V(16, 0, 12), false); // zemin
-  addBox(ctx, V(-16.5, 0, -5), V(-16, 6, 12), false); // sol
-  addBox(ctx, V(16, 0, -5), V(16.5, 6, 12), false); // sağ
-  addBox(ctx, V(-16, 0, -5.5), V(16, 6, -5), false); // arka
-  addBox(ctx, V(-16, 0, 12), V(16, 6, 12.5), false); // ön
-  addBox(ctx, V(-16, 6, -5), V(16, 6.5, 12), false); // tavan
+  // açık platform: alçak korkuluklar, tavan yok
+  addBox(ctx, V(-16.5, 0, -5), V(-16, 1.3, 12), false); // sol korkuluk
+  addBox(ctx, V(16, 0, -5), V(16.5, 1.3, 12), false); // sağ korkuluk
+  addBox(ctx, V(-16, 0, -5.5), V(16, 1.3, -5), false); // arka korkuluk
+  addBox(ctx, V(-16, 0, 12), V(16, 1.3, 12.5), false); // ön korkuluk
 
   // KAPI duvarı z=8, ortada kapı boşluğu x[-3,3]
   addBox(ctx, V(-16, 0, 8), V(-3, 6, 8.5), false);
@@ -1072,15 +1072,14 @@ function chamber31(ctx) {
 function chamber32(ctx) {
   // YAKIN oda (spawn)
   addBox(ctx, V(-6, -0.5, -4), V(6, 0, 4), false); // zemin
-  addBox(ctx, V(-6, 0, -4.5), V(6, 6, -4), false); // arka
-  addBox(ctx, V(-6, 6, -4), V(6, 6.5, 18), false); // tavan
-  // SOL duvar (x=-6, normal +x) PORTALLANABİLİR ve uzun: A spawn'da, B adada açılır
+  addBox(ctx, V(-6, 0, -4.5), V(6, 1.3, -4), false); // arka korkuluk (tavan kaldırıldı)
+  // SOL duvar (x=-6, normal +x) PORTALLANABİLİR ve uzun: A spawn'da, B adada açılır (ZORUNLU yüksek)
   addBox(ctx, V(-6.5, 0, -4), V(-6, 6, 18), true);
 
   // dipsiz boşluk z[4,12] (atlanamaz) -> ADA yalnızca portalla
   addBox(ctx, V(-6, -0.5, 12), V(6, 0, 18), false); // ADA zemini
-  addBox(ctx, V(-6, 0, 18), V(6, 6, 18.5), false); // ada arka
-  addBox(ctx, V(6, 0, 12), V(6.5, 6, 18), false); // ada sağ
+  addBox(ctx, V(-6, 0, 18), V(6, 1.3, 18.5), false); // ada arka korkuluk
+  addBox(ctx, V(6, 0, 12), V(6.5, 1.3, 18), false); // ada sağ korkuluk
 
   // ADA butonu (kapıyı açar) — momentary, hızlı kapanır
   const door = new Door(V(6, 0, -2), V(6.5, 5, 2));
@@ -1116,12 +1115,11 @@ function chamber33(ctx) {
   addBox(ctx, V(-6, -0.5, 4), V(6, 0, 12), false);
   // Hedef odası (derin: kapalı D2'ye yapışan oyuncu hedefin 2.6 küresine giremesin)
   addBox(ctx, V(-6, -0.5, 12), V(6, 0, 18), false);
-  // dış duvarlar (boydan boya)
-  addBox(ctx, V(-6.5, 0, -4), V(-6, 6, 18), false); // sol
-  addBox(ctx, V(6, 0, -4), V(6.5, 6, 18), false); // sağ
-  addBox(ctx, V(-6, 0, -4.5), V(6, 6, -4), false); // arka
-  addBox(ctx, V(-6, 0, 18), V(6, 6, 18.5), false); // ön
-  addBox(ctx, V(-6, 6, -4), V(6, 6.5, 18), false); // tavan
+  // dış korkuluklar (alçak; görüş açık, tavan yok). Kapı duvarları yüksek kalır.
+  addBox(ctx, V(-6.5, 0, -4), V(-6, 1.3, 18), false); // sol korkuluk
+  addBox(ctx, V(6, 0, -4), V(6.5, 1.3, 18), false); // sağ korkuluk
+  addBox(ctx, V(-6, 0, -4.5), V(6, 1.3, -4), false); // arka korkuluk
+  addBox(ctx, V(-6, 0, 18), V(6, 1.3, 18.5), false); // ön korkuluk
 
   // D1 (z=4) — b1 ile açılır
   addBox(ctx, V(-6, 0, 4), V(-2, 6, 4.5), false);
@@ -1159,7 +1157,7 @@ function chamber34(ctx) {
   addBox(ctx, V(-9, 0, -8.5), V(9, 6, -8), false); // arka (yayıcı)
   addBox(ctx, V(9, 0, -8), V(9.5, 6, 14), true); // SAĞ duvar portallanabilir (portal B)
   addBox(ctx, V(-9, 0, 14), V(9, 6, 14.5), true); // ÖN duvar portallanabilir (ışın buraya çarpar; portal A)
-  addBox(ctx, V(-9, 6, -8), V(9, 6.5, 14), false); // tavan
+  // (tavan kaldırıldı — gökyüzü açık; portallanabilir/işlevsel duvarlar yüksek kalır)
   // SOL duvar — ortada hedef kapısı boşluğu (z 9..12)
   addBox(ctx, V(-9.5, 0, -8), V(-9, 6, 9), false);
   addBox(ctx, V(-9.5, 0, 12), V(-9, 6, 14), false);
@@ -1330,7 +1328,10 @@ function chamber38(ctx) {
   ctx.story = "İki yansıma, iki ayrı kapı. Simetriyi kır: birini duvara daya, öteki kaysın.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber35, chamber36, chamber37, chamber38];
+// Not: Ayna bölümleri (35/37/38) geçici olarak çıkarıldı — mekanik çalışıyor ama
+// yerleşimleri çözümü kazara tetikliyordu (park duvarı spawn'a bitişik, buton aynanın
+// doğal yolunda). Altyapı (Mirror) duruyor; ileride dikkatli yeniden tasarlanacak.
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber36];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
