@@ -67,11 +67,20 @@ const fragmentShader = /* glsl */ `
 
     vec3 col;
     if (uHasView > 0.5) {
-      // karşı tarafın canlı görüntüsü (ekran-uzayı örnekleme)
+      // karşı tarafın canlı görüntüsü (ekran-uzayı örnekleme) — hafif bulanıklık
+      // (bakışla aşırı titremeyi/keskin artefaktları yumuşatır)
       vec2 suv = gl_FragCoord.xy / uResolution;
-      col = texture2D(uView, suv).rgb;
-      // çok hafif yeşil tonlama (R&M hissi, görüntüyü boğmadan)
-      col = mix(col, col * (uColor + 0.35), 0.12);
+      vec2 px = 1.4 / uResolution;
+      vec3 live = texture2D(uView, suv).rgb * 0.36;
+      live += texture2D(uView, suv + vec2(px.x, 0.0)).rgb * 0.16;
+      live += texture2D(uView, suv - vec2(px.x, 0.0)).rgb * 0.16;
+      live += texture2D(uView, suv + vec2(0.0, px.y)).rgb * 0.16;
+      live += texture2D(uView, suv - vec2(0.0, px.y)).rgb * 0.16;
+      live = mix(live, live * (uColor + 0.35), 0.12);
+      // STABİL girdapla harmanla: portal "öteki tarafı" gösterir ama bakışla
+      // bu kadar savrulmaz, yukarı bakınca bölünme/artefakt maskelenir.
+      vec3 sw = swirl(vUv, r);
+      col = mix(sw, live, 0.5);
     } else {
       col = swirl(vUv, r);
     }
