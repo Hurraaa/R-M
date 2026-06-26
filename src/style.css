@@ -147,6 +147,19 @@ body {
   background: rgba(10, 6, 18, 0.6);
   box-shadow: 0 0 60px rgba(110, 232, 79, 0.25);
   max-width: 90vw;
+  /* yatay/kısa ekranlarda taşmasın: panel içinde kaydırılabilir olsun */
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* yatay (kısa yükseklik) ekranlarda daha sıkı yerleşim ki içerik sığsın */
+@media (max-height: 560px) {
+  .panel { padding: 16px 22px; max-height: 96dvh; }
+  h1 { font-size: 38px; letter-spacing: 3px; }
+  .settings-title { font-size: 24px; }
+  #select-grid { margin: 10px 0; }
 }
 
 h1 {
