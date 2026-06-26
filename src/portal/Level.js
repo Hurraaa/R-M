@@ -932,12 +932,12 @@ function chamber27(ctx) {
 // ---- Oda 28: Yukarı Işın — ışını zemin portalıyla yukarı çevir, tavandaki alıcıyı yak ----
 function chamber28(ctx) {
   addBox(ctx, V(-9, -0.5, -6), V(9, 0, 12), true); // ZEMİN portallanabilir (dikey çevirme için)
-  addBox(ctx, V(-9, 6, -6), V(9, 6.5, 12), false); // tavan (alıcı burada)
+  // tavan kaldırıldı — alıcı havada asılı kalır (ışın yine ona çarpar); gökyüzü açık
   addBox(ctx, V(-9, 0, -6.5), V(9, 6.5, -6), false); // arka (yayıcı)
   addBox(ctx, V(9, 0, -6), V(9.5, 6.5, 12), true); // SAĞ duvar portallanabilir
   addBox(ctx, V(-9.5, 0, -6), V(-9, 6.5, 9), false); // sol (kapı boşluğu z9..12)
   addBox(ctx, V(-9.5, 0, 12), V(-9, 6.5, 12), false);
-  addBox(ctx, V(-9, 0, 12), V(9, 6.5, 12.5), false); // ön
+  addBox(ctx, V(-9, 0, 12), V(9, 1.3, 12.5), false); // ön korkuluk
 
   // lazer: arka-sol köşeden +x, sağ duvara çarpar (yatay, alıcıya ulaşmaz)
   const lz = new Laser(V(-8.7, 0.7, 4), V(1, 0, 0));
