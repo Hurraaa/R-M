@@ -1197,7 +1197,37 @@ function chamber34(ctx) {
   ctx.story = "Işık hattı bir güvenlik geçidinden geçiyor. Yankın geçidi tutsun, sen ışığı yönlendir.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34];
+// ---- Oda 35: Ayna — hareketini X'te yansıtan ikinci bir karakter; ikisini de çıkışa götür ----
+// YENİ MEKANİK: Ayna. Sen +x gidince o -x gider (z aynı). Kendi çarpışması var; duvarlar
+// simetriyi bozar. Hem sen hem aynan kendi çıkışınızda olunca bölüm geçilir. (Beceri/zamanlama
+// değil; uzaysal planlama.) Giriş bölümü: önündeki duvarı dolanırken aynanın da geçtiğini gör.
+function chamber35(ctx) {
+  addBox(ctx, V(-12, -0.5, -10), V(12, 0, 12), false); // zemin
+  addBox(ctx, V(-12.5, 0, -10), V(-12, 5, 12), false); // sol
+  addBox(ctx, V(12, 0, -10), V(12.5, 5, 12), false); // sağ
+  addBox(ctx, V(-12, 0, -10.5), V(12, 5, -10), false); // arka
+  addBox(ctx, V(-12, 0, 12), V(12, 5, 12.5), false); // ön
+  // SENİN şeridinde (sağ) bir engel duvarı: düz +z gidemezsin, merkeze dolanmalısın.
+  addBox(ctx, V(3, 0, -0.4), V(9, 3, 0.4), false);
+  // (Aynanın şeridi -x açık; sen dolanırken aynan ters-x salınıp kendi çıkışına varır.)
+
+  ctx.mirror = { spawn: V(-5, 0.1, -8), exit: V(-5, 0, 9), exitRadius: 2.0 };
+  ctx.spawn = V(5, 0.1, -8);
+  goal(ctx, V(5, 0, 9), "core", 0x6ee84f); // SENİN çıkışın (yeşil)
+  // aynanın çıkış işareti (turuncu halka)
+  const mring = new THREE.Mesh(
+    new THREE.TorusGeometry(1.4, 0.12, 12, 28),
+    new THREE.MeshStandardMaterial({ color: 0xffae54, emissive: 0xcc5a12, emissiveIntensity: 1.2 })
+  );
+  mring.rotation.x = Math.PI / 2; mring.position.set(-5, 0.15, 9);
+  ctx.group.add(mring);
+
+  ctx.objective = "Hem sen (yeşil) hem aynan (turuncu) kendi çıkışınızda olun. Sen +x → ayna -x.";
+  ctx.hint = "İkinci bir karakter hareketini X ekseninde yansıtır: sen sağa gidince o sola, ileri gidince ikiniz de ileri. Önündeki duvarı düz geçemezsin — merkeze (sola) doğru dolan, duvarı aşınca tekrar sağa, yeşil çıkışına git. Sen dolanırken aynan ters yönde salınıp kendi turuncu çıkışına varır. İkiniz birden çıkışta olunca bölüm geçilir.";
+  ctx.story = "Bir yansıma odası. Karşı evrendeki 'sen' her adımını aynalar — ikinizi de eve götür.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31, chamber32, chamber33, chamber34, chamber35];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {

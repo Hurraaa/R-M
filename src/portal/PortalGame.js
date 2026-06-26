@@ -10,7 +10,7 @@ import { PortalSystem } from "./PortalSystem.js";
 import { buildChamber, CHAMBER_COUNT } from "./Level.js";
 import { Scenery } from "./Scenery.js";
 import { PerfMonitor } from "./PerfMonitor.js";
-import { BouncePad, Echo } from "./Props.js";
+import { BouncePad, Echo, makeFigure, walkFigure } from "./Props.js";
 
 export class PortalGame {
   constructor(canvas) {
@@ -28,6 +28,11 @@ export class PortalGame {
     this.recStartYaw = 0;
     this.echoes = [];
     this.maxRecFrames = 1500; // ~ güvenlik üst sınırı
+    // Ayna (mirror): X ekseninde yansıyan, kendi fizikli ikinci karakter
+    this.mirror = null;        // FPController
+    this.mirrorFig = null;     // görsel avatar
+    this.mirrorState = null;   // {yaw, walkPhase, swing}
+    this.mirrorPrev = new THREE.Vector3();
 
     this._initRenderer();
     this._initScene();
@@ -132,8 +137,25 @@ export class PortalGame {
     this._clearEchoes();
     this.recording = false;
     this.recFrames = [];
+    this._setupMirror();
     this._onHud?.(i + 1, CHAMBER_COUNT, this.level.hint, this.level.objective);
     this._onEcho?.(false, this.level.echoMax ?? 0);
+  }
+
+  _setupMirror() {
+    if (this.mirrorFig) { this.scene.remove(this.mirrorFig.group); this._disposeGroup(this.mirrorFig.group); }
+    this.mirror = null; this.mirrorFig = null; this.mirrorState = null;
+    const m = this.level.mirror;
+    if (!m) return;
+    this.mirror = new FPController();
+    this.mirror.gravityScale = this.level.gravityScale ?? 1;
+    this.mirror.reset(m.spawn);
+    this.mirror.yaw = -this.controller.yaw;
+    this.mirrorFig = makeFigure(0xffae54, 0xcc5a12, 0.9); // sıcak turuncu (canlı ayna)
+    this.mirrorFig.group.position.copy(m.spawn);
+    this.scene.add(this.mirrorFig.group);
+    this.mirrorState = { yaw: 0, walkPhase: 0, swing: 0 };
+    this.mirrorPrev.copy(m.spawn);
   }
 
   _clearEchoes() {
@@ -248,6 +270,7 @@ export class PortalGame {
       }
     }
 
+    this._mirrorJump = this.input._jump; // ayna için zıplamayı oyuncu tüketmeden yakala
     this.controller.update(dt, this.input, this.level, this.portals);
     this.portals.update(dt);
     const exitNormal = this.portals.tryTeleport(this.controller);
@@ -259,6 +282,17 @@ export class PortalGame {
       if (this.recFrames.length >= this.maxRecFrames) this.toggleEcho(); // otomatik bitir
     }
     for (const echo of this.echoes) echo.update();
+
+    // Ayna: X ekseninde yansıyan girdiyle kendi fiziğini sür + avatarı canlandır
+    if (this.mirror) {
+      this.mirror.yaw = -this.controller.yaw;
+      const mInput = { aimDX: 0, aimDY: 0, moveX: -this.input.moveX, moveY: this.input.moveY, consumeJump: () => { const j = this._mirrorJump; this._mirrorJump = false; return j; } };
+      this.mirror.update(dt, mInput, this.level, this.portals);
+      if (this.mirror.position.y < -10) { this.mirror.reset(this.level.mirror.spawn); this.mirrorPrev.copy(this.level.mirror.spawn); }
+      walkFigure(this.mirrorState, this.mirrorFig, this.mirror.position, this.mirrorPrev);
+      this.mirrorFig.group.position.copy(this.mirror.position);
+      this.mirrorPrev.copy(this.mirror.position);
+    }
 
     // interaktif nesneler: yük küpleri, butonlar, kapılar
     for (const cube of this.level.cubes) {
@@ -347,7 +381,8 @@ export class PortalGame {
       return true;
     });
 
-    for (const button of this.level.buttons) button.update(this.level.cubes, this.controller, this.echoes);
+    const pressers = this.mirror ? [...this.echoes, { position: this.mirror.position }] : this.echoes;
+    for (const button of this.level.buttons) button.update(this.level.cubes, this.controller, pressers);
     for (const kp of this.level.keypads) kp.update(this.controller);
     for (const lift of this.level.waterLifts) {
       const c = lift.collider;
@@ -373,8 +408,13 @@ export class PortalGame {
 
     // çıkışa ulaşma
     if (this.level.exit) {
-      const d = this.controller.center.distanceTo(this.level.exit.pos);
-      if (d < this.level.exit.radius + 0.6) {
+      let ok = this.controller.center.distanceTo(this.level.exit.pos) < this.level.exit.radius + 0.6;
+      // ayna bölümünde: oyuncu VE ayna kendi çıkışlarında olmalı
+      if (ok && this.level.mirror && this.mirror) {
+        const dm = this.mirror.center.distanceTo(this.level.mirror.exit);
+        ok = dm < (this.level.mirror.exitRadius ?? 2.0) + 0.6;
+      }
+      if (ok) {
         this.winTimer += dt;
         if (this.winTimer > 0.25) this._reachExit();
       } else {

@@ -1086,40 +1086,71 @@ export class Fizzler {
   update(dt) { this.t += dt; this.mat.opacity = 0.20 + 0.12 * Math.abs(Math.sin(this.t * 3)); }
 }
 
+// ---- Paylaşılan insansı figür (Echo + Mirror) ----
+// Eklemli, yarı-saydam bir insansı; ayak y=0, kafa tepesi ~y1.8. Uzuvlar
+// omuz/kalça pivotlarında (rotation.x salınır). {group, armR,armL,legR,legL} döner.
+export function makeFigure(color, emissive, opacity) {
+  const mat = new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity: 0.95, transparent: true, opacity, roughness: 0.3 });
+  const group = new THREE.Group();
+  const add = (parent, geo, x, y, z, sx = 1, sy = 1, sz = 1) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z); m.scale.set(sx, sy, sz);
+    parent.add(m); return m;
+  };
+  add(group, new THREE.SphereGeometry(0.14, 14, 12), 0, 1.66, 0);            // kafa
+  add(group, new THREE.CapsuleGeometry(0.055, 0.06, 4, 10), 0, 1.52, 0);     // boyun
+  add(group, new THREE.CylinderGeometry(0.24, 0.14, 0.56, 14), 0, 1.18, 0, 1, 1, 0.62); // gövde (omuz->bel V)
+  add(group, new THREE.SphereGeometry(0.13, 14, 12), 0, 1.44, 0, 1.7, 0.8, 0.7); // omuz hattı
+  add(group, new THREE.SphereGeometry(0.15, 12, 12), 0, 0.88, 0, 1, 0.8, 0.72);  // kalça
+  const limb = (x, y, isArm) => {
+    const p = new THREE.Group(); p.position.set(x, y, 0);
+    if (isArm) {
+      add(p, new THREE.CapsuleGeometry(0.05, 0.24, 4, 10), 0, -0.17, 0);
+      add(p, new THREE.SphereGeometry(0.052, 10, 8), 0, -0.34, 0);
+      add(p, new THREE.CapsuleGeometry(0.045, 0.2, 4, 10), 0, -0.5, 0);
+      add(p, new THREE.SphereGeometry(0.062, 10, 10), 0, -0.66, 0);
+    } else {
+      add(p, new THREE.CapsuleGeometry(0.082, 0.3, 4, 10), 0, -0.23, 0);
+      add(p, new THREE.SphereGeometry(0.08, 10, 8), 0, -0.46, 0);
+      add(p, new THREE.CapsuleGeometry(0.066, 0.28, 4, 10), 0, -0.67, 0);
+      add(p, new THREE.BoxGeometry(0.12, 0.07, 0.26), 0, -0.86, 0.07);
+    }
+    return p;
+  };
+  const armR = limb(0.235, 1.43, true), armL = limb(-0.235, 1.43, true);
+  const legR = limb(0.11, 0.9, false), legL = limb(-0.11, 0.9, false);
+  group.add(armR, armL, legR, legL);
+  return { group, armR, armL, legR, legL };
+}
+
+// yürüme animasyonu: kol/bacak karşılıklı salınır; dururken yumuşak diner.
+// state {yaw, walkPhase, swing} mutasyona uğrar.
+export function walkFigure(state, fig, cur, prev) {
+  const dx = cur.x - prev.x, dz = cur.z - prev.z;
+  const horiz = Math.hypot(dx, dz);
+  if (horiz > 1e-4) state.yaw = Math.atan2(dx, dz);
+  fig.group.rotation.y = state.yaw;
+  const moving = horiz > 0.004;
+  state.swing += ((moving ? 0.5 : 0) - state.swing) * 0.12;
+  state.walkPhase += horiz * 2.2;
+  const s = Math.sin(state.walkPhase) * state.swing;
+  fig.legR.rotation.x = s; fig.legL.rotation.x = -s;
+  fig.armR.rotation.x = -s * 0.85; fig.armL.rotation.x = s * 0.85;
+}
+
 // ---- Yankı (zaman yankısı / klon) ----
 // Oyuncunun kaydedilmiş AYAK konumlarını sırayla oynatan yarı-saydam bir klon.
-// Kayıt biter bitmez son karede DONAR (butonu basılı tutar). Butonlar onu
-// oyuncu gibi algılar (Button.update'e echoes geçilir).
+// Kayıt biter bitmez son karede DONAR (butonu basılı tutar).
 export class Echo {
   constructor(frames) {
     this.frames = frames.length ? frames : [new THREE.Vector3()];
     this.i = 0;
     this.done = false;
     this.position = this.frames[0].clone(); // ayak konumu (Button bunu okur)
-    this.yaw = 0;
-    this.walkPhase = 0; // yürüme döngüsü fazı (mesafeyle ilerler)
-    this.swing = 0;     // salınım genliği (yürürken yumuşak açılır, dururken söner)
+    this.state = { yaw: 0, walkPhase: 0, swing: 0 };
+    this.fig = makeFigure(0x7fe6ff, 0x2aa6c8, 0.5); // mavi spektral
     this.group = new THREE.Group();
-    // tek paylaşılan yarı-saydam mavi malzeme (spektral klon)
-    const mat = new THREE.MeshStandardMaterial({ color: 0x7fe6ff, emissive: 0x2aa6c8, emissiveIntensity: 0.95, transparent: true, opacity: 0.5, roughness: 0.3 });
-    const add = (parent, geo, x, y, z, sx = 1, sy = 1, sz = 1) => {
-      const m = new THREE.Mesh(geo, mat);
-      m.position.set(x, y, z); m.scale.set(sx, sy, sz);
-      parent.add(m); return m;
-    };
-    // --- statik gövde (ayak y=0, kafa tepesi ~y1.8) ---
-    add(this.group, new THREE.SphereGeometry(0.14, 14, 12), 0, 1.66, 0);            // kafa
-    add(this.group, new THREE.CapsuleGeometry(0.055, 0.06, 4, 10), 0, 1.52, 0);     // boyun
-    add(this.group, new THREE.CylinderGeometry(0.24, 0.14, 0.56, 14), 0, 1.18, 0, 1, 1, 0.62); // gövde (omuz->bel V)
-    add(this.group, new THREE.SphereGeometry(0.13, 14, 12), 0, 1.44, 0, 1.7, 0.8, 0.7); // omuz hattı (geçiş yumuşatma)
-    add(this.group, new THREE.SphereGeometry(0.15, 12, 12), 0, 0.88, 0, 1, 0.8, 0.72);  // kalça (geçiş yumuşatma)
-    // --- eklemli uzuvlar (pivotlar omuz/kalçada; rotation.x ile salınır) ---
-    this.armR = this._limb(mat, add, 0.235, 1.43, true);
-    this.armL = this._limb(mat, add, -0.235, 1.43, true);
-    this.legR = this._limb(mat, add, 0.11, 0.9, false);
-    this.legL = this._limb(mat, add, -0.11, 0.9, false);
-    this.group.add(this.armR, this.armL, this.legR, this.legL);
-    // hafif spektral taban halkası
+    this.group.add(this.fig.group);
     const ring = new THREE.Mesh(
       new THREE.TorusGeometry(0.42, 0.04, 8, 22),
       new THREE.MeshStandardMaterial({ color: 0x9ff0ff, emissive: 0x46e6ff, emissiveIntensity: 1.3, transparent: true, opacity: 0.5 })
@@ -1128,23 +1159,6 @@ export class Echo {
     this.group.add(ring);
     this.group.position.copy(this.position);
   }
-  // omuz/kalça eklemi: aşağı sarkan uzvu (kapsüller + eklem küreleri) içeren pivot
-  _limb(mat, add, x, y, isArm) {
-    const p = new THREE.Group();
-    p.position.set(x, y, 0);
-    if (isArm) {
-      add(p, new THREE.CapsuleGeometry(0.05, 0.24, 4, 10), 0, -0.17, 0);  // üst kol
-      add(p, new THREE.SphereGeometry(0.052, 10, 8), 0, -0.34, 0);        // dirsek
-      add(p, new THREE.CapsuleGeometry(0.045, 0.2, 4, 10), 0, -0.5, 0);   // ön kol
-      add(p, new THREE.SphereGeometry(0.062, 10, 10), 0, -0.66, 0);       // el
-    } else {
-      add(p, new THREE.CapsuleGeometry(0.082, 0.3, 4, 10), 0, -0.23, 0);  // uyluk
-      add(p, new THREE.SphereGeometry(0.08, 10, 8), 0, -0.46, 0);         // diz
-      add(p, new THREE.CapsuleGeometry(0.066, 0.28, 4, 10), 0, -0.67, 0); // baldır
-      add(p, new THREE.BoxGeometry(0.12, 0.07, 0.26), 0, -0.86, 0.07);    // ayak (öne)
-    }
-    return p;
-  }
   update() {
     const prev = this.frames[this.i];
     if (this.i < this.frames.length - 1) this.i++;
@@ -1152,18 +1166,6 @@ export class Echo {
     const cur = this.frames[this.i];
     this.position.copy(cur);
     this.group.position.copy(cur);
-    const dx = cur.x - prev.x, dz = cur.z - prev.z;
-    const horiz = Math.hypot(dx, dz);
-    if (horiz > 1e-4) this.yaw = Math.atan2(dx, dz); // yürürken yönüne döner
-    this.group.rotation.y = this.yaw;
-    // yürüme animasyonu: kol/bacak karşılıklı salınır; dururken yumuşak diner
-    const moving = horiz > 0.004;
-    this.swing += ((moving ? 0.5 : 0) - this.swing) * 0.12;
-    this.walkPhase += horiz * 2.2; // adım frekansı kat edilen mesafeyle
-    const s = Math.sin(this.walkPhase) * this.swing;
-    this.legR.rotation.x = s;
-    this.legL.rotation.x = -s;
-    this.armR.rotation.x = -s * 0.85; // kollar bacaklara karşıt
-    this.armL.rotation.x = s * 0.85;
+    walkFigure(this.state, this.fig, cur, prev);
   }
 }
