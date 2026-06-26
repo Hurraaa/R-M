@@ -137,7 +137,10 @@ export class PortalGame {
   }
 
   _clearEchoes() {
-    for (const e of this.echoes) this.scene.remove(e.group);
+    for (const e of this.echoes) {
+      this.scene.remove(e.group);
+      this._disposeGroup(e.group); // ~20 mesh/klon -> GPU sızıntısını önle
+    }
     this.echoes = [];
   }
 

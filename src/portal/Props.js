@@ -1096,20 +1096,52 @@ export class Echo {
     this.i = 0;
     this.done = false;
     this.position = this.frames[0].clone(); // ayak konumu (Button bunu okur)
+    this.yaw = 0;
     this.group = new THREE.Group();
-    const mat = new THREE.MeshStandardMaterial({ color: 0x46e6ff, emissive: 0x1f7e96, emissiveIntensity: 0.9, transparent: true, opacity: 0.42, roughness: 0.3 });
-    this.body = new THREE.Mesh(new THREE.CapsuleGeometry(0.33, 1.05, 4, 10), mat);
-    this.body.position.y = 0.9;
-    this.group.add(this.body);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.05, 8, 20), new THREE.MeshStandardMaterial({ color: 0x9ff0ff, emissive: 0x46e6ff, emissiveIntensity: 1.4 }));
-    ring.rotation.x = Math.PI / 2; ring.position.y = 0.05;
+    // tek paylaşılan yarı-saydam mavi malzeme (spektral klon)
+    const mat = new THREE.MeshStandardMaterial({ color: 0x7fe6ff, emissive: 0x2aa6c8, emissiveIntensity: 0.95, transparent: true, opacity: 0.5, roughness: 0.3 });
+    const part = (geo, x, y, z, sx = 1, sy = 1, sz = 1) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z); m.scale.set(sx, sy, sz);
+      this.group.add(m); return m;
+    };
+    // insansı figür (ayak y=0, kafa tepesi ~y1.8). Her uzuv ayrı belli.
+    part(new THREE.SphereGeometry(0.14, 12, 12), 0, 1.66, 0);            // kafa
+    part(new THREE.CylinderGeometry(0.05, 0.07, 0.12, 8), 0, 1.52, 0);  // boyun
+    part(new THREE.CylinderGeometry(0.24, 0.14, 0.56, 12), 0, 1.18, 0, 1, 1, 0.62); // gövde (omuz->bel V, önden yassı)
+    part(new THREE.SphereGeometry(0.09, 10, 10), 0.24, 1.43, 0);        // sağ omuz
+    part(new THREE.SphereGeometry(0.09, 10, 10), -0.24, 1.43, 0);       // sol omuz
+    part(new THREE.CylinderGeometry(0.055, 0.05, 0.34, 8), 0.26, 1.25, 0);  // sağ üst kol
+    part(new THREE.CylinderGeometry(0.055, 0.05, 0.34, 8), -0.26, 1.25, 0); // sol üst kol
+    part(new THREE.CylinderGeometry(0.05, 0.043, 0.3, 8), 0.275, 0.95, 0);  // sağ ön kol
+    part(new THREE.CylinderGeometry(0.05, 0.043, 0.3, 8), -0.275, 0.95, 0); // sol ön kol
+    part(new THREE.SphereGeometry(0.062, 8, 8), 0.28, 0.78, 0);         // sağ el
+    part(new THREE.SphereGeometry(0.062, 8, 8), -0.28, 0.78, 0);        // sol el
+    part(new THREE.CylinderGeometry(0.15, 0.13, 0.16, 10), 0, 0.86, 0, 1, 1, 0.72); // kalça
+    part(new THREE.CylinderGeometry(0.085, 0.07, 0.46, 8), 0.105, 0.62, 0);  // sağ uyluk
+    part(new THREE.CylinderGeometry(0.085, 0.07, 0.46, 8), -0.105, 0.62, 0); // sol uyluk
+    part(new THREE.CylinderGeometry(0.07, 0.05, 0.42, 8), 0.11, 0.2, 0);    // sağ baldır
+    part(new THREE.CylinderGeometry(0.07, 0.05, 0.42, 8), -0.11, 0.2, 0);   // sol baldır
+    part(new THREE.BoxGeometry(0.12, 0.07, 0.26), 0.11, 0.035, 0.07);   // sağ ayak (öne)
+    part(new THREE.BoxGeometry(0.12, 0.07, 0.26), -0.11, 0.035, 0.07);  // sol ayak
+    // hafif spektral taban halkası
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(0.42, 0.04, 8, 22),
+      new THREE.MeshStandardMaterial({ color: 0x9ff0ff, emissive: 0x46e6ff, emissiveIntensity: 1.3, transparent: true, opacity: 0.55 })
+    );
+    ring.rotation.x = Math.PI / 2; ring.position.y = 0.03;
     this.group.add(ring);
     this.group.position.copy(this.position);
   }
   update() {
+    const prev = this.frames[this.i];
     if (this.i < this.frames.length - 1) this.i++;
     else this.done = true; // son karede donar -> butonu sürekli basılı tutar
-    this.position.copy(this.frames[this.i]);
-    this.group.position.copy(this.position);
+    const cur = this.frames[this.i];
+    this.position.copy(cur);
+    this.group.position.copy(cur);
+    const dx = cur.x - prev.x, dz = cur.z - prev.z;
+    if (dx * dx + dz * dz > 1e-5) this.yaw = Math.atan2(dx, dz); // yürürken yönüne döner
+    this.group.rotation.y = this.yaw;
   }
 }
