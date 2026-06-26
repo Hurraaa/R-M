@@ -85,6 +85,7 @@ basınç butonu → kapı → ileri seviye fırlatma).
 | 28 | Yukarı Işın | ışını zemin portalıyla DİKEY yukarı çevir, tavandaki alıcıyı yak | yukarı bük | ✅ |
 | 29 | Hız Kilidi | **MOMENTUM DEDÜKSİYONU**: düşüş hızı sabit; çıkış için ÜÇ banttan DOĞRU yükseklikteki bandı seç. Alçak kısa kalır, yüksek aşar — yalnızca ortadaki bant hedefe kondurur. "2 portalı yerleştir, bitti" değil; menzili kafanda kurmak gerek. | hız hesabı | ✅ |
 | 30 | Yankı | **YENİ MEKANİK — zaman yankısı/klon**: kendini kaydet (E / ⏱ düğmesi), kayıt bitince başlangıca ışınlanırsın ve klonun rotanı oynayıp son karede DONAR. Anlık buton (bırakılınca anında kapanır) → klon butonu basılı tutarken sen kapıdan geçersin. Portal yok; saf "iki yerde birden ol" planlaması. | iki yerde ol | ✅ |
+| 31 | Çift Yankı | İKİ klon: kapı yalnızca iki uzak buton AYNI ANDA basılıyken açılır (AND). Tek başına ikisini tutamazsın, bas-koş anında kapanır → iki ayrı yankı kaydetmen şart. Yankı mekaniğinin çok-klon eskalasyonu. | iki kilit | ✅ |
 
 > **Yankı mekaniği (Echo):** `Echo` sınıfı (Props.js) oyuncunun kaydedilmiş ayak
 > konumlarını oynatır, son karede donar; butonlar onu oyuncu gibi algılar.

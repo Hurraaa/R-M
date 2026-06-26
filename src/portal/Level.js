@@ -1030,7 +1030,43 @@ function chamber30(ctx) {
   ctx.story = "Eski bir zaman-yankısı konsolu. Kendi geçmişini kaydedip yanında bir 'sen' daha çalıştırabilirsin — iki yerde birden ol.";
 }
 
-const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30];
+// ---- Oda 31: Çift Yankı — İKİ klon, iki butonu aynı anda tutmalı (tek başına olmaz) ----
+// Kapı yalnızca b1 VE b2 birlikte basılıyken açılır (AND). Butonlar uzakta; tek başına
+// ikisini tutamazsın, bas-koş da işe yaramaz (anında kapanır). İki yankı kaydı şart.
+function chamber31(ctx) {
+  addBox(ctx, V(-16, -0.5, -5), V(16, 0, 12), false); // zemin
+  addBox(ctx, V(-16.5, 0, -5), V(-16, 6, 12), false); // sol
+  addBox(ctx, V(16, 0, -5), V(16.5, 6, 12), false); // sağ
+  addBox(ctx, V(-16, 0, -5.5), V(16, 6, -5), false); // arka
+  addBox(ctx, V(-16, 0, 12), V(16, 6, 12.5), false); // ön
+  addBox(ctx, V(-16, 6, -5), V(16, 6.5, 12), false); // tavan
+
+  // KAPI duvarı z=8, ortada kapı boşluğu x[-3,3]
+  addBox(ctx, V(-16, 0, 8), V(-3, 6, 8.5), false);
+  addBox(ctx, V(3, 0, 8), V(16, 6, 8.5), false);
+  addBox(ctx, V(-3, 5, 8), V(3, 6, 8.5), false); // lento
+  const door = new Door(V(-3, 0, 8), V(3, 5, 8.5));
+  door.closeSpeed = 8; // bırakılınca anında kapanır
+  ctx.group.add(door.mesh);
+  ctx.colliders.push(door.collider);
+  ctx.doors.push(door);
+
+  // İKİ buton (uzak; aynı anda tutmak için iki klon gerek). null kapı -> sadece pressed izlenir.
+  const b1 = new Button(V(-13, 0, 2), null);
+  const b2 = new Button(V(13, 0, 2), null);
+  ctx.group.add(b1.group, b2.group);
+  ctx.buttons.push(b1, b2);
+  door.requires = [b1, b2]; // AND kilidi
+
+  ctx.echoMax = 2; // iki yankı kaydedilebilir
+  ctx.spawn = V(0, 0.1, 0);
+  goal(ctx, V(0, 0, 10.5), "core", 0x6ee84f);
+  ctx.objective = "İki butonu aynı anda bastır: iki ayrı klon kaydet, sonra sen kapıdan geç.";
+  ctx.hint = "Kapı yalnızca İKİ buton birlikte basılıyken açılır — tek başına ikisine birden basamazsın, basıp koşsan da anında kapanır. ÇÖZÜM: 1) Yankı kaydını başlat, SOL butona yürü, dur, kaydı bitir (1. klon onu tutar). 2) Tekrar kayıt başlat, SAĞ butona yürü, dur, bitir (2. klon onu tutar). 3) İki klon iki butonu da tutarken kapı açılır — sen ortadan kapıya yürü.";
+  ctx.story = "İki kilit, iki el gerek. Ama sen birsin… ta ki iki yankını birden çalıştırana kadar.";
+}
+
+const builders = [chamber0, chamber1, chamber2, chamber3, chamber5, chamber6, chamber7, chamber8, chamber9, chamber10, chamber11, chamber12, chamber13, chamber14, chamber15, chamber16, chamber17, chamber18, chamber19, chamber20, chamber21, chamber22, chamber23, chamber24, chamber25, chamber26, chamber27, chamber28, chamber29, chamber30, chamber31];
 export const CHAMBER_COUNT = builders.length;
 
 export function buildChamber(index) {
