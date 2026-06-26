@@ -789,23 +789,27 @@ export class LightBridge {
 
   update(dt, level, portals) {
     const h1 = this._march(this.origin, this.dir, level, portals, null);
-    this._setSeg(0, this.origin, h1.point, this.dir);
+    this._setSeg(0, this.origin, h1.point, this.dir, this.origin.y);
     if (h1.portal) {
       const exit = h1.portal === portals.a ? portals.b : portals.a;
       const d2 = this._snap(exit.normal);
       const start2 = exit.position.clone();
       const h2 = this._march(start2, d2, level, portals, exit);
-      this._setSeg(1, start2, h2.point, d2);
+      // İKİNCİ segment ÇIKIŞ PORTALININ yüksekliğinde doğar (sabit yayıcı
+      // yüksekliği değil) — portalı yukarı taşıyınca köprü de yükselir,
+      // böylece ışık köprüsüyle merdiven gibi tırmanmak mümkün olur.
+      this._setSeg(1, start2, h2.point, d2, start2.y);
     } else {
       this._setSeg(1, null);
     }
   }
 
-  _setSeg(i, start, end, dir) {
+  _setSeg(i, start, end, dir, segY) {
     const s = this.seg[i];
     if (!start) { s.collider.disabled = true; s.mesh.visible = false; return; }
+    const y = segY ?? this.y;
     const min = new THREE.Vector3(), max = new THREE.Vector3();
-    min.y = this.y - this.thick / 2; max.y = this.y + this.thick / 2;
+    min.y = y - this.thick / 2; max.y = y + this.thick / 2;
     if (Math.abs(dir.x) > 0.5) {
       min.x = Math.min(start.x, end.x); max.x = Math.max(start.x, end.x);
       min.z = start.z - this.width / 2; max.z = start.z + this.width / 2;

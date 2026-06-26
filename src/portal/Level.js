@@ -640,26 +640,30 @@ function chamber19(ctx) {
   ctx.story = "Zemin çökmüş, önünde dipsiz bir şaft. Düşüşünü bir portalla ileri çevir — momentum seni karşıya taşısın.";
 }
 
-// ---- Oda 20: Işık Köprüsü — köprüyü portalla yakala, uçurumun karşısına çevir ----
+// ---- Oda 20: Işık Merdiveni — köprüyü portalla yükselte yükselte tırman ----
+// Işık köprüsü artık TEK YÖNLÜ platform (alttan zıplayıp üstüne çıkılır) ve
+// ikinci segment ÇIKIŞ PORTALININ yüksekliğinde doğar. Arka portalı adım adım
+// yukarı taşıyıp köprüyü yükselterek kendine bir merdiven dokursun.
 function chamber20(ctx) {
-  addBox(ctx, V(-8, -0.5, 0), V(8, 0, 6), false); // başlangıç platformu
-  addBox(ctx, V(-8, -0.5, 16), V(8, 0, 24), false); // çıkış platformu (uçurum z 6..16)
-  addBox(ctx, V(-8.5, 0, 0), V(-8, 6, 24), false); // sol duvar (yayıcı burada)
-  addBox(ctx, V(8, 0, 0), V(8.5, 6, 24), true); // SAĞ duvar portallanabilir (köprü buraya çarpar)
-  addBox(ctx, V(-8, 0, -0.5), V(8, 6, 0), true); // ARKA duvar portallanabilir (köprüyü +z'ye çevir)
-  addBox(ctx, V(-8, 0, 24), V(8, 6, 24.5), false); // ön duvar
+  addBox(ctx, V(-6, -0.5, 0), V(6, 0, 6), false); // başlangıç platformu (y0)
+  addBox(ctx, V(-8.5, 0, -1), V(-8, 9, 8), false); // sol duvar (yayıcı burada)
+  addBox(ctx, V(8, 0, -1), V(8.5, 9, 8), true);    // SAĞ duvar portallanabilir (köprü çarpar -> portal A, SABİT)
+  addBox(ctx, V(-6, 0, -0.5), V(6, 9, 0), true);   // ARKA duvar portallanabilir + YÜKSEK (portal B'yi yükselte taşı)
+  // uçurum z[6,10]; tepe (hedef) platformu y=6'da, köprü o yüksekliğe gelince ulaşılır
+  addBox(ctx, V(-6, 6, 10), V(6, 6.5, 16), false); // hedef platformu (y6)
+  addBox(ctx, V(-6, 0, 16), V(6, 9, 16.5), false); // arka durdurucu duvar (köprüyü sınırlar)
 
-  // ışık köprüsü yayıcısı: sol duvarda, +x'e ateşler (uçuruma paralel — boşa gider)
-  const lb = new LightBridge(V(-7.8, 0.2, 3), V(1, 0, 0), 40);
+  // ışık köprüsü yayıcısı: sol duvarda, +x'e ateşler -> sağ duvara çarpar
+  const lb = new LightBridge(V(-7.8, 0.2, 3), V(1, 0, 0), 44);
   ctx.group.add(lb.group);
   ctx.lightBridges.push(lb);
   for (const c of lb.colliders) ctx.colliders.push(c);
 
-  ctx.spawn = V(-5, 0.1, 3);
-  goal(ctx, V(4, 0, 20), "beacon", 0x46e6ff);
-  ctx.objective = "Işık köprüsünü portalla yakalayıp uçurumun karşısına çevir, üstünde yürü.";
-  ctx.hint = "Yayıcı köprüyü sağ duvara (uçuruma paralel) atıyor — boşa. Köprünün çarptığı SAĞ duvara bir portal, ARKA duvara (uçuruma bakan yer) ikinci portalı aç. Köprü arka portaldan yeniden doğup uçurumu boydan boya geçer. Portal B'yi hedefin hizasına (x) koy, köprüye çıkıp karşıya yürü.";
-  ctx.story = "Geçit çökmüş. Eski bir ışık köprüsü yayıcısı hâlâ çalışıyor — ışığı portalla büküp kendine bir yol döşe.";
+  ctx.spawn = V(0, 0.1, 3);
+  goal(ctx, V(0, 6, 13), "beacon", 0x46e6ff);
+  ctx.objective = "Işık köprüsünü portalla yükselte yükselte MERDİVEN yap; alttan zıplayıp üstüne çıkarak tepeye tırman.";
+  ctx.hint = "Yayıcı köprüyü SAĞ duvara atar — oraya bir portal aç (köprüyü yakalar) ve SABİT bırak. İkinci portalı ARKA duvara aç: köprü o portalın YÜKSEKLİĞİNDE doğar. Köprünün altından zıpla, üstüne çık. Sonra arka portalı biraz DAHA YUKARI taşı — köprü yükselir, yine alttan zıplayıp çık. Tekrarla; köprü y≈6'ya gelince tepedeki platforma yürü.";
+  ctx.story = "Yukarı giden yol yok — ama ışığı portalla adım adım yükseltirsen, kendine bir merdiven dokursun.";
 }
 
 // ---- Oda 21: İkinci Köprü — köprüyü farklı bir düzende kur, geniş uçurumu geç ----

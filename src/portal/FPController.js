@@ -125,6 +125,11 @@ export class FPController {
         box.max.y > c.min.y && box.min.y < c.max.y &&
         box.max.z > c.min.z && box.min.z < c.max.z
       ) {
+        // ışık köprüsü = tek yönlü tavan: ALTTAN yukarı zıplarken köprüden GEÇ
+        // (kafa çarpmaz) ama üstüne düşünce/ yandan basınca KATI. Böylece köprü
+        // hem yürünen bir yol (yatay geçiş) hem de alttan çıkılıp üstüne binilen
+        // bir basamak (merdiven tırmanışı) olur.
+        if (c.bridge && this.gravityDir > 0 && axis === "y" && this.velocity.y > 0) continue;
         // küçük basamak çıkma: yatay eksende, normal çekimde, yalnızca DÜŞMÜYORKEN
         // (gerçek boşluğa düşerken çalışmaz -> hassas zıplama bozulmaz)
         if (axis !== "y" && this.gravityDir > 0 && this.velocity.y > -1.5) {
@@ -156,6 +161,7 @@ export class FPController {
   }
 
   update(dt, input, level, portals) {
+    this._prevFootY = this.position.y; // bu kareki entegrasyondan ÖNCEki ayak yüksekliği (tek-yönlü köprü için)
     this.teleportCooldown = Math.max(0, this.teleportCooldown - dt);
     this.launchCooldown = Math.max(0, this.launchCooldown - dt);
     this.zipCooldown = Math.max(0, this.zipCooldown - dt);
